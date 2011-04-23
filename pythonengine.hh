@@ -15,7 +15,6 @@ protected:
     static PythonEngine *instance;
     PyObject *_locals;
     PyObject *_globals;
-    //PyThreadState *interpreter;
 
 protected:
     explicit PythonEngine(QObject *parent=0);
@@ -31,13 +30,6 @@ public:
     void setStdout(CellInputStream *stream);
     void setStderr(CellInputStream *stream);
 };
-
-
-typedef struct {
-    PyObject_HEAD
-
-    CellInputStream *stream;
-} SciPyStudioStreamWrapper;
 
 
 

@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     resultcell.cc \
     cellstatus.cc \
     pythonengine.cc \
-    cellinputstream.cc
+    cellinputstream.cc \
+    streamwrapper.cc
 
 HEADERS  += mainwindow.h \
     codecell.h \
@@ -29,7 +30,8 @@ HEADERS  += mainwindow.h \
     resultcell.hh \
     cellstatus.hh \
     pythonengine.hh \
-    cellinputstream.hh
+    cellinputstream.hh \
+    streamwrapper.hh
 
 INCLUDEPATH += /opt/local/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6
 LIBS += -ldl -framework CoreFoundation -lpython2.6
