@@ -34,6 +34,12 @@ ResultCell::ResultCell(QWidget *parent) :
                      this, SLOT(onStdoutText(QString)));
     QObject::connect(&(this->_stderr_stream), SIGNAL(newData(QString)),
                      this, SLOT(onStderrText(QString)));
+
+    // Setup format for stderr and stdout...
+    this->stdoutFormat.setFontStyleHint(QFont::TypeWriter, QFont::PreferMatch);
+    this->stdoutFormat.setForeground(QColor(0x00, 0x00, 0x00));
+    this->stderrFormat.setFontStyleHint(QFont::TypeWriter, QFont::PreferMatch);
+    this->stderrFormat.setForeground(QColor(0xa0, 0x00, 0x00));
 }
 
 
@@ -79,14 +85,14 @@ ResultCell::getStderrStream()
 void
 ResultCell::onStdoutText(const QString &data)
 {
-    this->textCursor().insertText(data);
+    this->textCursor().insertText(data, this->stdoutFormat);
     this->setVisible(true);
 }
 
 void
 ResultCell::onStderrText(const QString &data)
 {
-    this->textCursor().insertText(data);
+    this->textCursor().insertText(data, this->stderrFormat);
     this->setVisible(true);
 }
 

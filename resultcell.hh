@@ -14,6 +14,8 @@ private:
     CellInputStream _stdout_stream;
     CellInputStream _stderr_stream;
 
+    QTextCharFormat stdoutFormat;
+    QTextCharFormat stderrFormat;
 
 public:
     explicit ResultCell(QWidget *parent = 0);
