@@ -80,11 +80,13 @@ void
 ResultCell::onStdoutText(const QString &data)
 {
     this->textCursor().insertText(data);
+    this->setVisible(true);
 }
 
 void
 ResultCell::onStderrText(const QString &data)
 {
     this->textCursor().insertText(data);
+    this->setVisible(true);
 }
 

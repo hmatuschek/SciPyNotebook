@@ -14,6 +14,9 @@ CodeCell::CodeCell(QWidget *parent) :
     this->higlighter = new PythonHighlighter();
     this->higlighter->setDocument(this->document());
 
+    QFont default_font; default_font.setStyleHint(QFont::TypeWriter);
+    this->document()->setDefaultFont(default_font);
+
     this->_text_size = this->document()->size().toSize();
     this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 

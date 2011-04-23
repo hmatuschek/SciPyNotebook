@@ -47,12 +47,17 @@ Notebook::onEvalCell()
 void
 Notebook::onNewCell()
 {
-    // Get the current cell:
+    // Get the current cell and its index (if known)
     QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
+    int index = this->layout()->indexOf(w);
+    if(0 <= index)
+        index++;
 
     //Append a new cell
     Cell *new_cell = new Cell();
     new_cell->setFocus();
-    this->cell_layout->insertWidget(this->layout()->indexOf(w)+1, new_cell);
+
+    // Insert
+    this->cell_layout->insertWidget(index, new_cell);
 }
 

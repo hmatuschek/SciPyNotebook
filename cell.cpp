@@ -28,6 +28,8 @@ Cell::Cell(QWidget *parent) :
 
     // Instantiate result cell
     this->resultcell = new ResultCell();
+    this->cellbox->addWidget(this->resultcell);
+    this->resultcell->setVisible(false);
 
     // Eye candy
     this->setLayout(hbox);
@@ -50,8 +52,9 @@ Cell::evaluate()
     engine->setStdout(this->resultcell->getStdoutStream());
     engine->setStderr(this->resultcell->getStderrStream());
 
-    // Clear result cell:
+    // Clear and hide result cell:
     this->resultcell->document()->clear();
+    this->resultcell->setVisible(false);
 
     // Evaluate code:
     /// \todo Make sure this runs in a separate thread
@@ -63,7 +66,7 @@ Cell::evaluate()
         this->cell_status->setStatusError();
 
         // Show result cell
-        this->cellbox->addWidget(this->resultcell);
+        this->resultcell->setVisible(true);
 
         // print traceback to sys.stderr
         PyErr_Print();
@@ -71,8 +74,14 @@ Cell::evaluate()
         return;
     }
 
-    this->cellbox->addWidget(this->resultcell);
     this->cell_status->setStatusSuccess();
 
     Py_DECREF(result);
+}
+
+
+void
+Cell::setFocus()
+{
+    this->codecell->setFocus();
 }

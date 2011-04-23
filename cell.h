@@ -25,7 +25,7 @@ public:
     explicit Cell(QWidget *parent=0);
 
     void evaluate();
-
+    virtual void setFocus();
 
 signals:
 

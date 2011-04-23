@@ -6,7 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     // Set window title
     this->setWindowTitle("SciPy Studio");
-    this->resize(480, 640);
+    this->resize(533, 640);
 
     // Create new console widget...
     this->notebook = new Notebook();

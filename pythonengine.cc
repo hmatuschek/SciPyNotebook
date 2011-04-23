@@ -97,7 +97,8 @@ PythonEngine::setStdout(CellInputStream *stream)
     }
 
     PyObject *sys_dict = PyModule_GetDict(sys_module);
-    PyDict_SetItem(sys_dict, PyString_FromString("stdout"), SciPyStudioStreamWrapper_new(stream));
+    PyDict_SetItem(sys_dict, PyString_FromString("stdout"),
+                   SciPyStudioStreamWrapper_new(stream));
 }
 
 
@@ -113,6 +114,7 @@ PythonEngine::setStderr(CellInputStream *stream)
     }
 
     PyObject *sys_dict = PyModule_GetDict(sys_module);
-    PyDict_SetItem(sys_dict, PyString_FromString("stderr"), SciPyStudioStreamWrapper_new(stream));
+    PyDict_SetItem(sys_dict, PyString_FromString("stderr"),
+                   SciPyStudioStreamWrapper_new(stream));
 }
 
