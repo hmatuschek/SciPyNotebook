@@ -1,4 +1,4 @@
-#include "codecell.h"
+#include "codecell.hh"
 #include <QSyntaxHighlighter>
 
 #include <iostream>
@@ -11,7 +11,7 @@ CodeCell::CodeCell(QWidget *parent) :
     this->setWordWrapMode(QTextOption::NoWrap);
 
     // install syntax highlighter
-    this->higlighter = new PythonHighlighter();
+    this->higlighter = new PythonHighlighter(this);
     this->higlighter->setDocument(this->document());
 
     QFont default_font; default_font.setStyleHint(QFont::TypeWriter);

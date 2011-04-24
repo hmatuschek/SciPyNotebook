@@ -5,7 +5,7 @@
 #include <QLinkedList>
 #include <QLayout>
 
-#include "cell.h"
+#include "cell.hh"
 
 
 class Notebook : public QFrame

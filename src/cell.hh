@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QVBoxLayout>
 
-#include "codecell.h"
+#include "codecell.hh"
 #include "resultcell.hh"
 #include "cellstatus.hh"
 

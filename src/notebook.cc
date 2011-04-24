@@ -1,4 +1,4 @@
-#include "notebook.h"
+#include "notebook.hh"
 #include <QApplication>
 
 

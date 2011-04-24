@@ -15,8 +15,6 @@ SciPyStudioStreamWrapper_write(SciPyStudioStreamWrapper *self, PyObject *args)
         return NULL;
     }
 
-    std::cerr << "Redirect: " << text << std::endl;
-
     // Extract string and send it to stream:
     self->stream->write(PyString_AsString(text));
 

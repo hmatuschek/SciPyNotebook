@@ -3,7 +3,7 @@
 
 #include <QPlainTextEdit>
 #include <QShortcut>
-#include "pythonhighlighter.h"
+#include "pythonhighlighter.hh"
 
 
 class CodeCell : public QTextEdit

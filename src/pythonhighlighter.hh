@@ -20,6 +20,7 @@ class PythonHighlighter : public QSyntaxHighlighter
 protected:
     QLinkedList<HighlightingRule> rules;
 
+    QFont defaultFont;
     QTextCharFormat keywordFormat;
     QTextCharFormat singleLineCommentFormat;
     QTextCharFormat quotationFormat;
@@ -28,7 +29,7 @@ protected:
 
 
 public:
-    explicit PythonHighlighter(QObject *parent = 0);
+    explicit PythonHighlighter(QTextEdit *parent = 0);
 
 
 protected:

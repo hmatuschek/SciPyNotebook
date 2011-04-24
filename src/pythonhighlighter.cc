@@ -1,10 +1,10 @@
-#include "pythonhighlighter.h"
-#include <iostream>
+#include "pythonhighlighter.hh"
+#include <QTextEdit>
 
 
 
-PythonHighlighter::PythonHighlighter(QObject *parent) :
-    QSyntaxHighlighter(parent)
+PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
+    QSyntaxHighlighter(parent), defaultFont("Fixed")
 {
     // Assemble rules for syntax highlighting (stolen from Scribus sources)
     // Reserved keywords in Python 2.4
@@ -17,13 +17,23 @@ PythonHighlighter::PythonHighlighter(QObject *parent) :
         << "is" << "lambda" << "not" << "or" << "pass" << "print" << "raise"
         << "return" << "try" << "while" << "yield";
 
+    defaultFont.setStyleHint(QFont::TypeWriter);
+
+    keywordFormat.setFont(defaultFont);
     keywordFormat.setForeground(QColor(0x00, 0x00, 0x7f));
     keywordFormat.setFontWeight(QFont::Bold);
-    keywordFormat.setFontStyleHint(QFont::TypeWriter);
+
+    singleLineCommentFormat.setFont(defaultFont);
     singleLineCommentFormat.setForeground(QColor(0xA0, 0xA0, 0xA0));
     singleLineCommentFormat.setFontItalic(true);
+
+    quotationFormat.setFont(defaultFont);
     quotationFormat.setForeground(QColor(0x00, 0x55, 0x00));
+
+    numberFormat.setFont(defaultFont);
     numberFormat.setForeground(QColor(0xFF, 0xAA, 0x00));
+
+    operatorFormat.setFont(defaultFont);
     operatorFormat.setForeground(QColor(0xAA, 0x00, 0xFF));
 
     foreach (QString kw, keywords)
@@ -62,6 +72,9 @@ PythonHighlighter::PythonHighlighter(QObject *parent) :
 void
 PythonHighlighter::highlightBlock(const QString &text)
 {
+    // Set default font for all text:
+    this->setFormat(0, text.length(), this->defaultFont);
+
     // Perform pattern matching (also stolen from Scribus sources)
     foreach (HighlightingRule rule, rules)
     {
