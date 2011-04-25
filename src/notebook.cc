@@ -19,7 +19,11 @@
  */
 
 #include "notebook.hh"
+
 #include <QApplication>
+#include <QFile>
+
+#include <iostream>
 
 
 Notebook::Notebook(QWidget *parent) :
@@ -38,7 +42,7 @@ Notebook::Notebook(QWidget *parent) :
                      this, SLOT(onEvalCell()));
 
     // Register shortcut for evaluation of current cell
-    this->_new_cell_shortcut = new QShortcut(Qt::CTRL + Qt::Key_N, this);
+    this->_new_cell_shortcut = new QShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N, this);
     QObject::connect(this->_new_cell_shortcut, SIGNAL(activated()),
                      this, SLOT(onNewCell()));
 
@@ -46,6 +50,9 @@ Notebook::Notebook(QWidget *parent) :
     Cell *new_cell = new Cell(this);
     new_cell->setFocus();
     this->cell_layout->addWidget(new_cell);
+
+    // Append cell to list:
+    this->_cells.append(new_cell);
 }
 
 
@@ -77,7 +84,67 @@ Notebook::onNewCell()
     Cell *new_cell = new Cell();
     new_cell->setFocus();
 
-    // Insert
+    // Insert cell
     this->cell_layout->insertWidget(index, new_cell);
+    if (0 > index)
+        this->_cells.push_back(new_cell);
+    else
+        this->_cells.insert(index, new_cell);
 }
+
+
+bool
+Notebook::hasFileName()
+{
+    return 0 != this->_filename.size();
+}
+
+
+const QString &
+Notebook::fileName()
+{
+    return this->_filename;
+}
+
+
+void
+Notebook::setFileName(const QString &filename)
+{
+    this->_filename = filename;
+}
+
+
+void
+Notebook::save()
+{
+    // Do nothing if no filename is set...
+    if (!this->hasFileName())
+    {
+        return;
+    }
+
+    // open file;
+    QFile file(this->_filename);
+    file.open(QIODevice::WriteOnly | QIODevice::Truncate);
+
+    /// \todo Serialize preamble!
+
+    size_t index = 1;
+    foreach(Cell *cell, this->_cells)
+    {
+        // Write code into file;
+        cell->serializeCode(file);
+
+        if (index != this->_cells.size())
+        {
+            /// \todo Make lineendings more platform specific.
+            file.write("\n");
+            file.write("# -*- snip -*-");
+            file.write("\n");
+        }
+
+        index++;
+    }
+}
+
 

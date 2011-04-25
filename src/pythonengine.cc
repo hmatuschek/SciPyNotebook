@@ -7,15 +7,6 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "pythonengine.hh"
@@ -36,10 +27,10 @@ PythonEngine::PythonEngine(QObject *parent) :
     Py_Initialize();
     PythonEngine::instance = this;
 
-    // Register SciPyStudioStreamWrapper class:
-    if (0 > SciPyStudioStreamWrapperType_init())
+    // Register SciPyNotebookStreamWrapper class:
+    if (0 > SciPyNotebookStreamWrapperType_init())
     {
-        std::cerr << "Oops: Can not register stream wrapper..." << std::endl;
+        std::cerr << "Oops: Can not register stream wrapper type..." << std::endl;
         exit(0);
     }
 
@@ -118,7 +109,7 @@ PythonEngine::setStdout(CellInputStream *stream)
 
     PyObject *sys_dict = PyModule_GetDict(sys_module);
     PyDict_SetItem(sys_dict, PyString_FromString("stdout"),
-                   SciPyStudioStreamWrapper_new(stream));
+                   SciPyNotebookStreamWrapper_new(stream));
 }
 
 
@@ -135,6 +126,6 @@ PythonEngine::setStderr(CellInputStream *stream)
 
     PyObject *sys_dict = PyModule_GetDict(sys_module);
     PyDict_SetItem(sys_dict, PyString_FromString("stderr"),
-                   SciPyStudioStreamWrapper_new(stream));
+                   SciPyNotebookStreamWrapper_new(stream));
 }
 

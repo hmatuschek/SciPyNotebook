@@ -7,15 +7,6 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "streamwrapper.hh"
@@ -23,8 +14,11 @@
 #include <iostream>
 
 
+/**
+ * Implements the "write()" method for the StreamWrapper objects.
+ */
 static PyObject *
-SciPyStudioStreamWrapper_write(SciPyStudioStreamWrapper *self, PyObject *args)
+SciPyNotebookStreamWrapper_write(SciPyNotebookStreamWrapper *self, PyObject *args)
 {
     PyObject *text = 0;
 
@@ -43,40 +37,47 @@ SciPyStudioStreamWrapper_write(SciPyStudioStreamWrapper *self, PyObject *args)
 }
 
 
-static PyMethodDef SciPyStudioStreamWrapperType_methods[] =
+/**
+ * The method definitions for StreamWrapper instances.
+ */
+static PyMethodDef SciPyNotebookStreamWrapperType_methods[] =
 {
-    {"write", (PyCFunction)SciPyStudioStreamWrapper_write, METH_VARARGS, "..."},
+    {"write", (PyCFunction)SciPyNotebookStreamWrapper_write, METH_VARARGS, "..."},
     {NULL, NULL, 0, NULL}
 };
 
 
 
-static PyTypeObject SciPyStudioStreamWrapperType = {
+/**
+ * Defines the StreamWrapper type.
+ */
+static PyTypeObject SciPyNotebookStreamWrapperType = {
     PyObject_HEAD_INIT(NULL)
     0,
-    "SciPyStudioStreamWrapper",
-    sizeof(SciPyStudioStreamWrapperType),
+    "SciPyNotebookStreamWrapper",
+    sizeof(SciPyNotebookStreamWrapperType),
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     Py_TPFLAGS_DEFAULT,
     "Wrapper of stderr and stdout.",
     0,0,0,0,0,0,
-    SciPyStudioStreamWrapperType_methods,
+    SciPyNotebookStreamWrapperType_methods,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
 
-PyObject *
-SciPyStudioStreamWrapper_new(CellInputStream *stream)
-{
-    SciPyStudioStreamWrapper *self;
 
-    if (0 == (self = (SciPyStudioStreamWrapper *)SciPyStudioStreamWrapperType.tp_alloc(&SciPyStudioStreamWrapperType, 0)))
+PyObject *
+SciPyNotebookStreamWrapper_new(CellInputStream *stream)
+{
+    SciPyNotebookStreamWrapper *self;
+
+    if (0 == (self = (SciPyNotebookStreamWrapper *)SciPyNotebookStreamWrapperType.tp_alloc(&SciPyNotebookStreamWrapperType, 0)))
     {
         return 0;
     }
 
     // Init object
-    self = (SciPyStudioStreamWrapper *)PyObject_Init((PyObject *)self, &SciPyStudioStreamWrapperType);
+    self = (SciPyNotebookStreamWrapper *)PyObject_Init((PyObject *)self, &SciPyNotebookStreamWrapperType);
 
     // Store stream instance:
     self->stream = stream;
@@ -86,14 +87,14 @@ SciPyStudioStreamWrapper_new(CellInputStream *stream)
 
 
 int
-SciPyStudioStreamWrapperType_init()
+SciPyNotebookStreamWrapperType_init()
 {
-    if (0 > PyType_Ready(&SciPyStudioStreamWrapperType))
+    if (0 > PyType_Ready(&SciPyNotebookStreamWrapperType))
     {
         return -1;
     }
 
-    Py_INCREF(&SciPyStudioStreamWrapperType);
+    Py_INCREF(&SciPyNotebookStreamWrapperType);
 
     return 0;
 }

@@ -7,33 +7,38 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef STREAMWRAPPER_HH
-#define STREAMWRAPPER_HH
+#ifndef __SCIPY_NOTEBOOK_STREAMWRAPPER_HH__
+#define __SCIPY_NOTEBOOK_STREAMWRAPPER_HH__
 
 #include <Python.h>
 #include "cellinputstream.hh"
 
 
-int SciPyStudioStreamWrapperType_init();
+/**
+ * Registers the StreamWrapperType with the python type system.
+ */
+int SciPyNotebookStreamWrapperType_init();
 
-PyObject *SciPyStudioStreamWrapper_new(CellInputStream *stream);
 
+/**
+ * Constructs a StreamWrapper instance forwarding to CellInputStream instance.
+ */
+PyObject *SciPyNotebookStreamWrapper_new(CellInputStream *stream);
+
+
+/**
+ * Defines the StreamWrapper python class.
+ */
 typedef struct {
     PyObject_HEAD
 
+    /**
+     * Holds the stream instance the data is forwarded to.
+     */
     CellInputStream *stream;
-} SciPyStudioStreamWrapper;
+} SciPyNotebookStreamWrapper;
 
 
-#endif // STREAMWRAPPER_HH
+#endif // __SCIPY_NOTEBOOK_STREAMWRAPPER_HH__

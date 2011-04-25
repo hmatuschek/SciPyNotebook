@@ -22,7 +22,7 @@
 #define NOTEBOOK_H
 
 #include <QScrollArea>
-#include <QLinkedList>
+#include <QList>
 #include <QLayout>
 
 #include "cell.hh"
@@ -33,15 +33,21 @@ class Notebook : public QFrame
     Q_OBJECT
 
 protected:
-    QLinkedList<Cell *> _cells;
+    QList<Cell *> _cells;
     QShortcut *_eval_shortcut;
     QShortcut *_new_cell_shortcut;
     QBoxLayout *cell_layout;
+    QString _filename;
+
+
 public:
     explicit Notebook(QWidget *parent = 0);
 
+    bool hasFileName();
+    const QString &fileName();
+    void setFileName(const QString &filename);
 
-signals:
+    void save();
 
 
 public slots:

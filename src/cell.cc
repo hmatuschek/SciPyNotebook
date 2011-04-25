@@ -105,3 +105,10 @@ Cell::setFocus()
 {
     this->codecell->setFocus();
 }
+
+
+void
+Cell::serializeCode(QIODevice &device)
+{
+    device.write(this->codecell->document()->toPlainText().toAscii());
+}

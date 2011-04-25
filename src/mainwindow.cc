@@ -22,6 +22,7 @@
 
 #include <QScrollArea>
 #include <QMenuBar>
+#include <QFileDialog>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -52,10 +53,12 @@ MainWindow::MainWindow(QWidget *parent) :
     saveAct = new QAction(tr("&Save"), this);
     saveAct->setShortcut(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the notebook."));
+    QObject::connect(saveAct, SIGNAL(triggered()), this, SLOT(saveSlot()));
 
     saveAsAct = new QAction(tr("Save &As"), this);
     saveAsAct->setShortcut(QKeySequence::SaveAs);
     saveAsAct->setStatusTip(tr("Save the notbook under a different name."));
+    QObject::connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAsSlot()));
 
     printAct = new QAction(tr("&Print"), this);
     printAct->setShortcut(QKeySequence::Print);
@@ -117,3 +120,39 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
 }
+
+
+void
+MainWindow::saveSlot()
+{
+    if(! this->notebook->hasFileName())
+    {
+        this->saveAsSlot();
+        return;
+    }
+
+    //this->notebook->save();
+}
+
+
+void
+MainWindow::saveAsSlot()
+{
+    // Assemble Save as... dialog
+    QFileDialog dialog(this);
+    /// \todo Select directory properly.
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setNameFilter(tr("Python Scripts (*.py)"));
+
+    if (! dialog.exec()) {
+        // Abort...
+        return;
+    }
+
+    // Get filename and save it:
+    QString file = dialog.selectedFiles().front();
+    this->notebook->setFileName(file);
+    this->notebook->save();
+}
+

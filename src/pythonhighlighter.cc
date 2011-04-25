@@ -7,15 +7,6 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "pythonhighlighter.hh"
@@ -43,6 +34,10 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     keywordFormat.setForeground(QColor(0x00, 0x00, 0x7f));
     keywordFormat.setFontWeight(QFont::Bold);
 
+    definitionFormat.setFont(defaultFont);
+    definitionFormat.setFontWeight(QFont::Bold);
+    definitionFormat.setForeground(QColor(0x7F, 0x7F, 0x00));
+
     singleLineCommentFormat.setFont(defaultFont);
     singleLineCommentFormat.setForeground(QColor(0xA0, 0xA0, 0xA0));
     singleLineCommentFormat.setFontItalic(true);
@@ -60,31 +55,42 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     {
         rule.pattern = QRegExp("\\b" + kw + "\\b", Qt::CaseInsensitive);
         rule.format = keywordFormat;
+        rule.group = 0;
         this->rules.append(rule);
     }
 
     rule.pattern = QRegExp("#[^\n]*");
     rule.format = singleLineCommentFormat;
+    rule.group = 0;
+    rules.append(rule);
+
+    rule.pattern = QRegExp("\\b(def|class)\\s+(\\w+)\\b");
+    rule.format = definitionFormat;
+    rule.group = 2;
     rules.append(rule);
 
     rule.pattern = QRegExp("\'.*\'");
     rule.pattern.setMinimal(true);
     rule.format = quotationFormat;
+    rule.group = 0;
     rules.append(rule);
 
     rule.pattern = QRegExp("\".*\"");
     rule.pattern.setMinimal(true);
     rule.format = quotationFormat;
+    rule.group = 0;
     rules.append(rule);
 
     rule.pattern = QRegExp("\\b\\d+\\b");
     rule.pattern.setMinimal(true);
     rule.format = numberFormat;
+    rule.group = 0;
     rules.append(rule);
 
     rule.pattern = QRegExp("[\\\\|\\<|\\>|\\=|\\!|\\+|\\-|\\*|\\/|\\%]+");
     rule.pattern.setMinimal(true);
     rule.format = operatorFormat;
+    rule.group = 0;
     rules.append(rule);
 }
 
@@ -98,13 +104,18 @@ PythonHighlighter::highlightBlock(const QString &text)
     // Perform pattern matching (also stolen from Scribus sources)
     foreach (HighlightingRule rule, rules)
     {
+        // compile pattern:
         QRegExp expression(rule.pattern);
-        int index = expression.indexIn(text);
+        // match and get position of matched group
+        expression.indexIn(text);
+        int index = expression.pos(rule.group);
+
         while (index >= 0)
         {
-            int length = expression.matchedLength();
+            int length = expression.cap(rule.group).size();
             setFormat(index, length, rule.format);
-            index = expression.indexIn(text, index + length);
+            expression.indexIn(text, index + length);
+            index = expression.pos(rule.group);
         }
     }
 

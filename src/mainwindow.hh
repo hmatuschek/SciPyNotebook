@@ -60,6 +60,11 @@ public:
     explicit MainWindow(QWidget *parent = 0);
 
     ~MainWindow();
+
+
+public slots:
+    void saveSlot();
+    void saveAsSlot();
 };
 
 #endif // MAINWINDOW_H

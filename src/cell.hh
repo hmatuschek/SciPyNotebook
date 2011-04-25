@@ -47,11 +47,7 @@ public:
     void evaluate();
     virtual void setFocus();
 
-signals:
-
-
-public slots:
-
+    void serializeCode(QIODevice &device);
 };
 
 #endif // CELL_H
