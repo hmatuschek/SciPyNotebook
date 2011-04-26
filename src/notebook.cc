@@ -104,7 +104,7 @@ Notebook::initNotebookLayout()
 void
 Notebook::onEvalCell()
 {
-    //Eval cell
+    // Get selected cell:
     Cell *cell = (Cell *)(QApplication::focusWidget()->parent());
 
     // Check if w is a Cell object and if it is associated with this notebook.

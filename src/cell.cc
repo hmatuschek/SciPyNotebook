@@ -65,11 +65,25 @@ Cell::evaluate(PythonContext *ctx)
     this->resultcell->document()->clear();
     this->resultcell->setVisible(false);
 
+    // Precompile code:
+    PyObject *prec_code = 0;
+    if (0 == (prec_code = Py_CompileString(code.toStdString().c_str(), "<cell>",
+                                           Py_file_input)))
+    {
+        // Change color of cell status bar:
+        this->cell_status->setStatusError();
+
+        // Show exception:
+        this->resultcell->setVisible(true);
+        PyErr_Print();
+
+        // Done.
+    }
+
     // Evaluate code:
     /// \todo Make sure this runs in a separate thread
     PyObject *result = 0;
-    if (0 == (result = PyRun_String(code.toStdString().c_str(), Py_file_input,
-                                    ctx->getGlobals(), ctx->getLocals())))
+    if (0 == (result = PyEval_EvalCode((PyCodeObject *)prec_code, ctx->getGlobals(), ctx->getGlobals())))
     {
         // Change color of cell status bar
         this->cell_status->setStatusError();

@@ -1,7 +1,16 @@
+/*
+ * This file is part of the SciPyNotebook project.
+ *
+ * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ */
+
 #include "pythoncontext.hh"
-
 #include "pythonengine.hh"
-
 
 
 PythonContext::PythonContext(QObject *parent) :
@@ -29,8 +38,15 @@ PythonContext::PythonContext(QObject *parent) :
     }
 
     // Populate local and global scope
-    PyDict_Merge(this->_globals, PyModule_GetDict(main_module), 0);
-    PyDict_Merge(this->_locals, this->_globals, 0);
+    if (0 > PyDict_Merge(this->_globals, PyModule_GetDict(main_module), 1))
+    {
+        qCritical("Error while merging global variable scopes.");
+    }
+
+    if (0 > PyDict_Merge(this->_locals, this->_globals, 0))
+    {
+        qCritical("Error while merging local variable scopes.");
+    }
 }
 
 
