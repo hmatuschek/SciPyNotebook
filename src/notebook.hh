@@ -12,11 +12,13 @@
 #ifndef NOTEBOOK_H
 #define NOTEBOOK_H
 
+#include "cell.hh"
+
 #include <QScrollArea>
 #include <QList>
 #include <QLayout>
 
-#include "cell.hh"
+#include <Python.h>
 
 
 /**
@@ -32,6 +34,8 @@ protected:
     QShortcut *_new_cell_shortcut;
     QBoxLayout *_cell_layout;
     QString _filename;
+
+    PythonContext *_python_context;
 
 
 public:

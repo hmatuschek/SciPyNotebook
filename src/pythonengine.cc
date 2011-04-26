@@ -34,28 +34,6 @@ PythonEngine::PythonEngine(QObject *parent) :
         exit(0);
     }
 
-    // Allcocate initial variable scopes (top-level)
-    this->_locals = PyDict_New();
-    this->_globals = PyDict_New();
-
-    if (0 == this->_globals || 0 == this->_locals)
-    {
-        std::cerr << "Oops: Can not create scopes..." << std::endl;
-        exit(0);
-    }
-
-    // Load __main__ module:
-    PyObject *main_module = 0;
-    if (0 == (main_module = PyImport_AddModule("__main__")))
-    {
-        std::cerr << "Opps: Can not import '__main__'" << std::endl;
-        exit(-1);
-    }
-
-    // Populate local and global scope
-    PyDict_Merge(this->_globals, PyModule_GetDict(main_module), 0);
-    PyDict_Merge(this->_locals, this->_globals, 0);
-
     std::cerr << "Python interpreter started..." << std::endl;
 }
 
@@ -79,20 +57,6 @@ PythonEngine::get()
 
     PythonEngine::instance = new PythonEngine();
     return PythonEngine::instance;
-}
-
-
-PyObject *
-PythonEngine::getGlobals()
-{
-    return this->_globals;
-}
-
-
-PyObject *
-PythonEngine::getLocals()
-{
-    return this->_locals;
 }
 
 

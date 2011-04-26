@@ -27,7 +27,7 @@
 #include "codecell.hh"
 #include "resultcell.hh"
 #include "cellstatus.hh"
-
+#include "pythoncontext.hh"
 
 
 class Cell : public QFrame
@@ -47,7 +47,7 @@ protected:
 public:
     explicit Cell(QWidget *parent=0);
 
-    void evaluate();
+    void evaluate(PythonContext *ctx);
     virtual void setFocus();
 
     void serializeCode(QIODevice &device);

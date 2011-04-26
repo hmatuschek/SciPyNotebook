@@ -5,12 +5,12 @@
 SET(scipynotebook_SOURCES cell.cc resultcell.cc
     cellinputstream.cc codecell.cc notebook.cc streamwrapper.cc
     cellstatus.cc pythonengine.cc main.cc pythonhighlighter.cc
-    notebookwindow.cc aboutdialog.cc)
+    notebookwindow.cc aboutdialog.cc pythoncontext.cc)
 
 SET(scipynotebook_HEADERS cell.hh resultcell.hh
     cellinputstream.hh notebook.hh cellstatus.hh
     pythonengine.hh codecell.hh pythonhighlighter.hh
-    notebookwindow.hh aboutdialog.hh)
+    notebookwindow.hh aboutdialog.hh pythoncontext.hh)
 
 QT4_WRAP_CPP(scipynotebook_HEADERS_MOC ${scipynotebook_HEADERS})
 

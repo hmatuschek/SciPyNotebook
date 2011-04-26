@@ -18,6 +18,9 @@
 Notebook::Notebook(QWidget *parent) :
     QFrame(parent)
 {
+    // initialize python context of notebook:
+    this->_python_context = new PythonContext();
+
     // initialize notebook layout and connect signals
     this->initNotebookLayout();
 
@@ -34,6 +37,9 @@ Notebook::Notebook(QWidget *parent) :
 Notebook::Notebook(const QString &filename, QWidget *parent) :
     QFrame(parent)
 {
+    // initialize python context of notebook:
+    this->_python_context = new PythonContext();
+
   // initialize notebook layout and connect signals
   this->initNotebookLayout();
 
@@ -105,7 +111,7 @@ Notebook::onEvalCell()
     if(-1 == this->layout()->indexOf(cell))
         return;
 
-    cell->evaluate();
+    cell->evaluate(this->_python_context);
 }
 
 

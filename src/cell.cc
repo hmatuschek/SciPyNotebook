@@ -12,7 +12,7 @@
 #include "cell.hh"
 #include "cellstatus.hh"
 #include "pythonengine.hh"
-
+#include "pythoncontext.hh"
 
 
 Cell::Cell(QWidget *parent) :
@@ -46,7 +46,7 @@ Cell::Cell(QWidget *parent) :
 
 
 void
-Cell::evaluate()
+Cell::evaluate(PythonContext *ctx)
 {
     // Get execution engine
     PythonEngine *engine = PythonEngine::get();
@@ -69,7 +69,7 @@ Cell::evaluate()
     /// \todo Make sure this runs in a separate thread
     PyObject *result = 0;
     if (0 == (result = PyRun_String(code.toStdString().c_str(), Py_file_input,
-                                    engine->getGlobals(), engine->getLocals())))
+                                    ctx->getGlobals(), ctx->getLocals())))
     {
         // Change color of cell status bar
         this->cell_status->setStatusError();

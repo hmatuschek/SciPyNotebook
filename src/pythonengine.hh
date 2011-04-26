@@ -24,19 +24,16 @@ class PythonEngine: public QObject
 
 protected:
     static PythonEngine *instance;
-    PyObject *_locals;
-    PyObject *_globals;
+
 
 protected:
     explicit PythonEngine(QObject *parent=0);
+
 
 public:
     static PythonEngine *get();
 
     ~PythonEngine();
-
-    PyObject *getGlobals();
-    PyObject *getLocals();
 
     void setStdout(CellInputStream *stream);
     void setStderr(CellInputStream *stream);
