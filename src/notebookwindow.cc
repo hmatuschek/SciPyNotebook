@@ -32,7 +32,7 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   else
     this->setWindowTitle("SciPy Notebook - New File");
 
-  this->setWindowIcon(QIcon(QPixmap((const char *)MagickImage)));
+  this->setWindowIcon(QIcon(QPixmap(logo_xpm)));
 
   // Set window size...
   this->resize(533, 640);
