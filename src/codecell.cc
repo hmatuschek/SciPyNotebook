@@ -12,8 +12,6 @@
 #include "codecell.hh"
 #include <QSyntaxHighlighter>
 
-#include <iostream>
-
 
 CodeCell::CodeCell(QWidget *parent) :
     QTextEdit(parent)

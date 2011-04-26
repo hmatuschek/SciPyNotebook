@@ -39,6 +39,7 @@ protected:
     QAction *splitCellAct;
     QAction *joinCellsAct;
     QAction *evalCellAct;
+    QAction *runAllAct;
 
     QMenu *helpMenu;
     QAction *aboutAct;

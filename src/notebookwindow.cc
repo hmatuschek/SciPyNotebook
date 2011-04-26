@@ -131,6 +131,10 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   evalCellAct->setStatusTip(tr("Evaluates the current cell."));
   QObject::connect(evalCellAct, SIGNAL(triggered()), this->notebook, SLOT(onEvalCell()));
 
+  runAllAct = new QAction(tr("Run all"), this);
+  runAllAct->setShortcut(Qt::CTRL + Qt::Key_R);
+  runAllAct->setStatusTip(tr("Evaluates all cells of the notebook."));
+
   aboutAct = new QAction(tr("About SciPy Notebook"), this);
   aboutAct->setStatusTip(tr("Shows some information about SciPy Notebook."));
   QObject::connect(this->aboutAct, SIGNAL(triggered()), this, SLOT(aboutSlot()));
@@ -166,6 +170,7 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   cellMenu->addAction(this->joinCellsAct);
   cellMenu->addSeparator();
   cellMenu->addAction(this->evalCellAct);
+  cellMenu->addAction(this->runAllAct);
 
   helpMenu = this->menuBar()->addMenu(tr("&Help"));
   helpMenu->addAction(this->aboutAct);

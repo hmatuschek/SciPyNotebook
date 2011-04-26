@@ -13,8 +13,6 @@
 #include "cellstatus.hh"
 #include "pythonengine.hh"
 
-#include <iostream>
-
 
 
 Cell::Cell(QWidget *parent) :
@@ -108,7 +106,6 @@ Cell::serializeCode(QIODevice &device)
 void
 Cell::setCode(const QString &code)
 {
-  std::cerr << "Set code for cell: " << code.toStdString() << std::endl;
   this->codecell->document()->setPlainText(code);
   this->codecell->document()->adjustSize();
 }
