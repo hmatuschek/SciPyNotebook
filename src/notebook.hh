@@ -77,6 +77,11 @@ public slots:
 
     void onEvalCell();
     void onNewCell();
+
+    void undoSlot();
+    void redoSlot();
+
+    void splitCellSlot();
 };
 
 #endif // NOTEBOOK_H

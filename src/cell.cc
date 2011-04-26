@@ -112,3 +112,17 @@ Cell::setCode(const QString &code)
   this->codecell->document()->setPlainText(code);
   this->codecell->document()->adjustSize();
 }
+
+
+void
+Cell::undoSlot()
+{
+  this->codecell->undo();
+}
+
+
+void
+Cell::redoSlot()
+{
+  this->codecell->redo();
+}

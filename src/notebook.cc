@@ -192,3 +192,65 @@ Notebook::save()
 }
 
 
+void
+Notebook::undoSlot()
+{
+  // Get the current cell and its index (if known)
+  QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
+  int index = this->layout()->indexOf(w);
+
+  if(0 > index)
+      return;
+
+  // forward to current cell
+  this->_cells[index]->undoSlot();
+}
+
+
+void
+Notebook::redoSlot()
+{
+  // Get the current cell and its index (if known)
+  QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
+  int index = this->layout()->indexOf(w);
+
+  if(0 > index)
+      return;
+
+  // forward to current cell
+  this->_cells[index]->redoSlot();
+}
+
+
+void
+Notebook::splitCellSlot()
+{
+  // Get the current cell and its index (if known)
+  QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
+  int index = this->layout()->indexOf(w);
+
+  // If no cell has focus, done.
+  if(0 > index)
+      return;
+
+  // Cast to cell widget
+  Cell *cell = (Cell *)w;
+
+  // Get cursor position and split text
+  int pos = cell->codecell->textCursor().position();
+  QString text = cell->codecell->document()->toPlainText();
+  QString text1 = text.left(pos);
+  QString text2 = text.right(text.length()-pos);
+
+  // Reset text of "old cell"
+  cell->setCode(text1);
+
+  // Create new cell and add its text:
+  cell = new Cell();
+
+  // Add "new" cell to layout and list of cells:
+  this->_cell_layout->insertWidget(index+1, cell);
+  this->_cells.insert(index, cell);
+
+  cell->setCode(text2);
+}

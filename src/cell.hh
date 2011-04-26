@@ -34,6 +34,9 @@ class Cell : public QFrame
 {
     Q_OBJECT
 
+  friend class Notebook;
+
+
 protected:
     QBoxLayout *cellbox;
     CodeCell *codecell;
@@ -49,6 +52,11 @@ public:
 
     void serializeCode(QIODevice &device);
     void setCode(const QString &code);
+
+
+public slots:
+    void undoSlot();
+    void redoSlot();
 };
 
 #endif // CELL_H

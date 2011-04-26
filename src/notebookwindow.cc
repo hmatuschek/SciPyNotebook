@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMenuBar>
+#include <QApplication>
 
 #include "logo.hh"
 
@@ -77,14 +78,17 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   quitAct = new QAction(tr("&Quit"), this);
   quitAct->setShortcut(QKeySequence::Quit);
   quitAct->setStatusTip(tr("Quit SciPy Notebook."));
+  QObject::connect(quitAct, SIGNAL(triggered()), this, SLOT(quitSlot()));
 
   undoAct = new QAction(tr("Undo"), this);
   undoAct->setShortcut(QKeySequence::Undo);
   undoAct->setStatusTip(tr("Undo last changes."));
+  QObject::connect(undoAct, SIGNAL(triggered()), this->notebook, SLOT(undoSlot()));
 
   redoAct = new QAction(tr("Redo"), this);
   redoAct->setShortcut(QKeySequence::Redo);
   redoAct->setStatusTip(tr("Redo last changes."));
+  QObject::connect(redoAct, SIGNAL(triggered()), this->notebook, SLOT(redoSlot()));
 
   copyAct = new QAction(tr("Copy"), this);
   copyAct->setShortcut(QKeySequence::Copy);
@@ -106,6 +110,11 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   newCellAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N);
   newCellAct->setStatusTip(tr("Creates a new cell bayond the curtrent one."));
   QObject::connect(newCellAct, SIGNAL(triggered()), this->notebook, SLOT(onNewCell()));
+
+  splitCellAct = new QAction(tr("Split Cell"), this);
+  splitCellAct->setShortcut(Qt::CTRL + Qt::Key_Space);
+  splitCellAct->setStatusTip(tr("Splits current cell into two."));
+  QObject::connect(splitCellAct, SIGNAL(triggered()), this->notebook, SLOT(splitCellSlot()));
 
   evalCellAct = new QAction(tr("Evaluate Cell"), this);
   evalCellAct->setShortcut(Qt::CTRL + Qt::Key_Return);
@@ -142,6 +151,7 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
 
   cellMenu = this->menuBar()->addMenu(tr("&Cells"));
   cellMenu->addAction(this->newCellAct);
+  cellMenu->addAction(this->splitCellAct);
   cellMenu->addSeparator();
   cellMenu->addAction(this->evalCellAct);
 
@@ -224,6 +234,14 @@ NotebookWindow::saveAsSlot()
     this->notebook->save();
 
     this->setWindowTitle("SciPy Notebook - " + file);
+}
+
+
+void
+NotebookWindow::quitSlot()
+{
+  // Check if any notebook is not saved yet.
+  QApplication::quit();
 }
 
 

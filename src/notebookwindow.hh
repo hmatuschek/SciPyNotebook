@@ -35,6 +35,7 @@ protected:
 
     QMenu *cellMenu;
     QAction *newCellAct;
+    QAction *splitCellAct;
     QAction *evalCellAct;
 
     QMenu *helpMenu;
@@ -58,9 +59,9 @@ public slots:
     void newSlot();
     void openSlot();
     void closeSlot();
-
     void saveSlot();
     void saveAsSlot();
+    void quitSlot();
 
     void aboutSlot();
 };
