@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QMenuBar>
 
+#include "logo.hh"
 
 
 NotebookWindow::NotebookWindow(QWidget *parent) :
@@ -30,6 +31,8 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
     this->setWindowTitle("SciPy Notebook - " + notebook->fileName());
   else
     this->setWindowTitle("SciPy Notebook - New File");
+
+  this->setWindowIcon(QIcon(QPixmap((const char *)MagickImage)));
 
   // Set window size...
   this->resize(533, 640);
@@ -219,6 +222,8 @@ NotebookWindow::saveAsSlot()
     QString file = dialog.selectedFiles().front();
     this->notebook->setFileName(file);
     this->notebook->save();
+
+    this->setWindowTitle("SciPy Notebook - " + file);
 }
 
 
