@@ -1,4 +1,5 @@
 #include "notebookwindow.hh"
+#include "aboutdialog.hh"
 
 #include <QFile>
 #include <QFileDialog>
@@ -16,7 +17,7 @@ NotebookWindow::NotebookWindow(QWidget *parent) :
 NotebookWindow::NotebookWindow(const QString &filename, QWidget *parent)
     : QMainWindow(parent)
 {
-    this->initNotebookWindow(new Notebook(this, filename));
+    this->initNotebookWindow(new Notebook(filename, 0));
 }
 
 
@@ -28,24 +29,28 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
     this->setWindowTitle("SciPy Notebook");
     this->resize(533, 640);
 
-    // Store notebook widget
+    // Store notebook widget into a scrollarea
     this->notebook = notebook;
     QScrollArea *swin = new QScrollArea();
     swin->setWidget(this->notebook);
     swin->setWidgetResizable(true);
-
-    // layout the stuff...
     this->setCentralWidget(swin);
 
     // Assemble actions:
     newAct = new QAction(tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip(tr("A new, empty notebook."));
+    QObject::connect(newAct, SIGNAL(triggered()), this, SLOT(newSlot()));
 
     openAct = new QAction(tr("&Open"), this);
     openAct->setShortcut(QKeySequence::Open);
     openAct->setStatusTip(tr("Open a notebook or python script."));
     QObject::connect(openAct, SIGNAL(triggered()), this, SLOT(openSlot()));
+
+    closeAct = new QAction(tr("&Close"), this);
+    closeAct->setShortcut(QKeySequence::Close);
+    closeAct->setStatusTip(tr("Closes the current notebook."));
+    QObject::connect(closeAct, SIGNAL(triggered()), this, SLOT(closeSlot()));
 
     saveAct = new QAction(tr("&Save"), this);
     saveAct->setShortcut(QKeySequence::Save);
@@ -89,10 +94,26 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
     prefAct->setShortcut(QKeySequence::Preferences);
     prefAct->setStatusTip(tr("Edit the preferences."));
 
+    newCellAct = new QAction(tr("New Cell"), this);
+    newCellAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N);
+    newCellAct->setStatusTip(tr("Creates a new cell bayond the curtrent one."));
+    QObject::connect(newCellAct, SIGNAL(triggered()), this->notebook, SLOT(onNewCell()));
+
+    evalCellAct = new QAction(tr("Evaluate Cell"), this);
+    evalCellAct->setShortcut(Qt::CTRL + Qt::Key_Return);
+    evalCellAct->setStatusTip(tr("Evaluates the current cell."));
+    QObject::connect(evalCellAct, SIGNAL(triggered()), this->notebook, SLOT(onEvalCell()));
+
+    aboutAct = new QAction(tr("About SciPy Notebook"), this);
+    aboutAct->setStatusTip(tr("Shows some information about SciPy Notebook."));
+    QObject::connect(this->aboutAct, SIGNAL(triggered()), this, SLOT(aboutSlot()));
+
+
     // Assemble menu:
     fileMenu = this->menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(this->newAct);
     fileMenu->addAction(this->openAct);
+    fileMenu->addAction(this->closeAct);
     fileMenu->addSeparator();
     fileMenu->addAction(this->saveAct);
     fileMenu->addAction(this->saveAsAct);
@@ -110,6 +131,23 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
     editMenu->addAction(this->pasteAct);
     editMenu->addSeparator();
     editMenu->addAction(this->prefAct);
+
+    cellMenu = this->menuBar()->addMenu(tr("&Cells"));
+    cellMenu->addAction(this->newCellAct);
+    cellMenu->addSeparator();
+    cellMenu->addAction(this->evalCellAct);
+
+    helpMenu = this->menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(this->aboutAct);
+}
+
+
+void
+NotebookWindow::newSlot()
+{
+  NotebookWindow *w = new NotebookWindow();
+  /// \todo Register notebook window to application!
+  w->show();
 }
 
 
@@ -130,9 +168,17 @@ NotebookWindow::openSlot()
 
     // Get filename and save it:
     QString file = dialog.selectedFiles().front();
-
     NotebookWindow *newNotebook = new NotebookWindow(file, 0);
+    /// \todo Register notebook window to application!
     newNotebook->show();
+}
+
+
+void
+NotebookWindow::closeSlot()
+{
+  /// \todo Check if notebook is unsaved!
+  this->close();
 }
 
 
@@ -168,5 +214,13 @@ NotebookWindow::saveAsSlot()
     QString file = dialog.selectedFiles().front();
     this->notebook->setFileName(file);
     this->notebook->save();
+}
+
+
+void
+NotebookWindow::aboutSlot()
+{
+  AboutDialog *w = new AboutDialog(this);
+  w->show();
 }
 

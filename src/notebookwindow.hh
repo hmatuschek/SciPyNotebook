@@ -19,6 +19,7 @@ protected:
     QMenu *fileMenu;
     QAction *newAct;
     QAction *openAct;
+    QAction *closeAct;
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *printAct;
@@ -31,6 +32,13 @@ protected:
     QAction *cutAct;
     QAction *pasteAct;
     QAction *prefAct;
+
+    QMenu *cellMenu;
+    QAction *newCellAct;
+    QAction *evalCellAct;
+
+    QMenu *helpMenu;
+    QAction *aboutAct;
 
 
 public:
@@ -47,10 +55,14 @@ protected:
 
 
 public slots:
+    void newSlot();
     void openSlot();
+    void closeSlot();
+
     void saveSlot();
     void saveAsSlot();
 
+    void aboutSlot();
 };
 
 #endif // NOTEBOOKWINDOW_HH

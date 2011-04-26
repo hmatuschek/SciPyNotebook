@@ -25,7 +25,7 @@ Notebook::Notebook(QWidget *parent) :
 
     // Create an empty cell
     Cell *new_cell = new Cell(this);
-    new_cell->setFocus();
+    //new_cell->setFocus();
     this->_cell_layout->addWidget(new_cell);
 
     // Append cell to list:
@@ -33,47 +33,59 @@ Notebook::Notebook(QWidget *parent) :
 }
 
 
-Notebook::Notebook(QWidget *parent, const QString &filename) :
+Notebook::Notebook(const QString &filename, QWidget *parent) :
     QFrame(parent)
 {
-    // initialize notebook layout and connect signals
-    this->initNotebookLayout();
+  // initialize notebook layout and connect signals
+  this->initNotebookLayout();
 
-    // Read file content:
-    this->_filename = filename;
-    QFile file(this->_filename);
-    file.open(QIODevice::ReadOnly);
+  // Open file...
+  this->_filename = filename;
+  QFile file(this->_filename);
+  file.open(QIODevice::ReadOnly | QIODevice::Text);
 
-    QRegExp cellSepExpr("^#\\s+-\\*-\\s+snip\\s+-\\*-\\s*$");
-    QList<QByteArray> cells;
-    cells.append(QByteArray());
+  // Check if file is open for reading:
+  if(! file.isOpen())
+  {
+    std::cerr << "Oops, file (" << filename.toStdString() << ")not open..." << std::endl;
+  }
 
-    while(file.canReadLine())
+  // Read file content line-by-line
+  QRegExp cellSepExpr("^#\\s+-\\*-\\s+snip\\s+-\\*-\\s*$");
+  QList<QByteArray> cells;
+  cells.append(QByteArray());
+
+  while(! file.atEnd())
+  {
+    // Read line:
+    QByteArray line = file.readLine();
+
+    // check if line is cell separator
+    if (cellSepExpr.indexIn(line) != -1)
     {
-        // Read line:
-        QByteArray line = file.readLine();
-
-        // check if line is cell separator
-        if (cellSepExpr.indexIn(line) != -1)
-        {
-            // add an new cell to list
-            cells.append(QByteArray());
-        }
-        else
-        {
-            // append line to current cell
-            cells.back().append(line);
-        }
+      std::cerr << "Add new cell..." << std::endl;
+      // add an new cell to list
+      cells.append(QByteArray());
     }
-
-    // Create cells from code:
-    foreach (QByteArray code, cells)
+    else
     {
-        Cell *cell = new Cell(this);
-        cell->setCode(code);
-        this->_cells.append(cell);
-        this->_cell_layout->addWidget(cell);
+      std::cerr << "Add line to current cell..." << std::endl;
+      // append line to current cell
+      cells.back().append(line);
     }
+  }
+
+  // Create cells from code:
+  foreach (QByteArray code, cells)
+  {
+    std::cerr << "Create cell..." << std::endl;
+    Cell *cell = new Cell();
+    this->_cells.append(cell);
+    this->_cell_layout->addWidget(cell);
+    cell->setCode(code);
+  }
+
+  std::cerr << "Done..." << std::endl;
 }
 
 
@@ -86,16 +98,6 @@ Notebook::initNotebookLayout()
     this->setLayout(this->_cell_layout);
     this->_cell_layout->setSizeConstraint(QLayout::SetMinimumSize);
     this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-
-    // Register shortcut for evaluation of current cell
-    this->_eval_shortcut = new QShortcut(Qt::CTRL + Qt::Key_Return, this);
-    QObject::connect(this->_eval_shortcut, SIGNAL(activated()),
-                     this, SLOT(onEvalCell()));
-
-    // Register shortcut for evaluation of current cell
-    this->_new_cell_shortcut = new QShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N, this);
-    QObject::connect(this->_new_cell_shortcut, SIGNAL(activated()),
-                     this, SLOT(onNewCell()));
 }
 
 
@@ -167,7 +169,7 @@ Notebook::save()
 
     // open file;
     QFile file(this->_filename);
-    file.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
 
     /// \todo Serialize preamble!
 

@@ -43,7 +43,7 @@ public:
     /**
      * Constructs a new empty notebook from the given file.
      */
-    Notebook(QWidget *parent, const QString &filename);
+    Notebook(const QString &filename, QWidget *parent);
 
     /**
      * Returns true, if a filename is associated with the notebook.
