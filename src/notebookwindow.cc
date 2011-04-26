@@ -111,10 +111,18 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   newCellAct->setStatusTip(tr("Creates a new cell bayond the curtrent one."));
   QObject::connect(newCellAct, SIGNAL(triggered()), this->notebook, SLOT(onNewCell()));
 
+  delCellAct = new QAction(tr("Delete cell"), this);
+  delCellAct->setShortcut(Qt::CTRL + Qt::Key_Backspace);
+  delCellAct->setStatusTip(tr("Deletes the current cell."));
+
   splitCellAct = new QAction(tr("Split Cell"), this);
   splitCellAct->setShortcut(Qt::CTRL + Qt::Key_Space);
   splitCellAct->setStatusTip(tr("Splits current cell into two."));
   QObject::connect(splitCellAct, SIGNAL(triggered()), this->notebook, SLOT(splitCellSlot()));
+
+  joinCellsAct = new QAction(tr("Join Cells"), this);
+  joinCellsAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Space);
+  joinCellsAct->setStatusTip(tr("Joins the current cell with the next one."));
 
   evalCellAct = new QAction(tr("Evaluate Cell"), this);
   evalCellAct->setShortcut(Qt::CTRL + Qt::Key_Return);
@@ -151,7 +159,9 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
 
   cellMenu = this->menuBar()->addMenu(tr("&Cells"));
   cellMenu->addAction(this->newCellAct);
+  cellMenu->addAction(this->delCellAct);
   cellMenu->addAction(this->splitCellAct);
+  cellMenu->addAction(this->joinCellsAct);
   cellMenu->addSeparator();
   cellMenu->addAction(this->evalCellAct);
 

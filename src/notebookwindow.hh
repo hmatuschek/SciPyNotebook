@@ -35,7 +35,9 @@ protected:
 
     QMenu *cellMenu;
     QAction *newCellAct;
+    QAction *delCellAct;
     QAction *splitCellAct;
+    QAction *joinCellsAct;
     QAction *evalCellAct;
 
     QMenu *helpMenu;
