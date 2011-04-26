@@ -154,7 +154,7 @@ Notebook::fileName()
 void
 Notebook::setFileName(const QString &filename)
 {
-    this->_filename = filename;
+  this->_filename = filename;
 }
 
 

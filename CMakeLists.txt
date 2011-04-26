@@ -25,6 +25,10 @@ ADD_SUBDIRECTORY(src)
 #
 INCLUDE(CPack)
 
+INSTALL(FILES doc/logo.png
+        DESTINATION share/SciPyNotebook)
+
+
 SET(CPACK_PACKAGE_NAME "SciPyNotebook")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The SciPy Notebook")
 SET(CPACK_PACKAGE_VENDOR "Hannes Matuschek")

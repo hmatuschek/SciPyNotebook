@@ -18,4 +18,5 @@ QT4_WRAP_CPP(scipynotebook_HEADERS_MOC ${scipynotebook_HEADERS})
 ADD_EXECUTABLE(scipynotebook ${scipynotebook_SOURCES} ${scipynotebook_HEADERS_MOC})
 TARGET_LINK_LIBRARIES(scipynotebook ${QT_LIBRARIES} ${PYTHON_LIBRARIES})
 
-INSTALL(TARGETS scipynotebook DESTINATION bin)
+INSTALL(TARGETS scipynotebook
+        DESTINATION bin)
