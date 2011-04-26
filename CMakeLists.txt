@@ -49,6 +49,5 @@ SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Hannes Matuschek")
 #
 SET(CPACK_BUNDLE_NAME "SciPyNotebook")
 
-
 INCLUDE(CPack)
 
