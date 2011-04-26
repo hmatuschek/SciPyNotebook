@@ -129,3 +129,10 @@ PythonEngine::setStderr(CellInputStream *stream)
                    SciPyNotebookStreamWrapper_new(stream));
 }
 
+
+bool
+PythonEngine::isRunning()
+{
+    return 0 != PythonEngine::instance;
+}
+

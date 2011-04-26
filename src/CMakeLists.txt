@@ -2,13 +2,14 @@
 #
 #
 
-SET(scipynotebook_SOURCES cell.cc mainwindow.cc resultcell.cc
+SET(scipynotebook_SOURCES cell.cc resultcell.cc
     cellinputstream.cc codecell.cc notebook.cc streamwrapper.cc
-    cellstatus.cc pythonengine.cc main.cc pythonhighlighter.cc)
+    cellstatus.cc pythonengine.cc main.cc pythonhighlighter.cc
+    notebookwindow.cc)
 
-SET(scipynotebook_HEADERS cell.hh mainwindow.hh resultcell.hh
+SET(scipynotebook_HEADERS cell.hh resultcell.hh
     cellinputstream.hh notebook.hh cellstatus.hh
-    pythonengine.hh codecell.hh pythonhighlighter.hh)
+    pythonengine.hh codecell.hh pythonhighlighter.hh notebookwindow.hh)
 
 QT4_WRAP_CPP(scipynotebook_HEADERS_MOC ${scipynotebook_HEADERS})
 

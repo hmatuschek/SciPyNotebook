@@ -48,6 +48,7 @@ public:
     virtual void setFocus();
 
     void serializeCode(QIODevice &device);
+    void setCode(const QString &code);
 };
 
 #endif // CELL_H

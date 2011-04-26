@@ -1,39 +1,35 @@
-/*
- * This file is part of the SciPyNotebook project.
- *
- * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+#include "notebookwindow.hh"
 
-#include "mainwindow.hh"
-
-#include <QScrollArea>
-#include <QMenuBar>
+#include <QFile>
 #include <QFileDialog>
+#include <QMenuBar>
 
 
-MainWindow::MainWindow(QWidget *parent) :
+
+NotebookWindow::NotebookWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    this->initNotebookWindow(new Notebook());
+}
+
+
+NotebookWindow::NotebookWindow(const QString &filename, QWidget *parent)
+    : QMainWindow(parent)
+{
+    this->initNotebookWindow(new Notebook(this, filename));
+}
+
+
+void
+NotebookWindow::initNotebookWindow(Notebook *notebook)
+{
+
     // Set window title
     this->setWindowTitle("SciPy Notebook");
     this->resize(533, 640);
 
-    // Create new notebook widget...
-    this->notebook = new Notebook();
+    // Store notebook widget
+    this->notebook = notebook;
     QScrollArea *swin = new QScrollArea();
     swin->setWidget(this->notebook);
     swin->setWidgetResizable(true);
@@ -49,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     openAct = new QAction(tr("&Open"), this);
     openAct->setShortcut(QKeySequence::Open);
     openAct->setStatusTip(tr("Open a notebook or python script."));
+    QObject::connect(openAct, SIGNAL(triggered()), this, SLOT(openSlot()));
 
     saveAct = new QAction(tr("&Save"), this);
     saveAct->setShortcut(QKeySequence::Save);
@@ -116,14 +113,31 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 
-
-MainWindow::~MainWindow()
+void
+NotebookWindow::openSlot()
 {
+    // Assemble Save as... dialog
+    QFileDialog dialog(this);
+    /// \todo Select directory properly.
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setNameFilter(tr("Python Scripts (*.py)"));
+
+    if (! dialog.exec()) {
+        // Abort...
+        return;
+    }
+
+    // Get filename and save it:
+    QString file = dialog.selectedFiles().front();
+
+    NotebookWindow *newNotebook = new NotebookWindow(file, 0);
+    newNotebook->show();
 }
 
 
 void
-MainWindow::saveSlot()
+NotebookWindow::saveSlot()
 {
     if(! this->notebook->hasFileName())
     {
@@ -131,12 +145,12 @@ MainWindow::saveSlot()
         return;
     }
 
-    //this->notebook->save();
+    this->notebook->save();
 }
 
 
 void
-MainWindow::saveAsSlot()
+NotebookWindow::saveAsSlot()
 {
     // Assemble Save as... dialog
     QFileDialog dialog(this);

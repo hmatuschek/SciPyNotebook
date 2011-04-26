@@ -7,15 +7,6 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "notebook.hh"
@@ -29,11 +20,71 @@
 Notebook::Notebook(QWidget *parent) :
     QFrame(parent)
 {
-    this->cell_layout = new QVBoxLayout();
-    this->cell_layout->setSpacing(0);
-    this->cell_layout->setContentsMargins(0,0,0,0);
-    this->setLayout(this->cell_layout);
-    this->cell_layout->setSizeConstraint(QLayout::SetMinimumSize);
+    // initialize notebook layout and connect signals
+    this->initNotebookLayout();
+
+    // Create an empty cell
+    Cell *new_cell = new Cell(this);
+    new_cell->setFocus();
+    this->_cell_layout->addWidget(new_cell);
+
+    // Append cell to list:
+    this->_cells.append(new_cell);
+}
+
+
+Notebook::Notebook(QWidget *parent, const QString &filename) :
+    QFrame(parent)
+{
+    // initialize notebook layout and connect signals
+    this->initNotebookLayout();
+
+    // Read file content:
+    this->_filename = filename;
+    QFile file(this->_filename);
+    file.open(QIODevice::ReadOnly);
+
+    QRegExp cellSepExpr("^#\\s+-\\*-\\s+snip\\s+-\\*-\\s*$");
+    QList<QByteArray> cells;
+    cells.append(QByteArray());
+
+    while(file.canReadLine())
+    {
+        // Read line:
+        QByteArray line = file.readLine();
+
+        // check if line is cell separator
+        if (cellSepExpr.indexIn(line) != -1)
+        {
+            // add an new cell to list
+            cells.append(QByteArray());
+        }
+        else
+        {
+            // append line to current cell
+            cells.back().append(line);
+        }
+    }
+
+    // Create cells from code:
+    foreach (QByteArray code, cells)
+    {
+        Cell *cell = new Cell(this);
+        cell->setCode(code);
+        this->_cells.append(cell);
+        this->_cell_layout->addWidget(cell);
+    }
+}
+
+
+void
+Notebook::initNotebookLayout()
+{
+    this->_cell_layout = new QVBoxLayout();
+    this->_cell_layout->setSpacing(0);
+    this->_cell_layout->setContentsMargins(0,0,0,0);
+    this->setLayout(this->_cell_layout);
+    this->_cell_layout->setSizeConstraint(QLayout::SetMinimumSize);
     this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
     // Register shortcut for evaluation of current cell
@@ -45,16 +96,7 @@ Notebook::Notebook(QWidget *parent) :
     this->_new_cell_shortcut = new QShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N, this);
     QObject::connect(this->_new_cell_shortcut, SIGNAL(activated()),
                      this, SLOT(onNewCell()));
-
-    // Create an empty cell
-    Cell *new_cell = new Cell(this);
-    new_cell->setFocus();
-    this->cell_layout->addWidget(new_cell);
-
-    // Append cell to list:
-    this->_cells.append(new_cell);
 }
-
 
 
 void
@@ -85,7 +127,7 @@ Notebook::onNewCell()
     new_cell->setFocus();
 
     // Insert cell
-    this->cell_layout->insertWidget(index, new_cell);
+    this->_cell_layout->insertWidget(index, new_cell);
     if (0 > index)
         this->_cells.push_back(new_cell);
     else

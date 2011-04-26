@@ -7,15 +7,6 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #ifndef NOTEBOOK_H
@@ -28,6 +19,9 @@
 #include "cell.hh"
 
 
+/**
+ * The notebook class.
+ */
 class Notebook : public QFrame
 {
     Q_OBJECT
@@ -36,21 +30,51 @@ protected:
     QList<Cell *> _cells;
     QShortcut *_eval_shortcut;
     QShortcut *_new_cell_shortcut;
-    QBoxLayout *cell_layout;
+    QBoxLayout *_cell_layout;
     QString _filename;
 
 
 public:
+    /**
+     * Constructs a new, empty notebook.
+     */
     explicit Notebook(QWidget *parent = 0);
 
+    /**
+     * Constructs a new empty notebook from the given file.
+     */
+    Notebook(QWidget *parent, const QString &filename);
+
+    /**
+     * Returns true, if a filename is associated with the notebook.
+     */
     bool hasFileName();
+
+    /**
+     * Returns the filename associated with the notebook.
+     */
     const QString &fileName();
+
+    /**
+     * (Re-) Sets the filename associated with the note book.
+     *
+     * You need to call save() to save the notebook content into the file.
+     */
     void setFileName(const QString &filename);
 
-    void save();
+
+protected:
+    void initNotebookLayout();
 
 
 public slots:
+    /**
+     * Saves the notebook to the given file.
+     *
+     * If no filename is associated with the notebook, nothing will be done.
+     */
+    void save();
+
     void onEvalCell();
     void onNewCell();
 };
