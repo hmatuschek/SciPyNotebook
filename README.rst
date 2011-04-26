@@ -1,5 +1,5 @@
-SciPy Studio
-============
+SciPy Notebook
+==============
 
 This project is dedicated but not related to the SciPy project (http://scipy.org).
 

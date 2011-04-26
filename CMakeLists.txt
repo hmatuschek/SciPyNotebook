@@ -23,8 +23,6 @@ ADD_SUBDIRECTORY(src)
 #
 # CPack related stuff
 #
-INCLUDE(CPack)
-
 INSTALL(FILES doc/logo.png
         DESTINATION share/SciPyNotebook)
 
@@ -32,6 +30,7 @@ INSTALL(FILES doc/logo.png
 SET(CPACK_PACKAGE_NAME "SciPyNotebook")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The SciPy Notebook")
 SET(CPACK_PACKAGE_VENDOR "Hannes Matuschek")
+SET(CPACK_PACKAGE_CONTACT "Hannes Matuschek <hmatuschek AT gmail DOT com>")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.rst")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
@@ -40,6 +39,16 @@ SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_EXECUTABLES "scipynotebook" "SciPyNotebook")
 
 #
+# DEB package specific stuff
+#
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Hannes Matuschek")
+
+
+#
 # MacOS X bundle specific stuff
 #
 SET(CPACK_BUNDLE_NAME "SciPyNotebook")
+
+
+INCLUDE(CPack)
+
