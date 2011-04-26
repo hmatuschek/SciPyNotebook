@@ -254,3 +254,32 @@ Notebook::splitCellSlot()
 
   cell->setCode(text2);
 }
+
+
+void
+Notebook::joinCellsSlot()
+{
+    // Get the current cell and its index (if known)
+    QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
+    int index = this->layout()->indexOf(w);
+
+    // If no cell has focus or the last cell has the focus:
+    if(0 > index || index == this->_cells.size()-1)
+        return;
+
+    // Get cell at index:
+    Cell *cell1 = this->_cells[index];
+    Cell *cell2 = this->_cells[index+1];
+
+    // Get and join code:
+    /// \todo Make line break platform depended.
+    QString code = cell1->codecell->document()->toPlainText()
+                   + "\n"
+                   + cell2->codecell->document()->toPlainText();
+    cell1->setCode(code);
+
+    // remove widget from layout and list:
+    this->layout()->removeWidget(cell2);
+    this->_cells.removeAt(index+1);
+    delete cell2;
+}

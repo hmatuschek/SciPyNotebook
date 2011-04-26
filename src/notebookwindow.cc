@@ -123,6 +123,7 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   joinCellsAct = new QAction(tr("Join Cells"), this);
   joinCellsAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Space);
   joinCellsAct->setStatusTip(tr("Joins the current cell with the next one."));
+  QObject::connect(joinCellsAct, SIGNAL(triggered()), this->notebook, SLOT(joinCellsSlot()));
 
   evalCellAct = new QAction(tr("Evaluate Cell"), this);
   evalCellAct->setShortcut(Qt::CTRL + Qt::Key_Return);
