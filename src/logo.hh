@@ -1,6 +1,6 @@
 extern "C" {
 /* XPM */
-static char * logo_xpm[] = {
+static const char * logo_xpm[] = {
 "64 64 119 2",
 "  	c None",
 ". 	c #A00000",
