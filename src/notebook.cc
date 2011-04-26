@@ -125,15 +125,20 @@ Notebook::onNewCell()
         index++;
 
     //Append a new cell
-    Cell *new_cell = new Cell();
+    Cell *new_cell = new Cell(this);
     new_cell->setFocus();
 
     // Insert cell
-    this->_cell_layout->insertWidget(index, new_cell);
     if (0 > index)
+    {
+        this->_cell_layout->addWidget(new_cell);
         this->_cells.push_back(new_cell);
+    }
     else
+    {
+        this->_cell_layout->insertWidget(index, new_cell);
         this->_cells.insert(index, new_cell);
+    }
 }
 
 
@@ -250,8 +255,9 @@ Notebook::splitCellSlot()
 
   // Add "new" cell to layout and list of cells:
   this->_cell_layout->insertWidget(index+1, cell);
-  this->_cells.insert(index, cell);
+  this->_cells.insert(index+1, cell);
 
+  // Set code of second (new) cell
   cell->setCode(text2);
 }
 
@@ -282,4 +288,27 @@ Notebook::joinCellsSlot()
     this->layout()->removeWidget(cell2);
     this->_cells.removeAt(index+1);
     delete cell2;
+}
+
+
+void
+Notebook::delCellSlot()
+{
+    // Get the current cell and its index (if known)
+    QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
+    int index = this->layout()->indexOf(w);
+
+    // If no cell has focus:
+    if(0 > index)
+        return;
+
+    // Get cell at index:
+    Cell *cell = this->_cells[index];
+
+    // Remove cell from list and layout:
+    this->layout()->removeWidget(cell);
+    this->_cells.removeAt(index);
+
+    // free cell
+    delete cell;
 }

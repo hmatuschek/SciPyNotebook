@@ -114,6 +114,7 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   delCellAct = new QAction(tr("Delete cell"), this);
   delCellAct->setShortcut(Qt::CTRL + Qt::Key_Backspace);
   delCellAct->setStatusTip(tr("Deletes the current cell."));
+  QObject::connect(delCellAct, SIGNAL(triggered()), this->notebook, SLOT(delCellSlot()));
 
   splitCellAct = new QAction(tr("Split Cell"), this);
   splitCellAct->setShortcut(Qt::CTRL + Qt::Key_Space);
