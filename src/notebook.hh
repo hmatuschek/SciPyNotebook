@@ -79,7 +79,9 @@ public slots:
      */
     void save();
 
-    void onEvalCell();
+    void evalCellSlot();
+    void evalAllCellsSlot();
+
     void onNewCell();
 
     void undoSlot();

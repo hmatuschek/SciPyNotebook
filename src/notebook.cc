@@ -37,9 +37,9 @@ Notebook::Notebook(QWidget *parent) :
 Notebook::Notebook(const QString &filename, QWidget *parent) :
     QFrame(parent)
 {
-    // initialize python context of notebook:
-    this->_python_context = new PythonContext();
-    this->_python_context->setFileName(filename);
+  // initialize python context of notebook:
+  this->_python_context = new PythonContext();
+  this->_python_context->setFileName(filename);
 
   // initialize notebook layout and connect signals
   this->initNotebookLayout();
@@ -93,67 +93,53 @@ Notebook::Notebook(const QString &filename, QWidget *parent) :
 void
 Notebook::initNotebookLayout()
 {
-    this->_cell_layout = new QVBoxLayout();
-    this->_cell_layout->setSpacing(0);
-    this->_cell_layout->setContentsMargins(0,0,0,0);
-    this->setLayout(this->_cell_layout);
-    this->_cell_layout->setSizeConstraint(QLayout::SetMinimumSize);
-    this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-}
-
-
-void
-Notebook::onEvalCell()
-{
-    // Get selected cell:
-    Cell *cell = (Cell *)(QApplication::focusWidget()->parent());
-
-    // Check if w is a Cell object and if it is associated with this notebook.
-    if(-1 == this->layout()->indexOf(cell))
-        return;
-
-    cell->evaluate(this->_python_context);
+  this->_cell_layout = new QVBoxLayout();
+  this->_cell_layout->setSpacing(0);
+  this->_cell_layout->setContentsMargins(0,0,0,0);
+  this->setLayout(this->_cell_layout);
+  this->_cell_layout->setSizeConstraint(QLayout::SetMinimumSize);
+  this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 }
 
 
 void
 Notebook::onNewCell()
 {
-    // Get the current cell and its index (if known)
-    QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
-    int index = this->layout()->indexOf(w);
-    if(0 <= index)
-        index++;
+  // Get the current cell and its index (if known)
+  QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
+  int index = this->layout()->indexOf(w);
+  if(0 <= index)
+    index++;
 
-    //Append a new cell
-    Cell *new_cell = new Cell(this);
-    new_cell->setFocus();
+  //Append a new cell
+  Cell *new_cell = new Cell(this);
+  new_cell->setFocus();
 
-    // Insert cell
-    if (0 > index)
-    {
-        this->_cell_layout->addWidget(new_cell);
-        this->_cells.push_back(new_cell);
-    }
-    else
-    {
-        this->_cell_layout->insertWidget(index, new_cell);
-        this->_cells.insert(index, new_cell);
-    }
+  // Insert cell
+  if (0 > index)
+  {
+    this->_cell_layout->addWidget(new_cell);
+    this->_cells.push_back(new_cell);
+  }
+  else
+  {
+    this->_cell_layout->insertWidget(index, new_cell);
+    this->_cells.insert(index, new_cell);
+  }
 }
 
 
 bool
 Notebook::hasFileName()
 {
-    return 0 != this->_filename.size();
+  return 0 != this->_filename.size();
 }
 
 
 const QString &
 Notebook::fileName()
 {
-    return this->_filename;
+  return this->_filename;
 }
 
 
@@ -166,36 +152,61 @@ Notebook::setFileName(const QString &filename)
 
 
 void
+Notebook::evalCellSlot()
+{
+  // Get selected cell:
+  Cell *cell = (Cell *)(QApplication::focusWidget()->parent());
+
+  // Check if w is a Cell object and if it is associated with this notebook.
+  if(-1 == this->layout()->indexOf(cell))
+    return;
+
+  cell->evaluate(this->_python_context);
+}
+
+
+void
+Notebook::evalAllCellsSlot()
+{
+  // Evaluate all cells in order
+  foreach(Cell *cell, this->_cells)
+  {
+    cell->evaluate(this->_python_context);
+  }
+}
+
+
+void
 Notebook::save()
 {
-    // Do nothing if no filename is set...
-    if (!this->hasFileName())
+  // Do nothing if no filename is set...
+  if (!this->hasFileName())
+  {
+    return;
+  }
+
+  // open file;
+  QFile file(this->_filename);
+  file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+
+  /// \todo Serialize preamble!
+
+  size_t index = 1;
+  foreach(Cell *cell, this->_cells)
+  {
+    // Write code into file;
+    cell->serializeCode(file);
+
+    if (index != this->_cells.size())
     {
-        return;
+      /// \todo Make lineendings more platform specific.
+      file.write("\n");
+      file.write("# -*- snip -*-");
+      file.write("\n");
     }
 
-    // open file;
-    QFile file(this->_filename);
-    file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
-
-    /// \todo Serialize preamble!
-
-    size_t index = 1;
-    foreach(Cell *cell, this->_cells)
-    {
-        // Write code into file;
-        cell->serializeCode(file);
-
-        if (index != this->_cells.size())
-        {
-            /// \todo Make lineendings more platform specific.
-            file.write("\n");
-            file.write("# -*- snip -*-");
-            file.write("\n");
-        }
-
-        index++;
-    }
+    index++;
+  }
 }
 
 

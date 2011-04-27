@@ -129,11 +129,12 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   evalCellAct = new QAction(tr("Evaluate Cell"), this);
   evalCellAct->setShortcut(Qt::CTRL + Qt::Key_Return);
   evalCellAct->setStatusTip(tr("Evaluates the current cell."));
-  QObject::connect(evalCellAct, SIGNAL(triggered()), this->notebook, SLOT(onEvalCell()));
+  QObject::connect(evalCellAct, SIGNAL(triggered()), this->notebook, SLOT(evalCellSlot()));
 
-  runAllAct = new QAction(tr("Run all"), this);
+  runAllAct = new QAction(tr("Evaluate all"), this);
   runAllAct->setShortcut(Qt::CTRL + Qt::Key_R);
   runAllAct->setStatusTip(tr("Evaluates all cells of the notebook."));
+  QObject::connect(runAllAct, SIGNAL(triggered()), this->notebook, SLOT(evalAllCellsSlot()));
 
   aboutAct = new QAction(tr("About SciPy Notebook"), this);
   aboutAct->setStatusTip(tr("Shows some information about SciPy Notebook."));
