@@ -62,3 +62,15 @@ PythonContext::getLocals()
 {
     return this->_locals;
 }
+
+
+void
+PythonContext::setFileName(const QString &filename)
+{
+    // Convert string to python string
+    PyObject *fname = PyString_FromString(filename.toStdString().c_str());
+
+    // Store filename into local and global context
+    PyDict_SetItemString(this->_globals, "__file__", fname);
+    PyDict_SetItemString(this->_locals, "__file__", fname);
+}

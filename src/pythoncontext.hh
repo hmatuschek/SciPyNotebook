@@ -29,6 +29,8 @@ public:
 
     PyObject *getGlobals();
     PyObject *getLocals();
+
+    void setFileName(const QString &filename);
 };
 
 #endif // PYTHONCONTEXT_HH

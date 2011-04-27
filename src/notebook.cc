@@ -39,6 +39,7 @@ Notebook::Notebook(const QString &filename, QWidget *parent) :
 {
     // initialize python context of notebook:
     this->_python_context = new PythonContext();
+    this->_python_context->setFileName(filename);
 
   // initialize notebook layout and connect signals
   this->initNotebookLayout();
@@ -160,6 +161,7 @@ void
 Notebook::setFileName(const QString &filename)
 {
   this->_filename = filename;
+  this->_python_context->setFileName(filename);
 }
 
 
