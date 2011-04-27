@@ -57,6 +57,9 @@ Cell::evaluate(PythonContext *ctx)
     // signal cell evaluation
     this->cell_status->setStatusRunning();
 
+    // Clear line marks in codecell:
+    this->codecell->clearLineMarks();
+
     // Redirect stdout and stderr:
     engine->setStdout(this->resultcell->getStdoutStream());
     engine->setStderr(this->resultcell->getStderrStream());
@@ -73,20 +76,69 @@ Cell::evaluate(PythonContext *ctx)
         // Change color of cell status bar:
         this->cell_status->setStatusError();
 
+        // Extract Exception:
+        PyObject *exec, *pvalue, *traceback;
+        PyErr_Fetch(&exec, &pvalue, &traceback);
+
+        if (0 == pvalue)
+        {
+          // oops:
+          qWarning("Compilation failed but no exception found.");
+          return;
+        }
+
+        // If there is a traceback:
+        if (0 != traceback)
+        {
+          // Extract the line number of the first frame and mark the line in codecell
+          PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
+          this->codecell->markLine(PyInt_AsSsize_t(lineno));
+          Py_DECREF(lineno);
+        }
+
+        // Restore exception to be printed:
+        PyErr_Restore(exec, pvalue, traceback);
+
         // Show exception:
         this->resultcell->setVisible(true);
+
         PyErr_Print();
 
         // Done.
+        return;
     }
 
     // Evaluate code:
     /// \todo Make sure this runs in a separate thread
     PyObject *result = 0;
-    if (0 == (result = PyEval_EvalCode((PyCodeObject *)prec_code, ctx->getGlobals(), ctx->getGlobals())))
+    if (0 == (result = PyEval_EvalCode((PyCodeObject *)prec_code,
+                                       ctx->getGlobals(), ctx->getGlobals())))
     {
         // Change color of cell status bar
         this->cell_status->setStatusError();
+
+        // Extract Exception:
+        PyObject *exec, *pvalue, *traceback;
+        PyErr_Fetch(&exec, &pvalue, &traceback);
+
+        if (0 == pvalue)
+        {
+          // oops:
+          qWarning("Compilation failed but no exception found.");
+          return;
+        }
+
+        // If there is a traceback:
+        if (0 != traceback)
+        {
+          // Extract the line number of the first frame and mark the line in codecell
+          PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
+          this->codecell->markLine(PyInt_AsSsize_t(lineno));
+          Py_DECREF(lineno);
+        }
+
+        // Restore exception to be printed:
+        PyErr_Restore(exec, pvalue, traceback);
 
         // Show result cell
         this->resultcell->setVisible(true);
@@ -100,6 +152,7 @@ Cell::evaluate(PythonContext *ctx)
     this->cell_status->setStatusSuccess();
 
     Py_DECREF(result);
+    Py_DECREF(prec_code);
 }
 
 

@@ -70,3 +70,32 @@ CodeCell::onTextChanged()
     this->_text_size = this->document()->size().toSize();
     this->updateGeometry();
 }
+
+
+void
+CodeCell::markLine(size_t line)
+{
+  QTextEdit::ExtraSelection highlight;
+
+  // Move cursor to position
+  highlight.cursor = this->textCursor();
+  highlight.cursor.movePosition(QTextCursor::Start);
+  highlight.cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, line-1);
+
+  // Highlight line
+  highlight.format.setProperty(QTextFormat::FullWidthSelection, true);
+  highlight.format.setBackground( Qt::yellow );
+
+  QList<QTextEdit::ExtraSelection> extras;
+  extras << highlight;
+  this->setExtraSelections( extras );
+}
+
+
+void
+CodeCell::clearLineMarks()
+{
+  // just reset with empty extra selections
+  QList<QTextEdit::ExtraSelection> extras;
+  this->setExtraSelections(extras);
+}

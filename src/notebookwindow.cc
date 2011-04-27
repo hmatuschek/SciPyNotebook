@@ -36,7 +36,7 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   this->setWindowIcon(QIcon(QPixmap(logo_xpm)));
 
   // Set window size...
-  this->resize(533, 640);
+  this->resize(600, 640);
 
   // Store notebook widget into a scrollarea
   this->notebook = notebook;

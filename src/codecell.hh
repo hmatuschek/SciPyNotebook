@@ -43,6 +43,9 @@ public:
 
 public slots:
     void onTextChanged();
+
+    void markLine(size_t line);
+    void clearLineMarks();
 };
 
 #endif // CODECELL_H
