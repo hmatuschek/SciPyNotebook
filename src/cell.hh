@@ -48,7 +48,6 @@ public:
     explicit Cell(QWidget *parent=0);
 
     void evaluate(PythonContext *ctx);
-    virtual void setFocus();
 
     void serializeCode(QIODevice &device);
     void setCode(const QString &code);

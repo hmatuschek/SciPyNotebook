@@ -35,6 +35,9 @@ Cell::Cell(QWidget *parent) :
     this->codecell = new CodeCell(this);
     this->cellbox->addWidget(this->codecell);
 
+    // Set set codecell to be focus-proxy of the cell
+    this->setFocusProxy(this->codecell);
+
     // Instantiate result cell
     this->resultcell = new ResultCell();
     this->cellbox->addWidget(this->resultcell);
@@ -153,13 +156,6 @@ Cell::evaluate(PythonContext *ctx)
 
     Py_DECREF(result);
     Py_DECREF(prec_code);
-}
-
-
-void
-Cell::setFocus()
-{
-    this->codecell->setFocus();
 }
 
 
