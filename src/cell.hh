@@ -7,19 +7,10 @@
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CELL_H
-#define CELL_H
+#ifndef __SCIPY_NOTEBOOK_CELL_H__
+#define __SCIPY_NOTEBOOK_CELL_H__
 
 #include <QObject>
 #include <QVBoxLayout>
@@ -30,32 +21,74 @@
 #include "pythoncontext.hh"
 
 
+/**
+ * The cell class combines two cells, one for the input of code and another for the
+ * output, this code generates or error messages.
+ */
 class Cell : public QFrame
 {
-    Q_OBJECT
+  Q_OBJECT
 
+  /**
+   * \todo May not be needed in future.
+   */
   friend class Notebook;
 
 
 protected:
-    QBoxLayout *cellbox;
-    CodeCell *codecell;
-    ResultCell *resultcell;
-    CellStatus *cell_status;
+  /**
+   * The layout for the code and result cells.
+   */
+  QBoxLayout *cellbox;
+
+  /**
+   * Holds the instance of the code cell.
+   */
+  CodeCell *codecell;
+
+  /**
+   * Holds the instance of the result cell.
+   */
+  ResultCell *resultcell;
+
+  /**
+   * A simple widget to show the status of the cell.
+   */
+  CellStatus *cell_status;
 
 
 public:
-    explicit Cell(QWidget *parent=0);
+  /**
+   * Construct a new (empty) cell.
+   */
+  explicit Cell(QWidget *parent=0);
 
-    void evaluate(PythonContext *ctx);
+  /**
+   * Evaluates the cell in the given PythonContext.
+   */
+  void evaluate(PythonContext *ctx);
 
-    void serializeCode(QIODevice &device);
-    void setCode(const QString &code);
+  /**
+   * Serializes the code of the codecell into the given device.
+   */
+  void serializeCode(QIODevice &device);
+
+  /**
+   * Replaces the code in the codecell with the given text.
+   */
+  void setCode(const QString &code);
 
 
 public slots:
-    void undoSlot();
-    void redoSlot();
+  /**
+   * Forward to codecell.undo().
+   */
+  void undoSlot();
+
+  /**
+   * Forward to codecell.redo().
+   */
+  void redoSlot();
 };
 
-#endif // CELL_H
+#endif // __SCIPY_NOTEBOOK_CELL_H__

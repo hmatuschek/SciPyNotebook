@@ -13,6 +13,7 @@
 #define NOTEBOOK_H
 
 #include "cell.hh"
+#include "preamblecell.hh"
 
 #include <QScrollArea>
 #include <QList>
@@ -30,8 +31,7 @@ class Notebook : public QFrame
 
 protected:
     QList<Cell *> _cells;
-    QShortcut *_eval_shortcut;
-    QShortcut *_new_cell_shortcut;
+    PreambleCell *_preamble;
     QBoxLayout *_cell_layout;
     QString _filename;
 
@@ -90,6 +90,8 @@ public slots:
     void splitCellSlot();
     void joinCellsSlot();
     void delCellSlot();
+
+    void editPreambleSlot();
 };
 
 #endif // NOTEBOOK_H

@@ -10,6 +10,8 @@
  */
 
 #include "notebook.hh"
+#include "preambledialog.hh"
+#include "preamblecell.hh"
 
 #include <QApplication>
 #include <QFile>
@@ -24,13 +26,19 @@ Notebook::Notebook(QWidget *parent) :
     // initialize notebook layout and connect signals
     this->initNotebookLayout();
 
+    // Create preamble cell
+    this->_preamble = new PreambleCell(this);
+    this->_cell_layout->addWidget(this->_preamble);
+
     // Create an empty cell
     Cell *new_cell = new Cell(this);
-    //new_cell->setFocus();
-    this->_cell_layout->addWidget(new_cell);
 
     // Append cell to list:
+    this->_cell_layout->addWidget(new_cell);
     this->_cells.append(new_cell);
+
+    // Set focus to new cell
+    new_cell->setFocus();
 }
 
 
@@ -105,11 +113,18 @@ Notebook::initNotebookLayout()
 void
 Notebook::onNewCell()
 {
+  int index = -1;
+
   // Get the current cell and its index (if known)
-  QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
-  int index = this->layout()->indexOf(w);
-  if(0 <= index)
-    index++;
+  if (0 != QApplication::focusWidget())
+  {
+    QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
+    index = this->layout()->indexOf(w);
+
+    // If focus widget is not in notebook layout
+    if(0 <= index)
+      index++;
+  }
 
   //Append a new cell
   Cell *new_cell = new Cell(this);
@@ -324,4 +339,21 @@ Notebook::delCellSlot()
 
     // free cell
     delete cell;
+}
+
+
+void
+Notebook::editPreambleSlot()
+{
+  // Construct and show dialog in modal mode
+  PreambleDialog dialog(this);
+  dialog.exec();
+
+  // If cancel was clicked -> done.
+  if (QDialog::Rejected == dialog.result())
+  {
+    return;
+  }
+
+
 }
