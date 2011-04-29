@@ -89,7 +89,7 @@ Notebook::Notebook(const QString &filename, QWidget *parent) :
     Cell *cell = new Cell();
     this->_cells.append(cell);
     this->_cell_layout->addWidget(cell);
-    cell->setCode(code);
+    cell->setCode(code.trimmed());
   }
 }
 

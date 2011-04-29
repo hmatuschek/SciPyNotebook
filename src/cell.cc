@@ -166,7 +166,8 @@ Cell::evaluate(PythonContext *ctx)
 void
 Cell::serializeCode(QIODevice &device)
 {
-    device.write(this->codecell->document()->toPlainText().toAscii());
+  // Remove tailing newlines:
+  device.write(this->codecell->document()->toPlainText().toAscii().trimmed());
 }
 
 
