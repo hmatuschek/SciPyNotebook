@@ -26,6 +26,7 @@
 class CellStatus : public QWidget
 {
     Q_OBJECT
+
 public:
     explicit CellStatus(QWidget *parent = 0);
 
@@ -33,10 +34,11 @@ public:
     void setStatusError();
     void setStatusRunning();
 
+    virtual void mouseReleaseEvent(QMouseEvent *event);
+
+
 signals:
-
-public slots:
-
+    void clicked();
 };
 
 #endif // CELLSTATUS_HH

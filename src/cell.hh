@@ -79,6 +79,10 @@ public:
   void setCode(const QString &code);
 
 
+signals:
+  void statusClicked();
+
+
 public slots:
   /**
    * Forward to codecell.undo().
@@ -89,6 +93,10 @@ public slots:
    * Forward to codecell.redo().
    */
   void redoSlot();
+
+
+protected slots:
+  void onStatusClicked();
 };
 
 #endif // __SCIPY_NOTEBOOK_CELL_H__

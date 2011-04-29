@@ -13,7 +13,7 @@
 #define NOTEBOOK_H
 
 #include "cell.hh"
-#include "preamblecell.hh"
+//#include "preamblecell.hh"
 
 #include <QScrollArea>
 #include <QList>
@@ -31,7 +31,6 @@ class Notebook : public QFrame
 
 protected:
     QList<Cell *> _cells;
-    PreambleCell *_preamble;
     QBoxLayout *_cell_layout;
     QString _filename;
 

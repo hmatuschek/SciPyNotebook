@@ -67,3 +67,10 @@ CellStatus::setStatusError()
     this->setPalette(pal);
 }
 
+
+void
+CellStatus::mouseReleaseEvent(QMouseEvent *event)
+{
+  emit this->clicked();
+}
+

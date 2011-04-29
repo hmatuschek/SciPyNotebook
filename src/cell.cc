@@ -20,10 +20,14 @@ Cell::Cell(QWidget *parent) :
 {
     // Init the layout
     QHBoxLayout *hbox = new QHBoxLayout();
+
     this->cell_status = new CellStatus(this);
+    QObject::connect(this->cell_status, SIGNAL(clicked()), this, SLOT(onStatusClicked()));
+
     hbox->addWidget(this->cell_status);
     hbox->setSpacing(0);
     hbox->setContentsMargins(0,3,0,0);
+
     this->cellbox = new QVBoxLayout();
     this->cellbox->setContentsMargins(0,0,0,0);
     this->cellbox->setSizeConstraint(QLayout::SetMinimumSize);
@@ -39,7 +43,7 @@ Cell::Cell(QWidget *parent) :
     this->setFocusProxy(this->codecell);
 
     // Instantiate result cell
-    this->resultcell = new ResultCell();
+    this->resultcell = new ResultCell(this);
     this->cellbox->addWidget(this->resultcell);
     this->resultcell->setVisible(false);
 
@@ -185,4 +189,11 @@ void
 Cell::redoSlot()
 {
   this->codecell->redo();
+}
+
+
+void
+Cell::onStatusClicked()
+{
+  emit this->statusClicked();
 }

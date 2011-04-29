@@ -26,10 +26,6 @@ Notebook::Notebook(QWidget *parent) :
     // initialize notebook layout and connect signals
     this->initNotebookLayout();
 
-    // Create preamble cell
-    this->_preamble = new PreambleCell(this);
-    this->_cell_layout->addWidget(this->_preamble);
-
     // Create an empty cell
     Cell *new_cell = new Cell(this);
 
