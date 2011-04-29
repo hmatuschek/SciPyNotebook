@@ -80,7 +80,6 @@ ConfigLoader::startCDATA()
 {
   if (PARSE_PREAMBLE == this->state_stack.back())
   {
-    qWarning("Handle preamble...");
     this->state_stack.push_back(PARSE_PREAMBLEDATA);
     return true;
   }
@@ -93,7 +92,6 @@ ConfigLoader::startCDATA()
 bool
 ConfigLoader::endCDATA()
 {
-  qWarning("End CDATA");
   this->state_stack.pop_back();
   return true;
 }
@@ -104,7 +102,6 @@ ConfigLoader::characters(const QString &str)
 {
   if (PARSE_PREAMBLEDATA == this->state_stack.back())
   {
-    qWarning("Set preamble: %s", str.toStdString().c_str());
     this->preferences->setPreamble(str);
     return true;
   }

@@ -79,9 +79,9 @@ Preferences::font() const
 void
 Preferences::setPreamble(const QString &text)
 {
-  qWarning("Set preamble to: %s", text.toStdString().c_str());
   this->_preamble = text;
 }
+
 
 QString
 Preferences::preamble() const
