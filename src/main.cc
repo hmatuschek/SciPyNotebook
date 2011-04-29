@@ -12,11 +12,13 @@
 #include <QtGui/QApplication>
 #include "notebookwindow.hh"
 #include "pythonengine.hh"
+#include "preferences.hh"
 
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    Preferences *preferences = Preferences::get();
 
     // Create a new, empty notbook
     NotebookWindow w;

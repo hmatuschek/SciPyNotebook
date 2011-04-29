@@ -11,7 +11,6 @@
 
 #include "notebook.hh"
 #include "preambledialog.hh"
-#include "preamblecell.hh"
 
 #include <QApplication>
 #include <QFile>

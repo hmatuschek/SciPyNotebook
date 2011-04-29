@@ -10,12 +10,14 @@
  */
 
 #include "pythonhighlighter.hh"
+#include "preferences.hh"
+
 #include <QTextEdit>
 
 
 
 PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
-    QSyntaxHighlighter(parent), defaultFont("Fixed")
+    QSyntaxHighlighter(parent), defaultFont(Preferences::get()->getFont())
 {
     // Assemble rules for syntax highlighting (stolen from Scribus sources)
     // Reserved keywords in Python 2.4
@@ -27,8 +29,6 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
         << "for" << "from" << "global" << "if" << "import" << "in"
         << "is" << "lambda" << "not" << "or" << "pass" << "print" << "raise"
         << "return" << "try" << "while" << "yield";
-
-    defaultFont.setStyleHint(QFont::TypeWriter);
 
     keywordFormat.setFont(defaultFont);
     keywordFormat.setForeground(QColor(0x00, 0x00, 0x7f));

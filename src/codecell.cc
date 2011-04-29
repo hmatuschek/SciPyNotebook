@@ -10,6 +10,7 @@
  */
 
 #include "codecell.hh"
+#include "preferences.hh"
 #include <QSyntaxHighlighter>
 
 
@@ -23,8 +24,9 @@ CodeCell::CodeCell(QWidget *parent) :
     this->higlighter = new PythonHighlighter(this);
     this->higlighter->setDocument(this->document());
 
-    QFont default_font; default_font.setStyleHint(QFont::TypeWriter);
-    this->document()->setDefaultFont(default_font);
+    // Get default font from preferences:
+    Preferences *prefs = Preferences::get();
+    this->document()->setDefaultFont(prefs->getFont());
 
     this->_text_size = this->document()->size().toSize();
     this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
