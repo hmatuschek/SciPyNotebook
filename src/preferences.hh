@@ -38,6 +38,8 @@ signals:
 public slots:
     void setFont(const QFont &font);
     void setPreamble(const QString &text);
+
+    void save();
 };
 
 #endif // PREFERENCES_HH

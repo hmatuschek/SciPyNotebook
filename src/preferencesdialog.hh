@@ -21,6 +21,8 @@ protected:
 public:
     explicit PreferencesDialog(QWidget *parent = 0);
 
+    QFont font();
+    QString preamble();
 };
 
 #endif // PREFERENCESDIALOG_HH

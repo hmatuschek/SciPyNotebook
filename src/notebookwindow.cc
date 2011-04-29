@@ -1,5 +1,6 @@
 #include "notebookwindow.hh"
 #include "aboutdialog.hh"
+#include "preferences.hh"
 #include "preferencesdialog.hh"
 
 
@@ -279,6 +280,16 @@ NotebookWindow::preferencesSlot()
 {
   PreferencesDialog dialog;
 
-  dialog.exec();
+  if(! dialog.exec())
+  {
+    // Abort...
+    return;
+  }
+
+  // Get preferences from fialog and store it in preferences instance
+  Preferences *preferences = Preferences::get();
+  preferences->setFont(dialog.font());
+  preferences->setPreamble(dialog.preamble());
+  preferences->save();
 }
 

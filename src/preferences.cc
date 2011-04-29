@@ -1,6 +1,10 @@
 #include "preferences.hh"
 #include "configloader.hh"
+
 #include <QDir>
+#include <QDomDocument>
+#include <QDomElement>
+
 
 Preferences * Preferences::_instance = 0;
 
@@ -87,6 +91,45 @@ QString
 Preferences::preamble() const
 {
   return this->_preamble;
+}
+
+
+void
+Preferences::save()
+{
+  QDomDocument document;
+
+  // Create document element:
+  QDomElement root = document.createElement("SciPyNotebookConfig");
+  root.setAttribute("version", "1.0");
+  document.appendChild(root);
+
+  // Save Font:
+  QDomElement fontElement = document.createElement("font");
+  fontElement.setAttribute("family", this->_font.family());
+  fontElement.setAttribute("size", QString("%1").arg(this->font().pointSize()));
+  root.appendChild(fontElement);
+
+  // Save preamble:
+  QDomElement preambleElement = document.createElement("preamble");
+  QDomCDATASection preambleCode = document.createCDATASection(this->_preamble);
+  preambleElement.appendChild(preambleCode);
+  root.appendChild(preambleElement);
+
+  // Open file for reading:
+  if (! this->_configfile.open(QFile::WriteOnly | QFile::Truncate))
+  {
+    qWarning("Can not open config file for writing.");
+    return;
+  }
+
+  // Save config:
+  QTextStream out(&(this->_configfile));
+  document.save(out, 4);
+  qWarning(document.toString().toStdString().c_str());
+
+  // Done.
+  this->_configfile.close();
 }
 
 

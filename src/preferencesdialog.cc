@@ -68,3 +68,20 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
   // Set layout of dialog
   this->setLayout(layout);
 }
+
+
+QFont
+PreferencesDialog::font()
+{
+  QFont font(this->_fontBox->currentFont());
+  font.setPointSize(this->_fontSizeBox->value());
+
+  return font;
+}
+
+
+QString
+PreferencesDialog::preamble()
+{
+  return this->_preambleBox->document()->toPlainText();
+}
