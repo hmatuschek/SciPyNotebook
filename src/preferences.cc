@@ -8,16 +8,16 @@ Preferences::Preferences(QObject *parent) :
     QObject(parent)
 {
   // Set path to config file:
-  this->configfile.setFileName(QDir::home().absoluteFilePath(".scipynotebookconfig"));
+  this->_configfile.setFileName(QDir::home().absoluteFilePath(".scipynotebookconfig"));
 
   // Set default settings for font
-  this->font = QFont("Fixed");
+  this->_font = QFont("Fixed");
 
   // Check if config file exists:
-  if (! this->configfile.exists())
+  if (! this->_configfile.exists())
   {
     qWarning("Config file \"%s\" does not exist yet.",
-             this->configfile.fileName().toStdString().c_str());
+             this->_configfile.fileName().toStdString().c_str());
 
     // skip parsing:
     return;
@@ -28,20 +28,21 @@ Preferences::Preferences(QObject *parent) :
   QXmlSimpleReader reader;
   reader.setContentHandler(&handler);
   reader.setErrorHandler(&handler);
+  reader.setLexicalHandler(&handler);
 
   // Open file
-  if (! this->configfile.open(QFile::ReadOnly | QFile::Text)) {
+  if (! this->_configfile.open(QFile::ReadOnly | QFile::Text)) {
     qWarning("Can not open config file \"%s\".",
-             this->configfile.fileName().toStdString().c_str());
+             this->_configfile.fileName().toStdString().c_str());
 
     // skip parsing
     return;
   }
 
-  QXmlInputSource inputsource(&(this->configfile));
+  QXmlInputSource inputsource(&(this->_configfile));
   reader.parse(inputsource);
 
-  this->configfile.close();
+  this->_configfile.close();
 }
 
 
@@ -58,10 +59,10 @@ Preferences::get()
 
 
 void
-Preferences::setFont(QFont &font)
+Preferences::setFont(const QFont &font)
 {
   // Set font
-  this->font = font;
+  this->_font = font;
 
   // And emit signal
   emit this->fontChanged();
@@ -69,9 +70,23 @@ Preferences::setFont(QFont &font)
 
 
 QFont
-Preferences::getFont() const
+Preferences::font() const
 {
-  return this->font;
+  return this->_font;
+}
+
+
+void
+Preferences::setPreamble(const QString &text)
+{
+  qWarning("Set preamble to: %s", text.toStdString().c_str());
+  this->_preamble = text;
+}
+
+QString
+Preferences::preamble() const
+{
+  return this->_preamble;
 }
 
 

@@ -89,8 +89,6 @@ public slots:
     void splitCellSlot();
     void joinCellsSlot();
     void delCellSlot();
-
-    void editPreambleSlot();
 };
 
 #endif // NOTEBOOK_H

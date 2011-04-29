@@ -15,7 +15,8 @@ protected:
   typedef enum {
     START,
     PARSE_BODY,
-    PARSE_FONT
+    PARSE_FONT,
+    PARSE_PREAMBLE, PARSE_PREAMBLEDATA
   } State;
 
 protected:
@@ -36,17 +37,22 @@ protected:
 public:
   ConfigLoader(Preferences *preferences);
 
-  bool startElement(const QString &namespaceURI, const QString &localName,
-                    const QString &qName, const QXmlAttributes &attributes);
+  virtual bool startElement(const QString &namespaceURI, const QString &localName,
+                            const QString &qName, const QXmlAttributes &attributes);
 
-  bool endElement(const QString &namespaceURI, const QString &localName,
-                  const QString &qName);
+  virtual bool endElement(const QString &namespaceURI, const QString &localName,
+                          const QString &qName);
 
-  bool characters(const QString &str);
+  virtual bool startCDATA();
+  virtual bool endCDATA();
 
-  bool fatalError(const QXmlParseException &exception);
+  virtual bool characters(const QString &str);
 
-  QString errorString() const;
+  virtual bool fatalError(const QXmlParseException &exception);
+  virtual bool error(const QXmlParseException &exception);
+  virtual bool warning(const QXmlParseException &exception);
+
+  virtual QString errorString() const;
 };
 
 #endif // CONFIGLOADER_HH

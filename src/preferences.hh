@@ -15,16 +15,17 @@ protected:
 
 
 protected:
-  QFont font;
-  QFile configfile;
-
+  QFont _font;
+  QFile _configfile;
+  QString _preamble;
 
 protected:
   explicit Preferences(QObject *parent = 0);
 
 
 public:  
-    QFont getFont() const;
+    QFont font() const;
+    QString preamble() const;
 
 
 public:
@@ -35,8 +36,8 @@ signals:
 
 
 public slots:
-    void setFont(QFont &font);
-
+    void setFont(const QFont &font);
+    void setPreamble(const QString &text);
 };
 
 #endif // PREFERENCES_HH

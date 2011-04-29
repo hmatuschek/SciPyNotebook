@@ -136,10 +136,6 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   runAllAct->setStatusTip(tr("Evaluates all cells of the notebook."));
   QObject::connect(runAllAct, SIGNAL(triggered()), this->notebook, SLOT(evalAllCellsSlot()));
 
-  editPreambleAct = new QAction(tr("Edit Preamble"), this);
-  editPreambleAct->setStatusTip(tr("Edit the preamble of the notebook."));
-  QObject::connect(editPreambleAct, SIGNAL(triggered()), this->notebook, SLOT(editPreambleSlot()));
-
   aboutAct = new QAction(tr("About SciPy Notebook"), this);
   aboutAct->setStatusTip(tr("Shows some information about SciPy Notebook."));
   QObject::connect(this->aboutAct, SIGNAL(triggered()), this, SLOT(aboutSlot()));
@@ -176,8 +172,6 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   cellMenu->addSeparator();
   cellMenu->addAction(this->evalCellAct);
   cellMenu->addAction(this->runAllAct);
-  cellMenu->addSeparator();
-  cellMenu->addAction(this->editPreambleAct);
 
   helpMenu = this->menuBar()->addMenu(tr("&Help"));
   helpMenu->addAction(this->aboutAct);

@@ -10,7 +10,7 @@
  */
 
 #include "notebook.hh"
-#include "preambledialog.hh"
+#include "preferences.hh"
 
 #include <QApplication>
 #include <QFile>
@@ -27,6 +27,7 @@ Notebook::Notebook(QWidget *parent) :
 
     // Create an empty cell
     Cell *new_cell = new Cell(this);
+    new_cell->setCode(Preferences::get()->preamble());
 
     // Append cell to list:
     this->_cell_layout->addWidget(new_cell);
@@ -336,19 +337,3 @@ Notebook::delCellSlot()
     delete cell;
 }
 
-
-void
-Notebook::editPreambleSlot()
-{
-  // Construct and show dialog in modal mode
-  PreambleDialog dialog(this);
-  dialog.exec();
-
-  // If cancel was clicked -> done.
-  if (QDialog::Rejected == dialog.result())
-  {
-    return;
-  }
-
-
-}

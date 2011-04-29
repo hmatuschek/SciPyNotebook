@@ -27,19 +27,34 @@ ConfigLoader::startElement(const QString &namespaceURI, const QString &localName
     return false;
   }
 
+
   if (PARSE_BODY == this->state_stack.back())
   {
-    if (localName == "Font")
+    if (localName == "font")
     {
       this->state_stack.push_back(PARSE_FONT);
       return this->handleFont(attributes);
+    }
+
+    if (localName == "preamble")
+    {
+      this->state_stack.push_back(PARSE_PREAMBLE);
+      return true;
     }
 
     this->_error_string = QObject::tr("Unexpected element found: %1").arg(localName);
     return false;
   }
 
+
   if (PARSE_FONT == this->state_stack.back())
+  {
+    this->_error_string = QObject::tr("Unexpected element found: %1").arg(localName);
+    return false;
+  }
+
+
+  if (PARSE_PREAMBLE == this->state_stack.back())
   {
     this->_error_string = QObject::tr("Unexpected element found: %1").arg(localName);
     return false;
@@ -61,8 +76,39 @@ ConfigLoader::endElement(const QString &namespaceURI, const QString &localName,
 
 
 bool
+ConfigLoader::startCDATA()
+{
+  if (PARSE_PREAMBLE == this->state_stack.back())
+  {
+    qWarning("Handle preamble...");
+    this->state_stack.push_back(PARSE_PREAMBLEDATA);
+    return true;
+  }
+
+  this->_error_string = QObject::tr("Unexpected CDATA.");
+  return false;
+}
+
+
+bool
+ConfigLoader::endCDATA()
+{
+  qWarning("End CDATA");
+  this->state_stack.pop_back();
+  return true;
+}
+
+
+bool
 ConfigLoader::characters(const QString &str)
 {
+  if (PARSE_PREAMBLEDATA == this->state_stack.back())
+  {
+    qWarning("Set preamble: %s", str.toStdString().c_str());
+    this->preferences->setPreamble(str);
+    return true;
+  }
+
   return true;
 }
 
@@ -71,6 +117,25 @@ bool
 ConfigLoader::fatalError(const QXmlParseException &exception)
 {
   qWarning("Error while parsing config file: %s",
+           exception.message().toStdString().c_str());
+
+  return false;
+}
+
+
+bool
+ConfigLoader::error(const QXmlParseException &exception)
+{
+  qWarning("Error while parsing config file: %s",
+           exception.message().toStdString().c_str());
+
+  return false;
+}
+
+bool
+ConfigLoader::warning(const QXmlParseException &exception)
+{
+  qWarning("Warning while parsing config file: %s",
            exception.message().toStdString().c_str());
 
   return true;
@@ -87,7 +152,7 @@ ConfigLoader::errorString() const
 bool
 ConfigLoader::handleFont(const QXmlAttributes &attributes)
 {
-  QFont font = this->preferences->getFont();
+  QFont font = this->preferences->font();
 
   // Handle font family attribute
   QString family = attributes.value("family");

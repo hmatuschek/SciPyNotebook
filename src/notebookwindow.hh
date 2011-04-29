@@ -40,7 +40,6 @@ protected:
     QAction *joinCellsAct;
     QAction *evalCellAct;
     QAction *runAllAct;
-    QAction *editPreambleAct;
 
     QMenu *helpMenu;
     QAction *aboutAct;

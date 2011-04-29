@@ -26,7 +26,7 @@ CodeCell::CodeCell(QWidget *parent) :
 
     // Get default font from preferences:
     Preferences *prefs = Preferences::get();
-    this->document()->setDefaultFont(prefs->getFont());
+    this->document()->setDefaultFont(prefs->font());
 
     this->_text_size = this->document()->size().toSize();
     this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);

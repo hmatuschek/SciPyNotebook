@@ -17,7 +17,7 @@
 
 
 PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
-    QSyntaxHighlighter(parent), defaultFont(Preferences::get()->getFont())
+    QSyntaxHighlighter(parent), defaultFont(Preferences::get()->font())
 {
     // Assemble rules for syntax highlighting (stolen from Scribus sources)
     // Reserved keywords in Python 2.4
