@@ -1,5 +1,8 @@
 #include "notebookwindow.hh"
 #include "aboutdialog.hh"
+#include "preferences.hh"
+#include "preferencesdialog.hh"
+
 
 #include <QFile>
 #include <QFileDialog>
@@ -105,6 +108,7 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   prefAct = new QAction(tr("Preferences"), this);
   prefAct->setShortcut(QKeySequence::Preferences);
   prefAct->setStatusTip(tr("Edit the preferences."));
+  QObject::connect(prefAct, SIGNAL(triggered()), this, SLOT(preferencesSlot()));
 
   newCellAct = new QAction(tr("New Cell"), this);
   newCellAct->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_N);
@@ -266,7 +270,27 @@ NotebookWindow::quitSlot()
 void
 NotebookWindow::aboutSlot()
 {
-  AboutDialog *w = new AboutDialog(this);
-  w->show();
+  AboutDialog dialog;
+  dialog.show();
+}
+
+
+void
+NotebookWindow::preferencesSlot()
+{
+  PreferencesDialog dialog;
+
+  if(! dialog.exec())
+  {
+    // Abort...
+    return;
+  }
+
+  // Get preferences from fialog and store it in preferences instance
+  Preferences *preferences = Preferences::get();
+  preferences->setFont(dialog.font());
+  preferences->setTabSize(dialog.tabSize());
+  preferences->setPreamble(dialog.preamble());
+  preferences->save();
 }
 

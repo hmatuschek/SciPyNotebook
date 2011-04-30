@@ -59,6 +59,8 @@ protected:
 
 
 public slots:
+    void preferencesSlot();
+
     void newSlot();
     void openSlot();
     void closeSlot();

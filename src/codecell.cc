@@ -11,7 +11,10 @@
 
 #include "codecell.hh"
 #include "preferences.hh"
+
 #include <QSyntaxHighlighter>
+#include <QFontMetrics>
+
 
 
 CodeCell::CodeCell(QWidget *parent) :
@@ -27,6 +30,11 @@ CodeCell::CodeCell(QWidget *parent) :
     // Get default font from preferences:
     Preferences *prefs = Preferences::get();
     this->document()->setDefaultFont(prefs->font());
+
+    // Set tab size:
+    int tabsize = QFontMetrics(prefs->font()).width(' ');
+    tabsize *= prefs->tabSize();
+    this->setTabStopWidth(tabsize);
 
     this->_text_size = this->document()->size().toSize();
     this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
