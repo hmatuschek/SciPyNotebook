@@ -17,6 +17,9 @@ Preferences::Preferences(QObject *parent) :
   // Set default settings for font
   this->_font = QFont("Fixed");
 
+  // Set default settings for
+  this->_tabsize = 4;
+
   // Check if config file exists:
   if (! this->_configfile.exists())
   {
@@ -94,6 +97,20 @@ Preferences::preamble() const
 }
 
 
+int
+Preferences::tabSize()
+{
+  return this->_tabsize;
+}
+
+
+void
+Preferences::setTabSize(int size)
+{
+  this->_tabsize = size;
+}
+
+
 void
 Preferences::save()
 {
@@ -109,6 +126,12 @@ Preferences::save()
   fontElement.setAttribute("family", this->_font.family());
   fontElement.setAttribute("size", QString("%1").arg(this->font().pointSize()));
   root.appendChild(fontElement);
+
+  // Save tab size:
+  QDomElement tabElement = document.createElement("tabsize");
+  QDomText tabValueElement = document.createTextNode(QString("%1").arg(this->_tabsize));
+  tabElement.appendChild(tabValueElement);
+  root.appendChild(tabElement);
 
   // Save preamble:
   QDomElement preambleElement = document.createElement("preamble");
@@ -126,7 +149,6 @@ Preferences::save()
   // Save config:
   QTextStream out(&(this->_configfile));
   document.save(out, 4);
-  qWarning(document.toString().toStdString().c_str());
 
   // Done.
   this->_configfile.close();

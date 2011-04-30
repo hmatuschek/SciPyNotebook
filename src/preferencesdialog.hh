@@ -16,6 +16,7 @@ protected:
   QFontComboBox *_fontBox;
   QSpinBox *_fontSizeBox;
   QTextEdit *_preambleBox;
+  QSpinBox *_tabSizeBox;
 
 
 public:
@@ -23,6 +24,7 @@ public:
 
     QFont font();
     QString preamble();
+    int tabSize();
 };
 
 #endif // PREFERENCESDIALOG_HH

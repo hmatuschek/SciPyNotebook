@@ -289,6 +289,7 @@ NotebookWindow::preferencesSlot()
   // Get preferences from fialog and store it in preferences instance
   Preferences *preferences = Preferences::get();
   preferences->setFont(dialog.font());
+  preferences->setTabSize(dialog.tabSize());
   preferences->setPreamble(dialog.preamble());
   preferences->save();
 }

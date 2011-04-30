@@ -42,19 +42,20 @@ ConfigLoader::startElement(const QString &namespaceURI, const QString &localName
       return true;
     }
 
+    if (localName == "tabsize")
+    {
+      this->state_stack.push_back(PARSE_TABSIZE);
+      return true;
+    }
+
     this->_error_string = QObject::tr("Unexpected element found: %1").arg(localName);
     return false;
   }
 
 
-  if (PARSE_FONT == this->state_stack.back())
-  {
-    this->_error_string = QObject::tr("Unexpected element found: %1").arg(localName);
-    return false;
-  }
-
-
-  if (PARSE_PREAMBLE == this->state_stack.back())
+  if (PARSE_FONT == this->state_stack.back() ||
+      PARSE_PREAMBLE == this->state_stack.back() ||
+      PARSE_TABSIZE == this->state_stack.back())
   {
     this->_error_string = QObject::tr("Unexpected element found: %1").arg(localName);
     return false;
@@ -103,6 +104,21 @@ ConfigLoader::characters(const QString &str)
   if (PARSE_PREAMBLEDATA == this->state_stack.back())
   {
     this->preferences->setPreamble(str);
+    return true;
+  }
+
+  if (PARSE_TABSIZE == this->state_stack.back())
+  {
+    bool ok;
+    int tabsize = str.toInt(&ok);
+
+    if ((! ok) || 0 > tabsize)
+    {
+      this->_error_string = QObject::tr("Invalid tab size %1").arg(str);
+      return false;
+    }
+
+    this->preferences->setTabSize(tabsize);
     return true;
   }
 

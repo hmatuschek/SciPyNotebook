@@ -8,51 +8,84 @@
 #include <QSpinBox>
 #include <QGroupBox>
 #include <QTextEdit>
+#include <QTabWidget>
 
 
 
 PreferencesDialog::PreferencesDialog(QWidget *parent) :
     QDialog(parent)
 {
+  this->setWindowTitle("Preferences");
+
   QVBoxLayout *layout = new QVBoxLayout(this);
+  QTabWidget *tabs = new QTabWidget(this);
 
   /*
-   * Font configuration
+   * Assemble "Editor" tab.
    */
   {
-    QGroupBox *gbox = new QGroupBox("Font Settings", this);
-    QHBoxLayout *hbox = new QHBoxLayout();
-    gbox->setLayout(hbox);
+    QFrame *editorFrame = new QFrame(tabs);
+    QVBoxLayout *vbox = new QVBoxLayout();
+    editorFrame->setLayout(vbox);
 
-    // Assemble font selection:
-    this->_fontBox = new QFontComboBox(this);
-    this->_fontBox->setCurrentFont(Preferences::get()->font());
-    hbox->addWidget(this->_fontBox);
+    /*
+     * Font configuration
+     */
+    {
+      QGroupBox *gbox = new QGroupBox("Font Settings", this);
+      QHBoxLayout *hbox = new QHBoxLayout();
+      gbox->setLayout(hbox);
 
-    // Assemble size selection box.
-    this->_fontSizeBox = new QSpinBox(this);
-    this->_fontSizeBox->setRange(6, 24);
-    this->_fontSizeBox->setValue(Preferences::get()->font().pointSize());
-    hbox->addWidget(this->_fontSizeBox);
+      // Assemble font selection:
+      this->_fontBox = new QFontComboBox(this);
+      this->_fontBox->setCurrentFont(Preferences::get()->font());
+      hbox->addWidget(this->_fontBox);
 
-    this->layout()->addWidget(gbox);
+      // Assemble size selection box.
+      this->_fontSizeBox = new QSpinBox(this);
+      this->_fontSizeBox->setRange(6, 24);
+      this->_fontSizeBox->setValue(Preferences::get()->font().pointSize());
+      hbox->addWidget(this->_fontSizeBox);
+
+      vbox->addWidget(gbox);
+    }
+
+    /*
+     * Assemble tabsize config
+     */
+    {
+      QGroupBox *gbox = new QGroupBox("Tab Size", this);
+      QHBoxLayout *hbox = new QHBoxLayout();
+      gbox->setLayout(hbox);
+
+      this->_tabSizeBox = new QSpinBox(this);
+      this->_tabSizeBox->setRange(0, 10);
+      this->_tabSizeBox->setValue(Preferences::get()->tabSize());
+      hbox->addWidget(this->_tabSizeBox);
+
+      vbox->addWidget(gbox);
+    }
+
+    // Add "editor frame" to tabwidget:
+    tabs->addTab(editorFrame, "Editor");
   }
 
-  /*
-   * Assemble Preamble
-   */
   {
-    QGroupBox *gbox = new QGroupBox("Default Preamble", this);
-    QHBoxLayout *hbox = new QHBoxLayout();
-    gbox->setLayout(hbox);
+    QFrame *preFrame = new QFrame(tabs);
+    QVBoxLayout *vbox = new QVBoxLayout();
+    preFrame->setLayout(vbox);
 
     this->_preambleBox = new QTextEdit(this);
     PythonHighlighter *highlighter = new PythonHighlighter(this->_preambleBox);
     this->_preambleBox->document()->setPlainText(Preferences::get()->preamble());
-    hbox->addWidget(this->_preambleBox);
+    vbox->addWidget(this->_preambleBox);
 
-    this->layout()->addWidget(gbox);
+    // add preamble frame to tabs.
+    tabs->addTab(preFrame, "Preamble");
   }
+
+  this->layout()->addWidget(tabs);
+
 
   // Create default buttons
   QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
@@ -84,4 +117,11 @@ QString
 PreferencesDialog::preamble()
 {
   return this->_preambleBox->document()->toPlainText();
+}
+
+
+int
+PreferencesDialog::tabSize()
+{
+  return this->_tabSizeBox->value();
 }
