@@ -43,10 +43,13 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
 
   // Store notebook widget into a scrollarea
   this->notebook = notebook;
-  QScrollArea *swin = new QScrollArea();
-  swin->setWidget(this->notebook);
-  swin->setWidgetResizable(true);
-  this->setCentralWidget(swin);
+  this->scrolledWindow = new QScrollArea();
+  QObject::connect(this->notebook, SIGNAL(makeVisible(QPoint)),
+                   this, SLOT(makeVisible(QPoint)));
+
+  this->scrolledWindow->setWidget(this->notebook);
+  this->scrolledWindow->setWidgetResizable(true);
+  this->setCentralWidget(this->scrolledWindow);
 
   // Assemble actions:
   newAct = new QAction(tr("&New"), this);
@@ -292,5 +295,12 @@ NotebookWindow::preferencesSlot()
   preferences->setTabSize(dialog.tabSize());
   preferences->setPreamble(dialog.preamble());
   preferences->save();
+}
+
+
+void
+NotebookWindow::makeVisible(QPoint coord)
+{
+  this->scrolledWindow->ensureVisible(coord.x(), coord.y(), 50, 50);
 }
 

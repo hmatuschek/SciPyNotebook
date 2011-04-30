@@ -37,6 +37,8 @@ Cell::Cell(QWidget *parent) :
 
     // Instantiate empty code cell
     this->codecell = new CodeCell(this);
+    QObject::connect(this->codecell, SIGNAL(cursorPositionChanged()),
+                     this, SLOT(onCursorPositionChanged()));
     this->cellbox->addWidget(this->codecell);
 
     // Set set codecell to be focus-proxy of the cell
@@ -196,4 +198,12 @@ void
 Cell::onStatusClicked()
 {
   emit this->statusClicked();
+}
+
+
+void
+Cell::onCursorPositionChanged()
+{
+  QPoint coord = this->codecell->cursorRect().topLeft()+this->codecell->pos()+this->pos();
+  emit this->makeVisible(coord);
 }

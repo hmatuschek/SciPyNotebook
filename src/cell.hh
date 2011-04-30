@@ -82,6 +82,8 @@ public:
 signals:
   void statusClicked();
 
+  void makeVisible(QPoint coord);
+
 
 public slots:
   /**
@@ -97,6 +99,7 @@ public slots:
 
 protected slots:
   void onStatusClicked();
+  void onCursorPositionChanged();
 };
 
 #endif // __SCIPY_NOTEBOOK_CELL_H__
