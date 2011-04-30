@@ -15,10 +15,16 @@ Preferences::Preferences(QObject *parent) :
   this->_configfile.setFileName(QDir::home().absoluteFilePath(".scipynotebookconfig"));
 
   // Set default settings for font
-  this->_font = QFont("Fixed");
+  this->_font = QFont("Courier");
 
   // Set default settings for
   this->_tabsize = 4;
+
+  // Set default for preamble:
+  this->_preamble = "#\n# Default preamble\n#\n" \
+                    "from numpy import *\n" \
+                    "from scipy import *\n" \
+                    "from matplotlib import pylab";
 
   // Check if config file exists:
   if (! this->_configfile.exists())
