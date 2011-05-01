@@ -26,7 +26,6 @@ cmake -DCMAKE_INSTALL_PREFIX=$RPM_BUILD_ROOT/usr
 make
 
 %install
-rm -fr $RPM_BUILD_ROOT
 make install
 
 %clean
@@ -34,6 +33,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %doc README.rst LICENSE
-/usr/bin/scipynotbook
+/usr/bin/scipynotebook
 /usr/share/SciPyNotebook/icon.png
 /usr/share/applications/SciPyNotebook.desktop
