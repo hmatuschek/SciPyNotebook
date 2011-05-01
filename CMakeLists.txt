@@ -46,7 +46,7 @@ SET(CPACK_PACKAGE_EXECUTABLES "scipynotebook" "SciPyNotebook")
 #
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Hannes Matuschek")
 SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqtcore4 (>= 4.4), libqtgui4 (>= 4.4), libqtxml4 (>= 4.4), python (>= 2.5)")
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqtcore4 (>= 4.4), libqtgui4 (>= 4.4), libqt4-xml (>= 4.4), python (>= 2.5)")
 
 
 #
