@@ -6,7 +6,7 @@ License: GPLv2
 Group: Development
 Name: scipynotebook
 Prefix: /usr
-Provides: scipynotebook
+#Provides: scipynotebook
 Release: 1
 Source: scipynotebook-%{version}.tar.gz
 URL: https://github.com/downloads/hmatuschek/SciPyNotebook/
