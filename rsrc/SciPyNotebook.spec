@@ -1,6 +1,6 @@
 Summary: Notebook like editor for NumPy/SciPy.
 
-%define version 0.2.0
+%define version 0.2.1
 
 License: GPLv2
 Group: Development
@@ -12,7 +12,7 @@ Source: SciPyNotebook-%{version}.tar.gz
 URL: https://github.com/downloads/hmatuschek/SciPyNotebook/
 Version: %{version}
 Buildroot: /tmp/scipynotbookrpm
-BuildRequires: cmake, qt4-devel, python-devel
+BuildRequires: cmake, libqt4-devel, python-devel
 Requires: qt4, python
 
 %description
@@ -31,3 +31,9 @@ make install
 
 %clean
 rm -rf $RPM_BUILD_ROOT
+
+%files
+%doc README.rst LICENSE
+/usr/bin/scipynotbook
+/usr/share/SciPyNotebook/icon.png
+/usr/share/applications/SciPyNotebook.desktop
