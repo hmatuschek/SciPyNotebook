@@ -17,7 +17,7 @@ static QString content = \
 "<head></head>" \
 "<body>" \
 "<h1 align=\"center\">SciPy Notebook</h1>" \
-"<center><b>Version 0.2.0</b></center>" \
+"<center><b>Version 0.2.1</b></center>" \
 "<center>(c) 2011 <i>Hannes Matuschek</i></center>" \
 "<p> This program is free software; you can redistribute it and/or modify" \
 "it under the terms of the GNU General Public License as published by" \
