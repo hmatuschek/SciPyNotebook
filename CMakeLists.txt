@@ -26,7 +26,8 @@ ADD_SUBDIRECTORY(src)
 #
 INSTALL(FILES doc/logo.png
         DESTINATION share/SciPyNotebook)
-
+INSTALL(FILES SciPyNotebook.desktop
+        DESTINATION share/applications)
 
 SET(CPACK_PACKAGE_NAME "SciPyNotebook")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The SciPy Notebook")
@@ -39,10 +40,20 @@ SET(CPACK_PACKAGE_VERSION_MINOR "2")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_EXECUTABLES "scipynotebook" "SciPyNotebook")
 
+
 #
 # DEB package specific stuff
 #
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Hannes Matuschek")
+SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
+SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt4-gui (>= 4.4), libqt4-xml (>= 4.4), python (>= 2.5)")
+
+
+#
+# RPM specific stuff
+#
+SET(CPACK_RPM_PACKAGE_LICENSE "GPLv2")
+SET(CPACK_RPM_PACKAGE_REQUIRES "qt4 >= 4.4, python >= 2.5")
 
 
 #

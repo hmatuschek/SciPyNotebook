@@ -28,6 +28,8 @@ Notebook::Notebook(QWidget *parent) :
     // Create an empty cell
     Cell *new_cell = new Cell(this);
     new_cell->setCode(Preferences::get()->preamble());
+    QObject::connect(new_cell, SIGNAL(makeVisible(QPoint)),
+                     this, SLOT(makeCellVisible(QPoint)));
 
     // Append cell to list:
     this->_cell_layout->addWidget(new_cell);
@@ -89,6 +91,8 @@ Notebook::Notebook(const QString &filename, QWidget *parent) :
     Cell *cell = new Cell();
     this->_cells.append(cell);
     this->_cell_layout->addWidget(cell);
+    QObject::connect(cell, SIGNAL(makeVisible(QPoint)),
+                     this, SLOT(makeCellVisible(QPoint)));
     cell->setCode(code.trimmed());
   }
 }
@@ -125,6 +129,8 @@ Notebook::onNewCell()
   //Append a new cell
   Cell *new_cell = new Cell(this);
   new_cell->setFocus();
+  QObject::connect(new_cell, SIGNAL(makeVisible(QPoint)),
+                   this, SLOT(makeCellVisible(QPoint)));
 
   // Insert cell
   if (0 > index)
@@ -335,5 +341,12 @@ Notebook::delCellSlot()
 
     // free cell
     delete cell;
+}
+
+
+void
+Notebook::makeCellVisible(QPoint coord)
+{
+  emit this->makeVisible(coord);
 }
 

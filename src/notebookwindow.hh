@@ -15,6 +15,7 @@ class NotebookWindow : public QMainWindow
 
 protected:
     Notebook *notebook;
+    QScrollArea *scrolledWindow;
 
     QMenu *fileMenu;
     QAction *newAct;
@@ -69,6 +70,10 @@ public slots:
     void quitSlot();
 
     void aboutSlot();
+
+
+  protected slots:
+    void makeVisible(QPoint coord);
 };
 
 #endif // NOTEBOOKWINDOW_HH

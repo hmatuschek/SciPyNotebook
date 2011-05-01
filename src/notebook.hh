@@ -70,6 +70,10 @@ protected:
     void initNotebookLayout();
 
 
+signals:
+    void makeVisible(QPoint coord);
+
+
 public slots:
     /**
      * Saves the notebook to the given file.
@@ -89,6 +93,10 @@ public slots:
     void splitCellSlot();
     void joinCellsSlot();
     void delCellSlot();
+
+
+  protected slots:
+    void makeCellVisible(QPoint coord);
 };
 
 #endif // NOTEBOOK_H
