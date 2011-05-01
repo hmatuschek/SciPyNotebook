@@ -1,9 +1,10 @@
 [Desktop Entry]
 Name=SciPyNotebook
+GenericName=Editor
 Comment=Notebook style editor for SciPy/Numpy
-Exec=/usr/local/bin/scipynotebook
-Icon=/usr/local/share/SciPyNotebook/logo.png
+Exec=scipynotebook
+Icon=/usr/share/SciPyNotebook/logo.png
 Type=Application
 Terminal=false
-Categories=Developement;
+Categories=Developement
 Encoding=UTF-8
