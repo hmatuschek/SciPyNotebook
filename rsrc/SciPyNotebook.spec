@@ -12,7 +12,7 @@ Source: SciPyNotebook-%{version}.tar.gz
 URL: https://github.com/downloads/hmatuschek/SciPyNotebook/
 Version: %{version}
 Buildroot: /tmp/scipynotbookrpm
-BuildRequires: cmake, libqt4-devel, python-devel
+BuildRequires: gcc-c++, cmake, libqt4-devel, python-devel
 Requires: qt4, python
 
 %description
@@ -32,7 +32,8 @@ make install
 rm -rf $RPM_BUILD_ROOT
 
 %files
+%defattr(-, root, root, -)
 %doc README.rst LICENSE
 /usr/bin/scipynotebook
-/usr/share/SciPyNotebook/icon.png
+/usr/share/SciPyNotebook
 /usr/share/applications/SciPyNotebook.desktop
