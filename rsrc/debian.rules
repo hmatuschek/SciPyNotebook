@@ -20,8 +20,8 @@ build-stamp:
 	dh_testdir
 
 	# Add here commands to compile the package.
-	mkdir build
-	(cd build; cmake .. -DCMAKE_INSTALL_PREFIX=/usr; make)
+	cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+	make
 
 	touch build-stamp
 
@@ -31,7 +31,7 @@ clean:
 	rm -f build-stamp
 
 	# Add here commands to clean up after the build process.
-	rm -rf build
+	make clean
 
 	dh_clean
 
