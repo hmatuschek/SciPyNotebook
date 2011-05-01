@@ -26,7 +26,7 @@ ADD_SUBDIRECTORY(src)
 #
 INSTALL(FILES rsrc/icon.png
         DESTINATION share/SciPyNotebook)
-INSTALL(FILES rsrc/SciPyNotebook.desktop
+INSTALL(FILES rsrc/scipynotebook.desktop
         DESTINATION share/applications)
 
 SET(CPACK_PACKAGE_NAME "SciPyNotebook")

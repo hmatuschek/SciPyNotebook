@@ -1,11 +1,11 @@
-Source: SciPyNotebook
+Source: scipynotebook
 Section: unknown
 Priority: optional
 Maintainer: Hannes Matuschek <hmatuschek@gmail.com>
-Build-Depends: debhelper (>= 4.1.16), g++, libqt4-dev, libqt4-core, python-dev
+Build-Depends: debhelper (>= 4.1.16), g++, cmake, libqt4-dev, libqtcore4, libqtgui4, libqt4-xml, python, python-dev
 
-Package: SciPyNotebook
+Package: scipynotebook
 Architecture: any
 Depends: ${shlibs:Depends}
-Description: SciPyNotebook*
- SciPyNotebook* -- A notebook like editor for NumPy/SciPy.
+Description: scipynotebook*
+ scipynotebook* -- A notebook like editor for NumPy/SciPy.
