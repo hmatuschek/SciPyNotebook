@@ -3,7 +3,7 @@
 # GNU copyright 1997 to 1999 by Joey Hess.
 
 # Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
+export DH_VERBOSE=1
 
 # This is the debhelper compatibility version to use.
 export DH_COMPAT=4
@@ -17,10 +17,10 @@ endif
 
 build: build-stamp
 build-stamp:
-	dh_testdir
+	#dh_testdir
 
 	# Add here commands to compile the package.
-	cmake -DCMAKE_INSTALL_PREFIX=/usr
+	cmake $(CURDIR)/scipynotebook-0.2.1 -DCMAKE_INSTALL_PREFIX=$(CURDIR)/debian/scipynotebook
 	make
 
 	touch build-stamp
@@ -31,7 +31,7 @@ clean:
 	rm -f build-stamp
 
 	# Add here commands to clean up after the build process.
-	#make clean
+	[ ! -f Makefile ] || make clean
 
 	dh_clean
 
