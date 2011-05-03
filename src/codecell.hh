@@ -23,6 +23,8 @@
 
 #include <QPlainTextEdit>
 #include <QShortcut>
+#include <QCompleter>
+
 #include "pythonhighlighter.hh"
 
 
@@ -33,6 +35,13 @@ class CodeCell : public QTextEdit
 protected:
     PythonHighlighter *higlighter;
     QSize _text_size;
+    QCompleter *_completer;
+
+
+protected:
+    QString textUnderCursor();
+
+    virtual void keyPressEvent(QKeyEvent *e);
 
 
 public:
@@ -42,12 +51,19 @@ public:
     virtual QSize minimumSizeHint() const;
     virtual QSize sizeHint() const;
 
+    void setCompleter(QCompleter *completer);
+    QCompleter *completer();
+
 
 public slots:
     void onTextChanged();
 
     void markLine(size_t line);
     void clearLineMarks();
+
+
+protected slots:
+    void insertCompletion(const QString &completion);
 };
 
 #endif // CODECELL_H

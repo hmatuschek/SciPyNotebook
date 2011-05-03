@@ -14,7 +14,8 @@
 
 #include <QSyntaxHighlighter>
 #include <QFontMetrics>
-
+#include <QAbstractItemView>
+#include <QScrollBar>
 
 
 CodeCell::CodeCell(QWidget *parent) :
@@ -36,6 +37,7 @@ CodeCell::CodeCell(QWidget *parent) :
     tabsize *= prefs->tabSize();
     this->setTabStopWidth(tabsize);
 
+    // Layout specific stuff...
     this->_text_size = this->document()->size().toSize();
     this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
@@ -46,6 +48,9 @@ CodeCell::CodeCell(QWidget *parent) :
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     this->setFrameShape(QFrame::NoFrame);
+
+    // Set completer:
+    this->_completer = 0;
 }
 
 
@@ -110,4 +115,105 @@ CodeCell::clearLineMarks()
   // just reset with empty extra selections
   QList<QTextEdit::ExtraSelection> extras;
   this->setExtraSelections(extras);
+}
+
+
+void
+CodeCell::setCompleter(QCompleter *completer)
+{
+  if(this->_completer)
+  {
+    QObject::disconnect(this->_completer, 0, this, 0);
+  }
+
+  this->_completer = completer;
+
+  if(! this->_completer)
+    return;
+
+  this->_completer->setWidget(this);
+  this->_completer->setCompletionMode(QCompleter::PopupCompletion);
+  this->_completer->setCaseSensitivity(Qt::CaseSensitive);
+  QObject::connect(this->_completer, SIGNAL(activated(QString)),
+                   this, SLOT(insertCompletion(QString)));
+}
+
+
+QCompleter *
+CodeCell::completer()
+{
+  return this->_completer;
+}
+
+
+void
+CodeCell::insertCompletion(const QString &completion)
+{
+  if (this->_completer->widget() != this)
+           return;
+
+  QTextCursor tc = this->textCursor();
+  int extra = completion.length() - this->_completer->completionPrefix().length();
+  tc.movePosition(QTextCursor::Left);
+  tc.movePosition(QTextCursor::EndOfWord);
+  tc.insertText(completion.right(extra));
+  setTextCursor(tc);
+}
+
+
+QString
+CodeCell::textUnderCursor()
+{
+  QTextCursor tc = this->textCursor();
+  tc.select(QTextCursor::WordUnderCursor);
+  return tc.selectedText();
+}
+
+
+void
+CodeCell::keyPressEvent(QKeyEvent *e)
+{
+  if (this->_completer && this->_completer->popup()->isVisible())
+  {
+    // The following keys are forwarded by the completer to the widget
+    switch (e->key())
+    {
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+    case Qt::Key_Escape:
+    case Qt::Key_Tab:
+      case Qt::Key_Backtab:
+      e->ignore();
+      return; // let the completer do default behavior
+    default:
+      break;
+    }
+  }
+
+  bool isShortcut = ((e->modifiers() & Qt::ControlModifier) && e->key() == Qt::Key_E); // CTRL+E
+  if (!this->_completer || !isShortcut) // dont process the shortcut when we have a completer
+    QTextEdit::keyPressEvent(e);
+
+  const bool ctrlOrShift = e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
+  if (!this->_completer || (ctrlOrShift && e->text().isEmpty()))
+      return;
+
+  static QString eow("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="); // end of word
+  bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;
+  QString completionPrefix = textUnderCursor();
+
+  if (!isShortcut && (hasModifier || e->text().isEmpty()|| completionPrefix.length() < 3
+                    || eow.contains(e->text().right(1)))) {
+      this->_completer->popup()->hide();
+      return;
+  }
+
+  if (completionPrefix != this->_completer->completionPrefix()) {
+      this->_completer->setCompletionPrefix(completionPrefix);
+      this->_completer->popup()->setCurrentIndex(this->_completer->completionModel()->index(0, 0));
+  }
+  QRect cr = cursorRect();
+  cr.setWidth(this->_completer->popup()->sizeHintForColumn(0)
+              + this->_completer->popup()->verticalScrollBar()->sizeHint().width());
+  this->_completer->complete(cr); // popup it up!
 }

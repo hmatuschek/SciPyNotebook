@@ -14,6 +14,8 @@
 #include "pythonengine.hh"
 #include "pythoncontext.hh"
 
+#include <QStringListModel>
+
 
 Cell::Cell(QWidget *parent) :
     QFrame(parent)
@@ -47,6 +49,13 @@ Cell::Cell(QWidget *parent) :
 
     // Set set codecell to be focus-proxy of the cell
     this->setFocusProxy(this->codecell);
+
+    // Setup autocompletion
+    QStringList words;
+    words << "plot" << "array" << "empty" << "linspace";
+    QCompleter *completer = new QCompleter(this->codecell);
+    completer->setModel(new QStringListModel(words, completer));
+    this->codecell->setCompleter(completer);
 
     // Instantiate result cell
     this->resultcell = new ResultCell(this);
