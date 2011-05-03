@@ -201,8 +201,10 @@ CodeCell::keyPressEvent(QKeyEvent *e)
     {
       isShortcut = false;
     }
-
-    isShortcut = true;
+    else
+    {
+      isShortcut = true;
+    }
   }
 
   if(!this->_completer || !isShortcut)
