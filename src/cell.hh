@@ -20,6 +20,9 @@
 #include "cellstatus.hh"
 #include "pythoncontext.hh"
 
+/* forward declarations. */
+class Notebook;
+
 
 /**
  * The cell class combines two cells, one for the input of code and another for the
@@ -36,6 +39,11 @@ class Cell : public QFrame
 
 
 protected:
+  /**
+   * Holds a weak reference to the notebook, that owns this cell.
+   */
+  Notebook *notebook;
+
   /**
    * The layout for the code and result cells.
    */
@@ -60,8 +68,10 @@ protected:
 public:
   /**
    * Construct a new (empty) cell.
+   *
+   * \param notebook Specifies a weak reference to the notebook, that owns this cell.
    */
-  explicit Cell(QWidget *parent=0);
+  explicit Cell(Notebook *notebook);
 
   /**
    * Evaluates the cell in the given PythonContext.

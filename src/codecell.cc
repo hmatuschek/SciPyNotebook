@@ -203,6 +203,7 @@ CodeCell::keyPressEvent(QKeyEvent *e)
     }
     else
     {
+      qWarning("Complete: %s", completionPrefix.toStdString().c_str());
       isShortcut = true;
     }
   }

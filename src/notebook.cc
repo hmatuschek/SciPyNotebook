@@ -94,7 +94,7 @@ Notebook::Notebook(const QString &filename, QWidget *parent) :
   // Create cells from code:
   foreach (QByteArray code, cells)
   {
-    Cell *cell = new Cell();
+    Cell *cell = new Cell(this);
     this->_cells.append(cell);
     this->_cell_layout->addWidget(cell);
 
@@ -177,6 +177,13 @@ Notebook::setFileName(const QString &filename)
 {
   this->_filename = filename;
   this->_python_context->setFileName(filename);
+}
+
+
+PythonContext *
+Notebook::pythonContext()
+{
+  return this->_python_context;
 }
 
 
@@ -310,7 +317,7 @@ Notebook::splitCellSlot()
   cell->setCode(text1);
 
   // Create new cell and add its text:
-  cell = new Cell();
+  cell = new Cell(this);
   QObject::connect(cell, SIGNAL(makeVisible(QPoint)),
                    this, SLOT(makeCellVisible(QPoint)));
   QObject::connect(cell, SIGNAL(cellChanged()),

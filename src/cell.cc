@@ -13,57 +13,60 @@
 #include "cellstatus.hh"
 #include "pythonengine.hh"
 #include "pythoncontext.hh"
-
+#include "notebook.hh"
 #include <QStringListModel>
 
+#include <iostream>
 
-Cell::Cell(QWidget *parent) :
+
+Cell::Cell(Notebook *parent) :
     QFrame(parent)
 {
-    // Init the layout
-    QHBoxLayout *hbox = new QHBoxLayout();
+  // Store notebook
+  this->notebook = parent;
 
-    this->cell_status = new CellStatus(this);
-    QObject::connect(this->cell_status, SIGNAL(clicked()), this, SLOT(onStatusClicked()));
+  // Init the layout
+  QHBoxLayout *hbox = new QHBoxLayout();
 
-    hbox->addWidget(this->cell_status);
-    hbox->setSpacing(0);
-    hbox->setContentsMargins(0,3,0,0);
+  this->cell_status = new CellStatus(this);
+  QObject::connect(this->cell_status, SIGNAL(clicked()), this, SLOT(onStatusClicked()));
 
-    this->cellbox = new QVBoxLayout();
-    this->cellbox->setContentsMargins(0,0,0,0);
-    this->cellbox->setSizeConstraint(QLayout::SetMinimumSize);
-    this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    this->cellbox->setSpacing(0);
-    hbox->addLayout(this->cellbox);
+  hbox->addWidget(this->cell_status);
+  hbox->setSpacing(0);
+  hbox->setContentsMargins(0,3,0,0);
 
-    // Instantiate empty code cell
-    this->codecell = new CodeCell(this);
-    // Connect to signals
-    QObject::connect(this->codecell, SIGNAL(cursorPositionChanged()),
-                     this, SLOT(onCursorPositionChanged()));
-    QObject::connect(this->codecell, SIGNAL(textChanged()),
-                     this, SLOT(onCodeCellChanged()));
-    // add cell to layout
-    this->cellbox->addWidget(this->codecell);
+  this->cellbox = new QVBoxLayout();
+  this->cellbox->setContentsMargins(0,0,0,0);
+  this->cellbox->setSizeConstraint(QLayout::SetMinimumSize);
+  this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+  this->cellbox->setSpacing(0);
+  hbox->addLayout(this->cellbox);
 
-    // Set set codecell to be focus-proxy of the cell
-    this->setFocusProxy(this->codecell);
+  // Instantiate empty code cell
+  this->codecell = new CodeCell(this);
+  // Connect to signals
+  QObject::connect(this->codecell, SIGNAL(cursorPositionChanged()),
+                   this, SLOT(onCursorPositionChanged()));
+  QObject::connect(this->codecell, SIGNAL(textChanged()),
+                   this, SLOT(onCodeCellChanged()));
+  // add cell to layout
+  this->cellbox->addWidget(this->codecell);
 
-    // Setup autocompletion
-    QStringList words;
-    words << "plot" << "array" << "empty" << "linspace";
-    QCompleter *completer = new QCompleter(this->codecell);
-    completer->setModel(new QStringListModel(words, completer));
-    this->codecell->setCompleter(completer);
+  // Set set codecell to be focus-proxy of the cell
+  this->setFocusProxy(this->codecell);
 
-    // Instantiate result cell
-    this->resultcell = new ResultCell(this);
-    this->cellbox->addWidget(this->resultcell);
-    this->resultcell->setVisible(false);
+  // Setup autocompletion
+  QCompleter *completer = new QCompleter(this);
+  completer->setModel(this->notebook->pythonContext()->getNames());
+  this->codecell->setCompleter(completer);
 
-    // Eye candy
-    this->setLayout(hbox);
+  // Instantiate result cell
+  this->resultcell = new ResultCell(this);
+  this->cellbox->addWidget(this->resultcell);
+  this->resultcell->setVisible(false);
+
+  // Eye candy
+  this->setLayout(hbox);
 }
 
 
@@ -175,6 +178,9 @@ Cell::evaluate(PythonContext *ctx)
 
     Py_DECREF(result);
     Py_DECREF(prec_code);
+
+    // Update Model for global namespace
+    ctx->updateNames();
 
     return true;
 }

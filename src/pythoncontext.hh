@@ -14,6 +14,7 @@
 
 #include <QObject>
 #include <Python.h>
+#include <QStringListModel>
 
 
 class PythonContext : public QObject
@@ -23,6 +24,7 @@ class PythonContext : public QObject
 protected:
     PyObject *_globals;
     PyObject *_locals;
+    QStringListModel *_names;
 
 public:
     explicit PythonContext(QObject *parent = 0);
@@ -31,6 +33,9 @@ public:
     PyObject *getLocals();
 
     void setFileName(const QString &filename);
+
+    void updateNames();
+    QStringListModel *getNames();
 };
 
 #endif // PYTHONCONTEXT_HH

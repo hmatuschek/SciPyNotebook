@@ -92,6 +92,11 @@ public:
      */
     bool isModified();
 
+    /**
+     * Returns the context of the Notebook
+     */
+    PythonContext *pythonContext();
+
 
 protected:
     /**

@@ -12,6 +12,8 @@
 #include "pythoncontext.hh"
 #include "pythonengine.hh"
 
+#include <iostream>
+
 
 PythonContext::PythonContext(QObject *parent) :
     QObject(parent)
@@ -47,6 +49,12 @@ PythonContext::PythonContext(QObject *parent) :
     {
         qCritical("Error while merging local variable scopes.");
     }
+
+    // Instantiate listmodel of all symbols defined
+    this->_names = new QStringListModel();
+
+    // update names from global context
+    this->updateNames();
 }
 
 
@@ -73,4 +81,26 @@ PythonContext::setFileName(const QString &filename)
     // Store filename into local and global context
     PyDict_SetItemString(this->_globals, "__file__", fname);
     PyDict_SetItemString(this->_locals, "__file__", fname);
+}
+
+
+QStringListModel *
+PythonContext::getNames()
+{
+  return this->_names;
+}
+
+
+void
+PythonContext::updateNames()
+{
+  QStringList name_list;
+
+  PyObject *key = 0; ssize_t pos = 0;
+  while (PyDict_Next(this->_globals, &pos, &key, NULL))
+  {
+    name_list.append(PyString_AsString(key));
+  }
+
+  this->_names->setStringList(name_list);
 }
