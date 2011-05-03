@@ -66,7 +66,7 @@ public:
   /**
    * Evaluates the cell in the given PythonContext.
    */
-  void evaluate(PythonContext *ctx);
+  bool evaluate(PythonContext *ctx);
 
   /**
    * Serializes the code of the codecell into the given device.

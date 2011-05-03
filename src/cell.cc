@@ -58,7 +58,7 @@ Cell::Cell(QWidget *parent) :
 }
 
 
-void
+bool
 Cell::evaluate(PythonContext *ctx)
 {
     // Get execution engine
@@ -97,7 +97,7 @@ Cell::evaluate(PythonContext *ctx)
         {
           // oops:
           qWarning("Compilation failed but no exception found.");
-          return;
+          return false;
         }
 
         // If there is a traceback:
@@ -118,7 +118,7 @@ Cell::evaluate(PythonContext *ctx)
         PyErr_Print();
 
         // Done.
-        return;
+        return false;
     }
 
     // Evaluate code:
@@ -138,7 +138,7 @@ Cell::evaluate(PythonContext *ctx)
         {
           // oops:
           qWarning("Compilation failed but no exception found.");
-          return;
+          return false;
         }
 
         // If there is a traceback:
@@ -159,13 +159,15 @@ Cell::evaluate(PythonContext *ctx)
         // print traceback to sys.stderr
         PyErr_Print();
 
-        return;
+        return false;
     }
 
     this->cell_status->setStatusSuccess();
 
     Py_DECREF(result);
     Py_DECREF(prec_code);
+
+    return true;
 }
 
 

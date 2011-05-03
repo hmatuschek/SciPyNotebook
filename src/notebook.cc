@@ -207,7 +207,11 @@ Notebook::evalAllCellsSlot()
   // Evaluate all cells in order
   foreach(Cell *cell, this->_cells)
   {
-    cell->evaluate(this->_python_context);
+    // Evaluate cell but stop iteration if evaluation fails
+    if (! cell->evaluate(this->_python_context))
+    {
+      return;
+    }
   }
 }
 
