@@ -182,16 +182,30 @@ CodeCell::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Return:
     case Qt::Key_Escape:
     case Qt::Key_Tab:
-      case Qt::Key_Backtab:
+    case Qt::Key_Backtab:
       e->ignore();
       return; // let the completer do default behavior
+
     default:
       break;
     }
   }
 
-  bool isShortcut = ((e->modifiers() & Qt::ControlModifier) && e->key() == Qt::Key_E); // CTRL+E
-  if (!this->_completer || !isShortcut) // dont process the shortcut when we have a completer
+  bool isShortcut = false;
+  if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_Tab))
+  {
+    QString completionPrefix = textUnderCursor();
+
+    // If there is no text under the cursor -> handle <tab> by TextEdit
+    if (0 == completionPrefix.length())
+    {
+      isShortcut = false;
+    }
+
+    isShortcut = true;
+  }
+
+  if(!this->_completer || !isShortcut)
     QTextEdit::keyPressEvent(e);
 
   const bool ctrlOrShift = e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
@@ -212,6 +226,7 @@ CodeCell::keyPressEvent(QKeyEvent *e)
       this->_completer->setCompletionPrefix(completionPrefix);
       this->_completer->popup()->setCurrentIndex(this->_completer->completionModel()->index(0, 0));
   }
+
   QRect cr = cursorRect();
   cr.setWidth(this->_completer->popup()->sizeHintForColumn(0)
               + this->_completer->popup()->verticalScrollBar()->sizeHint().width());
