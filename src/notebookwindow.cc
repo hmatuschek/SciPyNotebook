@@ -281,7 +281,7 @@ void
 NotebookWindow::aboutSlot()
 {
   AboutDialog dialog;
-  dialog.show();
+  dialog.exec();
 }
 
 

@@ -10,7 +10,10 @@
  */
 
 #include "aboutdialog.hh"
+
 #include <QTextEdit>
+#include <QVBoxLayout>
+
 
 static QString content = \
 "<html>" \
@@ -18,29 +21,32 @@ static QString content = \
 "<body>" \
 "<h1 align=\"center\">SciPy Notebook</h1>" \
 "<center><b>Version 0.3.0</b></center>" \
-"<center>(c) 2011 <i>Hannes Matuschek</i></center>" \
-"<p> This program is free software; you can redistribute it and/or modify" \
-"it under the terms of the GNU General Public License as published by" \
-"the Free Software Foundation; either version 2 of the License, or" \
+"<center>(c) 2011 <i>Hannes Matuschek</i> &lt;hmatuschek@gmail.com&gt;</center>" \
+"<center> http://github.com/hmatuschek/SciPyNotebook/wiki </center>" \
+"<p> This program is free software; you can redistribute it and/or modify " \
+"it under the terms of the GNU General Public License as published by " \
+"the Free Software Foundation; either version 2 of the License, or " \
 "(at your option) any later version.</p>"\
-"<p>This program is distributed in the hope that it will be useful," \
-"but WITHOUT ANY WARRANTY; without even the implied warranty of" \
-"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the" \
+"<p>This program is distributed in the hope that it will be useful, " \
+"but WITHOUT ANY WARRANTY; without even the implied warranty of " \
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the " \
 "GNU General Public License for more details.</p>" \
-"<p>You should have received a copy of the GNU General Public License along" \
-"with this program; if not, write to the Free Software Foundation, Inc.," \
+"<p>You should have received a copy of the GNU General Public License along " \
+"with this program; if not, write to the Free Software Foundation, Inc., " \
 "51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.</p>" \
 "</body>" \
 "</html>";
 
 
 AboutDialog::AboutDialog(QWidget *parent) :
-    QMainWindow(parent)
+    QDialog(parent)
 {
+  QVBoxLayout *layout = new QVBoxLayout();
   QTextEdit *view = new QTextEdit(this);
   view->setReadOnly(true);
   view->setHtml(content);
+  layout->addWidget(view);
 
-  this->setCentralWidget(view);
-  this->resize(320, 240);
+  this->setLayout(layout);
+  this->resize(480, 360);
 }

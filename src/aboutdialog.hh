@@ -12,14 +12,14 @@
 #ifndef ABOUTDIALOG_HH
 #define ABOUTDIALOG_HH
 
-#include <QMainWindow>
+#include <QDialog>
 
 /**
  * Shows some information about SciPy Notebook.
  *
  * \todo Buityfy
  */
-class AboutDialog : public QMainWindow
+class AboutDialog : public QDialog
 {
     Q_OBJECT
 
