@@ -14,15 +14,21 @@
 
 #include <QMainWindow>
 
+/**
+ * Shows some information about SciPy Notebook.
+ *
+ * \todo Buityfy
+ */
 class AboutDialog : public QMainWindow
 {
     Q_OBJECT
+
+
 public:
-    explicit AboutDialog(QWidget *parent = 0);
-
-signals:
-
-public slots:
+  /**
+   * Contructs a new dialog.
+   */
+  explicit AboutDialog(QWidget *parent = 0);
 
 };
 
