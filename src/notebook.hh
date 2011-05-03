@@ -30,11 +30,33 @@ class Notebook : public QFrame
     Q_OBJECT
 
 protected:
-    QList<Cell *> _cells;
-    QBoxLayout *_cell_layout;
-    QString _filename;
+  /**
+   * Holds all cells of the notebook.
+   */
+  QList<Cell *> _cells;
 
-    PythonContext *_python_context;
+  /**
+   * The BoxLayout to layout the cells.
+   */
+  QBoxLayout *_cell_layout;
+
+  /**
+   * Holds the filename of the notebook.
+   *
+   * Can be set/get via filename(), setFilename();
+   */
+  QString _filename;
+
+  /**
+   * Is true if the notebook is not saved, that means if it was modified since the last
+   * save.
+   */
+  bool _is_modified;
+
+  /**
+   * The python context (namespaces and scopes) of the notebook.
+   */
+  PythonContext *_python_context;
 
 
 public:
@@ -65,13 +87,34 @@ public:
      */
     void setFileName(const QString &filename);
 
+    /**
+     * Returns true if the notebook was modified since the last save.
+     */
+    bool isModified();
+
 
 protected:
+    /**
+     * Internal helper function to setup the layout of the notebook.
+     */
     void initNotebookLayout();
 
 
 signals:
+    /**
+     * This signal is emitted if the given part of the notebook needs to be visible.
+     */
     void makeVisible(QPoint coord);
+
+    /**
+     * This signal is emitted, if the one of the cells is modified since the last save.
+     */
+    void modified();
+
+    /**
+     * This signal is emitted, if the notebook was saved.
+     */
+    void saved();
 
 
 public slots:
@@ -96,7 +139,15 @@ public slots:
 
 
   protected slots:
+    /**
+     * Is connected to all cells to emit a makeVisible signal.
+     */
     void makeCellVisible(QPoint coord);
+
+    /**
+     * Is connected to all cells to emit a isModified() signal.
+     */
+    void cellModified();
 };
 
 #endif // NOTEBOOK_H

@@ -77,8 +77,10 @@ CodeCell::sizeHint() const
 void
 CodeCell::onTextChanged()
 {
-    this->_text_size = this->document()->size().toSize();
-    this->updateGeometry();
+  if (0 != this->extraSelections().size())
+    this->clearLineMarks();
+  this->_text_size = this->document()->size().toSize();
+  this->updateGeometry();
 }
 
 

@@ -69,6 +69,16 @@ CellStatus::setStatusError()
 
 
 void
+CellStatus::setStatusModified()
+{
+  // Set background color.
+  QPalette pal = this->palette();
+  pal.setColor(QPalette::Window, Qt::lightGray);
+  this->setPalette(pal);
+}
+
+
+void
 CellStatus::mouseReleaseEvent(QMouseEvent *event)
 {
   emit this->clicked();

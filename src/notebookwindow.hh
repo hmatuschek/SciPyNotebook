@@ -74,6 +74,8 @@ public slots:
 
   protected slots:
     void makeVisible(QPoint coord);
+    void notebookModified();
+    void notebookSaved();
 };
 
 #endif // NOTEBOOKWINDOW_HH

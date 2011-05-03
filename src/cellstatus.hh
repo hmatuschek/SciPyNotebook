@@ -33,6 +33,7 @@ public:
     void setStatusSuccess();
     void setStatusError();
     void setStatusRunning();
+    void setStatusModified();
 
     virtual void mouseReleaseEvent(QMouseEvent *event);
 

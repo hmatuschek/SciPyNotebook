@@ -34,7 +34,7 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   if (notebook->hasFileName())
     this->setWindowTitle("SciPy Notebook - " + notebook->fileName());
   else
-    this->setWindowTitle("SciPy Notebook - New File");
+    this->setWindowTitle("SciPy Notebook - New File*");
 
   this->setWindowIcon(QIcon(QPixmap(logo_xpm)));
 
@@ -44,9 +44,16 @@ NotebookWindow::initNotebookWindow(Notebook *notebook)
   // Store notebook widget into a scrollarea
   this->notebook = notebook;
   this->scrolledWindow = new QScrollArea();
+
+  // Connect to signals:
   QObject::connect(this->notebook, SIGNAL(makeVisible(QPoint)),
                    this, SLOT(makeVisible(QPoint)));
+  QObject::connect(this->notebook, SIGNAL(modified()),
+                   this, SLOT(notebookModified()));
+  QObject::connect(this->notebook, SIGNAL(saved()),
+                   this, SLOT(notebookSaved()));
 
+  // Layout notebook
   this->scrolledWindow->setWidget(this->notebook);
   this->scrolledWindow->setWidgetResizable(true);
   this->setCentralWidget(this->scrolledWindow);
@@ -302,5 +309,19 @@ void
 NotebookWindow::makeVisible(QPoint coord)
 {
   this->scrolledWindow->ensureVisible(coord.x(), coord.y(), 50, 50);
+}
+
+
+void
+NotebookWindow::notebookModified()
+{
+  if (notebook->hasFileName())
+    this->setWindowTitle("SciPy Notebook - " + notebook->fileName() + "*");
+}
+
+void
+NotebookWindow::notebookSaved()
+{
+  this->setWindowTitle("SciPy Notebook - " + notebook->fileName());
 }
 

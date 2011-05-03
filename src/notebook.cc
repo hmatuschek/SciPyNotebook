@@ -27,9 +27,15 @@ Notebook::Notebook(QWidget *parent) :
 
     // Create an empty cell
     Cell *new_cell = new Cell(this);
+
+    // set preamble code from preferences
     new_cell->setCode(Preferences::get()->preamble());
+
+    // Connect to signals
     QObject::connect(new_cell, SIGNAL(makeVisible(QPoint)),
                      this, SLOT(makeCellVisible(QPoint)));
+    QObject::connect(new_cell, SIGNAL(cellChanged()),
+                     this, SLOT(cellModified()));
 
     // Append cell to list:
     this->_cell_layout->addWidget(new_cell);
@@ -91,9 +97,13 @@ Notebook::Notebook(const QString &filename, QWidget *parent) :
     Cell *cell = new Cell();
     this->_cells.append(cell);
     this->_cell_layout->addWidget(cell);
-    QObject::connect(cell, SIGNAL(makeVisible(QPoint)),
-                     this, SLOT(makeCellVisible(QPoint)));
+
     cell->setCode(code.trimmed());
+
+    QObject::connect(cell, SIGNAL(makeVisible(QPoint)),
+                     this, SLOT(makeCellVisible(QPoint)));    
+    QObject::connect(cell, SIGNAL(cellChanged()),
+                     this, SLOT(cellModified()));
   }
 }
 
@@ -131,6 +141,8 @@ Notebook::onNewCell()
   new_cell->setFocus();
   QObject::connect(new_cell, SIGNAL(makeVisible(QPoint)),
                    this, SLOT(makeCellVisible(QPoint)));
+  QObject::connect(new_cell, SIGNAL(cellChanged()),
+                   this, SLOT(cellModified()));
 
   // Insert cell
   if (0 > index)
@@ -165,6 +177,13 @@ Notebook::setFileName(const QString &filename)
 {
   this->_filename = filename;
   this->_python_context->setFileName(filename);
+}
+
+
+bool
+Notebook::isModified()
+{
+  return this->_is_modified;
 }
 
 
@@ -204,9 +223,9 @@ Notebook::save()
 
   // open file;
   QFile file(this->_filename);
-  file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
 
-  /// \todo Serialize preamble!
+  /// \todo Show message if file can not be saved.
+  file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
 
   size_t index = 1;
   foreach(Cell *cell, this->_cells)
@@ -214,9 +233,11 @@ Notebook::save()
     // Write code into file;
     cell->serializeCode(file);
 
+    // Write cell separator if not last cell
     if (index != this->_cells.size())
     {
       /// \todo Make lineendings more platform specific.
+
       file.write("\n");
       file.write("# -*- snip -*-");
       file.write("\n");
@@ -224,6 +245,10 @@ Notebook::save()
 
     index++;
   }
+
+  // emit the "isSaved" signal
+  this->_is_modified = false;
+  emit this->saved();
 }
 
 
@@ -282,6 +307,10 @@ Notebook::splitCellSlot()
 
   // Create new cell and add its text:
   cell = new Cell();
+  QObject::connect(cell, SIGNAL(makeVisible(QPoint)),
+                   this, SLOT(makeCellVisible(QPoint)));
+  QObject::connect(cell, SIGNAL(cellChanged()),
+                   this, SLOT(cellModified()));
 
   // Add "new" cell to layout and list of cells:
   this->_cell_layout->insertWidget(index+1, cell);
@@ -289,6 +318,9 @@ Notebook::splitCellSlot()
 
   // Set code of second (new) cell
   cell->setCode(text2);
+
+  // signal modification
+  this->cellModified();
 }
 
 
@@ -317,7 +349,15 @@ Notebook::joinCellsSlot()
     // remove widget from layout and list:
     this->layout()->removeWidget(cell2);
     this->_cells.removeAt(index+1);
+
+    // Disconnect from all signals of the cell
+    QObject::disconnect(cell2, 0, this, 0);
+
+    // free it
     delete cell2;
+
+    // signal modification
+    this->cellModified();
 }
 
 
@@ -339,8 +379,14 @@ Notebook::delCellSlot()
     this->layout()->removeWidget(cell);
     this->_cells.removeAt(index);
 
+    // Disconnect from all signals of the cell
+    QObject::disconnect(cell, 0, this, 0);
+
     // free cell
     delete cell;
+
+    // signal modification
+    this->cellModified();
 }
 
 
@@ -348,5 +394,13 @@ void
 Notebook::makeCellVisible(QPoint coord)
 {
   emit this->makeVisible(coord);
+}
+
+
+void
+Notebook::cellModified()
+{
+  if (! this->_is_modified)
+    emit this->modified();
 }
 
