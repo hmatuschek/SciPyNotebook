@@ -30,6 +30,7 @@ protected:
 
 public:
     explicit PythonContext(QObject *parent = 0);
+    ~PythonContext();
 
     PyObject *getGlobals();
     PyObject *getLocals();

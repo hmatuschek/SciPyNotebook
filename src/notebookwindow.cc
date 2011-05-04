@@ -15,14 +15,19 @@
 NotebookWindow::NotebookWindow(QWidget *parent) :
     QMainWindow(parent)
 {
-  this->initNotebookWindow(new Notebook());
+  this->initNotebookWindow(new Notebook(this));
 }
 
 
 NotebookWindow::NotebookWindow(const QString &filename, QWidget *parent)
     : QMainWindow(parent)
 {
-  this->initNotebookWindow(new Notebook(filename, 0));
+  this->initNotebookWindow(new Notebook(filename, this));
+}
+
+
+NotebookWindow::~NotebookWindow()
+{
 }
 
 

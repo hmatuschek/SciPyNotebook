@@ -54,6 +54,8 @@ public:
 
     NotebookWindow(const QString &filename, QWidget *parent);
 
+    ~NotebookWindow();
+
 
 protected:
     void initNotebookWindow(Notebook *notebook);

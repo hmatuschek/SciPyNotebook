@@ -20,7 +20,7 @@ Notebook::Notebook(QWidget *parent) :
     QFrame(parent)
 {
     // initialize python context of notebook:
-    this->_python_context = new PythonContext();
+    this->_python_context = new PythonContext(this);
 
     // initialize notebook layout and connect signals
     this->initNotebookLayout();
@@ -50,7 +50,7 @@ Notebook::Notebook(const QString &filename, QWidget *parent) :
     QFrame(parent)
 {
   // initialize python context of notebook:
-  this->_python_context = new PythonContext();
+  this->_python_context = new PythonContext(this);
   this->_python_context->setFileName(filename);
 
   // initialize notebook layout and connect signals

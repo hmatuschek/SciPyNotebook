@@ -58,6 +58,13 @@ PythonContext::PythonContext(QObject *parent) :
 }
 
 
+PythonContext::~PythonContext()
+{
+  // Free ListModel for names.
+  delete this->_names;
+}
+
+
 PyObject *
 PythonContext::getGlobals()
 {
