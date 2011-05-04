@@ -127,6 +127,7 @@ PythonContext::updateNamesFrom(QStringList &prefix)
   if (0 == prefix.length())
   {
     this->updateGlobalNames();
+    return;
   }
 
   PyObject *object = 0;
@@ -152,6 +153,8 @@ PythonContext::updateNamesFrom(PyObject *object, QStringList &prefix)
     PyObject *items = 0;
     if (0 == (items = PyObject_Dir(object)))
     {
+      PyErr_Clear();
+
       // Set empty list:
       this->_names->setStringList(name_list);
       // done.
@@ -159,15 +162,31 @@ PythonContext::updateNamesFrom(PyObject *object, QStringList &prefix)
     }
 
     // get iterator for list:
-    PyObject *iterator = PyObject_GetIter(items);
+    PyObject *iterator = 0;
+
+    if (0 == (iterator = PyObject_GetIter(items)))
+    {
+      // oops
+      this->_names->setStringList(name_list);
+      PyErr_Clear();
+      Py_DECREF(items);
+      // done.
+      return;
+    }
 
     // Iterate over list:
     PyObject *item = 0;
-    while(item = PyIter_Next(iterator))
+    while(0 != (item = PyIter_Next(iterator)))
     {
       name_list.append(PyString_AsString(item));
       Py_DECREF(item);
     }
+
+    if (PyErr_Occurred()) {
+      name_list.clear();
+      PyErr_Clear();
+    }
+
     Py_DECREF(iterator);
     Py_DECREF(items);
 
@@ -182,6 +201,7 @@ PythonContext::updateNamesFrom(PyObject *object, QStringList &prefix)
   {
     // Set empty name list:
     this->_names->setStringList(name_list);
+    return;
   }
 
   // pop name from prefix:
