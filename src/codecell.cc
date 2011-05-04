@@ -170,8 +170,17 @@ CodeCell::textUnderCursor()
   // Select current "word" this includes dotted names like "sys.version" etc
   QTextCursor tc = this->textCursor();
 
+  int current_position = tc.position();
+
   // First, move to start of dotted word:
   this->moveToStartOfWord(tc);
+
+  // If cursor is at start of the word -> do nothing (for indentation)
+  if(current_position == tc.position())
+  {
+    return "";
+  }
+
   // start selection
   this->moveToEndOfWord(tc);
 
