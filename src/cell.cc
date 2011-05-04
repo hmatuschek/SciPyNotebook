@@ -13,7 +13,9 @@
 #include "cellstatus.hh"
 #include "pythonengine.hh"
 #include "pythoncontext.hh"
+#include "pythoncompleter.hh"
 #include "notebook.hh"
+
 #include <QStringListModel>
 
 #include <iostream>
@@ -56,8 +58,7 @@ Cell::Cell(Notebook *parent) :
   this->setFocusProxy(this->codecell);
 
   // Setup autocompletion
-  QCompleter *completer = new QCompleter(this);
-  completer->setModel(this->notebook->pythonContext()->getNames());
+  PythonCompleter *completer = new PythonCompleter(this->notebook->pythonContext());
   this->codecell->setCompleter(completer);
 
   // Instantiate result cell
@@ -180,7 +181,7 @@ Cell::evaluate(PythonContext *ctx)
     Py_DECREF(prec_code);
 
     // Update Model for global namespace
-    ctx->updateNames();
+    ctx->updateGlobalNames();
 
     return true;
 }

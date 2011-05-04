@@ -54,7 +54,7 @@ PythonContext::PythonContext(QObject *parent) :
     this->_names = new QStringListModel();
 
     // update names from global context
-    this->updateNames();
+    this->updateGlobalNames();
 }
 
 
@@ -85,14 +85,29 @@ PythonContext::setFileName(const QString &filename)
 
 
 QStringListModel *
-PythonContext::getNames()
+PythonContext::getNamesOf(const QString &prefix)
 {
+  if (this->_current_names_prefix != prefix)
+  {
+    this->_current_names_prefix = prefix;
+
+    if ("" == prefix)
+    {
+      this->updateGlobalNames();
+    }
+    else
+    {
+      QStringList prefix_list = prefix.split('.', QString::SkipEmptyParts);
+      this->updateNamesFrom(prefix_list);
+    }
+  }
+
   return this->_names;
 }
 
 
 void
-PythonContext::updateNames()
+PythonContext::updateGlobalNames()
 {
   QStringList name_list;
 
@@ -104,3 +119,79 @@ PythonContext::updateNames()
 
   this->_names->setStringList(name_list);
 }
+
+
+void
+PythonContext::updateNamesFrom(QStringList &prefix)
+{
+  if (0 == prefix.length())
+  {
+    this->updateGlobalNames();
+  }
+
+  PyObject *object = 0;
+  if (0 == (object = PyDict_GetItemString(this->_globals, prefix.front().toStdString().c_str())))
+  {
+    QStringList name_list;
+    this->_names->setStringList(name_list);
+  }
+
+  // Remove first name from prefix list:
+  prefix.pop_front();
+  this->updateNamesFrom(object, prefix);
+}
+
+
+void
+PythonContext::updateNamesFrom(PyObject *object, QStringList &prefix)
+{
+  QStringList name_list;
+
+  if (0 == prefix.length())
+  {
+    PyObject *items = 0;
+    if (0 == (items = PyObject_Dir(object)))
+    {
+      // Set empty list:
+      this->_names->setStringList(name_list);
+      // done.
+      return;
+    }
+
+    // get iterator for list:
+    PyObject *iterator = PyObject_GetIter(items);
+
+    // Iterate over list:
+    PyObject *item = 0;
+    while(item = PyIter_Next(iterator))
+    {
+      name_list.append(PyString_AsString(item));
+      Py_DECREF(item);
+    }
+    Py_DECREF(iterator);
+    Py_DECREF(items);
+
+    // set list of names:
+    this->_names->setStringList(name_list);
+
+    return;
+  }
+
+  PyObject *child = 0;
+  if (0 == (child = PyObject_GetAttrString(object, prefix.front().toStdString().c_str())))
+  {
+    // Set empty name list:
+    this->_names->setStringList(name_list);
+  }
+
+  // pop name from prefix:
+  prefix.pop_front();
+
+  // continue:
+  this->updateNamesFrom(child, prefix);
+
+  // free child:
+  Py_DECREF(child);
+}
+
+

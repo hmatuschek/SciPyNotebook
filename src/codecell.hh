@@ -23,10 +23,9 @@
 
 #include <QPlainTextEdit>
 #include <QShortcut>
-#include <QCompleter>
 
 #include "pythonhighlighter.hh"
-
+#include "pythoncompleter.hh"
 
 /**
  * Implements the part of the cell that shows the python-code.
@@ -45,15 +44,15 @@ protected:
   PythonHighlighter *higlighter;
 
   /**
+   * Holds a weak reference to the completer for auto-completion.
+   */
+  PythonCompleter *_completer;
+
+  /**
    * Internal used variable to hold the height of the text in pixel. Is needed to resize the
    * view to avoid scrolling.
    */
   QSize _text_size;
-
-  /**
-   * Holds a weak reference to the completer for auto-completion.
-   */
-  QCompleter *_completer;
 
 
 protected:
@@ -82,8 +81,8 @@ public:
   virtual QSize minimumSizeHint() const;
   virtual QSize sizeHint() const;
 
-  void setCompleter(QCompleter *completer);
-  QCompleter *completer();
+  void setCompleter(PythonCompleter *completer);
+  PythonCompleter *completer();
 
 
 public slots:

@@ -122,7 +122,7 @@ CodeCell::clearLineMarks()
 
 
 void
-CodeCell::setCompleter(QCompleter *completer)
+CodeCell::setCompleter(PythonCompleter *completer)
 {
   if(this->_completer)
   {
@@ -142,7 +142,7 @@ CodeCell::setCompleter(QCompleter *completer)
 }
 
 
-QCompleter *
+PythonCompleter *
 CodeCell::completer()
 {
   return this->_completer;
@@ -278,23 +278,26 @@ CodeCell::keyPressEvent(QKeyEvent *e)
   if (!this->_completer || (ctrlOrShift && e->text().isEmpty()))
       return;
 
-  static QString eow("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="); // end of word
+  static QString eow("~!@#$%^&*()_+{}|:\"<>?,/;'[]\\-="); // end of word
   bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;
   QString completionPrefix = textUnderCursor();
 
   if (!isShortcut && (hasModifier || e->text().isEmpty()|| completionPrefix.length() < 3
-                    || eow.contains(e->text().right(1)))) {
-      this->_completer->popup()->hide();
-      return;
+                      || eow.contains(e->text().right(1))))
+  {
+    this->_completer->popup()->hide();
+    return;
   }
 
-  if (completionPrefix != this->_completer->completionPrefix()) {
-      this->_completer->setCompletionPrefix(completionPrefix);
-      this->_completer->popup()->setCurrentIndex(this->_completer->completionModel()->index(0, 0));
+  if (completionPrefix != this->_completer->completionPrefix())
+  {
+    this->_completer->setCompletionPrefix(completionPrefix);
+    this->_completer->popup()->setCurrentIndex(this->_completer->completionModel()->index(0, 0));
   }
 
   QRect cr = cursorRect();
   cr.setWidth(this->_completer->popup()->sizeHintForColumn(0)
               + this->_completer->popup()->verticalScrollBar()->sizeHint().width());
-  this->_completer->complete(cr); // popup it up!
+  // popup it up!
+  this->_completer->complete(cr);
 }
