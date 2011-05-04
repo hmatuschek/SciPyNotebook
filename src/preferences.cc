@@ -37,6 +37,10 @@ Preferences::Preferences(QObject *parent) :
                     "from scipy import *\n" \
                     "from matplotlib import pylab";
 
+  // Auto completion is enabled by default
+  this->_auto_completion = true;
+  this->_auto_completion_threshold = 5;
+
   // Check if config file exists:
   if (! this->_configfile.exists())
   {
@@ -128,6 +132,34 @@ Preferences::setTabSize(int size)
 }
 
 
+bool
+Preferences::autoCompletion()
+{
+  return this->_auto_completion;
+}
+
+
+void
+Preferences::setAutoCompletion(bool enabled)
+{
+  this->_auto_completion = enabled;
+}
+
+
+int
+Preferences::autoCompletionThreshold()
+{
+  return this->_auto_completion_threshold;
+}
+
+
+void
+Preferences::setAutoCompletionThreshold(int thres)
+{
+  this->_auto_completion_threshold = thres;
+}
+
+
 void
 Preferences::save()
 {
@@ -156,7 +188,16 @@ Preferences::save()
   preambleElement.appendChild(preambleCode);
   root.appendChild(preambleElement);
 
-  // Open file for reading:
+  // Save autocompletion section:
+  QDomElement autoComplElement = document.createElement("autocompletion");
+  if (this->_auto_completion)
+    autoComplElement.setAttribute("enabled", "true");
+  else
+    autoComplElement.setAttribute("enabled", "false");
+  autoComplElement.setAttribute("threshold", this->_auto_completion_threshold);
+  root.appendChild(autoComplElement);
+
+  // Open file for writing:
   if (! this->_configfile.open(QFile::WriteOnly | QFile::Truncate))
   {
     qWarning("Can not open config file for writing.");

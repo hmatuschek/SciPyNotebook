@@ -28,6 +28,7 @@ protected:
     QString _current_names_prefix;
     QStringListModel *_names;
 
+
 public:
     explicit PythonContext(QObject *parent = 0);
     ~PythonContext();
@@ -40,7 +41,8 @@ public:
     void updateGlobalNames();
     QStringListModel *getNamesOf(const QString &prefix);
 
-public:
+
+protected:
   void updateNamesFrom(QStringList &prefix);
   void updateNamesFrom(PyObject *object, QStringList &prefix);
 };

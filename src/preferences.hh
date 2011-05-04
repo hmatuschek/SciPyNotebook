@@ -31,6 +31,9 @@ protected:
   QString _preamble;
   int _tabsize;
 
+  bool _auto_completion;
+  int _auto_completion_threshold;
+
 protected:
   explicit Preferences(QObject *parent = 0);
 
@@ -39,6 +42,9 @@ public:
     QFont font() const;
     QString preamble() const;
     int tabSize();
+
+    bool autoCompletion();
+    int autoCompletionThreshold();
 
 public:
     static Preferences *get();
@@ -51,6 +57,8 @@ public slots:
     void setFont(const QFont &font);
     void setPreamble(const QString &text);
     void setTabSize(int size);
+    void setAutoCompletion(bool enabled);
+    void setAutoCompletionThreshold(int thres);
 
     void save();
 };

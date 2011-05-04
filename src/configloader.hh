@@ -28,7 +28,8 @@ protected:
     PARSE_BODY,
     PARSE_FONT,
     PARSE_PREAMBLE, PARSE_PREAMBLEDATA,
-    PARSE_TABSIZE
+    PARSE_TABSIZE,
+    PARSE_AUTOCOMPLETION
   } State;
 
 protected:
@@ -44,6 +45,7 @@ protected:
 
 protected:
   bool handleFont(const QXmlAttributes &attributes);
+  bool handleAutoCompletion(const QXmlAttributes &attributes);
 
 
 public:

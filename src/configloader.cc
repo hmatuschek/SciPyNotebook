@@ -59,6 +59,12 @@ ConfigLoader::startElement(const QString &namespaceURI, const QString &localName
       return true;
     }
 
+    if (localName == "autocompletion")
+    {
+      this->state_stack.push_back(PARSE_AUTOCOMPLETION);
+      return this->handleAutoCompletion(attributes);
+    }
+
     this->_error_string = QObject::tr("Unexpected element found: %1").arg(localName);
     return false;
   }
@@ -66,7 +72,8 @@ ConfigLoader::startElement(const QString &namespaceURI, const QString &localName
 
   if (PARSE_FONT == this->state_stack.back() ||
       PARSE_PREAMBLE == this->state_stack.back() ||
-      PARSE_TABSIZE == this->state_stack.back())
+      PARSE_TABSIZE == this->state_stack.back() ||
+      PARSE_AUTOCOMPLETION == this->state_stack.back())
   {
     this->_error_string = QObject::tr("Unexpected element found: %1").arg(localName);
     return false;
@@ -202,6 +209,32 @@ ConfigLoader::handleFont(const QXmlAttributes &attributes)
 
   this->preferences->setFont(font);
   return true;
+}
+
+
+bool
+ConfigLoader::handleAutoCompletion(const QXmlAttributes &attributes)
+{
+  QString enabled = attributes.value("enabled");
+  if("false" == enabled.toLower())
+  {
+    this->preferences->setAutoCompletion(false);
+  }
+
+  QString thres_str = attributes.value("threshold");
+  if (!thres_str.isEmpty())
+  {
+    bool ok;
+    int thres = thres_str.toInt(&ok);
+
+    if (!ok || thres < 3)
+    {
+      this->_error_string = QObject::tr("Invalid threshold value %1").arg(thres_str);
+      return false;
+    }
+
+    this->preferences->setAutoCompletionThreshold(thres);
+  }
 }
 
 
