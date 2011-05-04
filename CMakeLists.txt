@@ -24,8 +24,8 @@ ADD_SUBDIRECTORY(src)
 #
 # CPack related stuff
 #
-INSTALL(FILES rsrc/icon.png
-        DESTINATION share/SciPyNotebook)
+INSTALL(FILES rsrc/scipynotebook.png
+        DESTINATION share/icons)
 INSTALL(FILES rsrc/scipynotebook.desktop
         DESTINATION share/applications)
 
