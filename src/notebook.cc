@@ -390,6 +390,14 @@ Notebook::delCellSlot()
     this->layout()->removeWidget(cell);
     this->_cells.removeAt(index);
 
+    // Reset focus:
+    if(0 == this->_cells.length())
+      this->setFocus();
+    else if(index >= this->_cells.length())
+      this->_cells.back()->setFocus();
+    else
+      this->_cells.at(index)->setFocus();
+
     // Disconnect from all signals of the cell
     QObject::disconnect(cell, 0, this, 0);
 
