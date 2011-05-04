@@ -235,6 +235,8 @@ ConfigLoader::handleAutoCompletion(const QXmlAttributes &attributes)
 
     this->preferences->setAutoCompletionThreshold(thres);
   }
+
+  return true;
 }
 
 
