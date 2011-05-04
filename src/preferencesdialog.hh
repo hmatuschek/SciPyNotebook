@@ -16,6 +16,7 @@
 #include <QFontComboBox>
 #include <QSpinBox>
 #include <QTextEdit>
+#include <QCheckBox>
 
 
 
@@ -28,7 +29,8 @@ protected:
   QSpinBox *_fontSizeBox;
   QTextEdit *_preambleBox;
   QSpinBox *_tabSizeBox;
-
+  QCheckBox *_autoComplEnabledBox;
+  QSpinBox *_autoComplThresBox;
 
 public:
     explicit PreferencesDialog(QWidget *parent = 0);
@@ -36,6 +38,8 @@ public:
     QFont font();
     QString preamble();
     int tabSize();
+    bool autoCompletionEnabled();
+    int autoCompletionThreshold();
 };
 
 #endif // PREFERENCESDIALOG_HH

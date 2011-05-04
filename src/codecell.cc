@@ -280,12 +280,15 @@ CodeCell::keyPressEvent(QKeyEvent *e)
     }
   }
 
-  if(!this->_completer || !isShortcut)
+  if(!this->_completer || !Preferences::get()->autoCompletion() || !isShortcut)
     QTextEdit::keyPressEvent(e);
 
   const bool ctrlOrShift = e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
-  if (!this->_completer || (ctrlOrShift && e->text().isEmpty()))
-      return;
+  if ((! this->_completer) || (! Preferences::get()->autoCompletion())
+    || (ctrlOrShift && e->text().isEmpty()))
+  {
+    return;
+  }
 
   static QString eow("~!@#$%^&*()_+{}|:\"<>?,/;'[]\\-="); // end of word
   bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;

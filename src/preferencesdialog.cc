@@ -20,6 +20,7 @@
 #include <QGroupBox>
 #include <QTextEdit>
 #include <QTabWidget>
+#include <QLabel>
 
 
 
@@ -73,6 +74,33 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
       this->_tabSizeBox->setRange(0, 10);
       this->_tabSizeBox->setValue(Preferences::get()->tabSize());
       hbox->addWidget(this->_tabSizeBox);
+
+      vbox->addWidget(gbox);
+    }
+
+    /*
+     * Assemble auto-completion config
+     */
+    {
+      QGroupBox *gbox = new QGroupBox("Auto Completion", this);
+      QBoxLayout *hbox = new QVBoxLayout();
+      gbox->setLayout(hbox);
+
+      this->_autoComplEnabledBox = new QCheckBox("Auto completion enabled", this);
+      this->_autoComplEnabledBox->setTristate(false);
+      if (Preferences::get()->autoCompletion())
+        this->_autoComplEnabledBox->setCheckState(Qt::Checked);
+      else
+        this->_autoComplEnabledBox->setCheckState(Qt::Unchecked);
+      hbox->addWidget(this->_autoComplEnabledBox);
+
+      QBoxLayout *thres_box = new QHBoxLayout();
+      this->_autoComplThresBox = new QSpinBox(this);
+      this->_autoComplThresBox->setRange(3, 100);
+      this->_autoComplThresBox->setValue(Preferences::get()->autoCompletionThreshold());
+      thres_box->addWidget(new QLabel("Auto completion threshold", this));
+      thres_box->addWidget(this->_autoComplThresBox);
+      hbox->addLayout(thres_box);
 
       vbox->addWidget(gbox);
     }
@@ -135,4 +163,18 @@ int
 PreferencesDialog::tabSize()
 {
   return this->_tabSizeBox->value();
+}
+
+
+bool
+PreferencesDialog::autoCompletionEnabled()
+{
+  return Qt::Checked == this->_autoComplEnabledBox->checkState();
+}
+
+
+int
+PreferencesDialog::autoCompletionThreshold()
+{
+  return this->_autoComplThresBox->value();
 }
