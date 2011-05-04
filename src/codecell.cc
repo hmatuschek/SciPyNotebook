@@ -82,8 +82,11 @@ CodeCell::sizeHint() const
 void
 CodeCell::onTextChanged()
 {
+  // If there are any line-marks -> clear them
   if (0 != this->extraSelections().size())
     this->clearLineMarks();
+
+  // Updated text height and width
   this->_text_size = this->document()->size().toSize();
   this->updateGeometry();
 }
@@ -164,9 +167,69 @@ CodeCell::insertCompletion(const QString &completion)
 QString
 CodeCell::textUnderCursor()
 {
+  // Select current "word" this includes dotted names like "sys.version" etc
   QTextCursor tc = this->textCursor();
-  tc.select(QTextCursor::WordUnderCursor);
+
+  // First, move to start of dotted word:
+  this->moveToStartOfWord(tc);
+  // start selection
+  this->moveToEndOfWord(tc);
+
   return tc.selectedText();
+}
+
+
+void
+CodeCell::moveToStartOfWord(QTextCursor &cursor)
+{
+  // Simply move the cursor to start of the word.
+  cursor.movePosition(QTextCursor::StartOfWord);
+
+  // If cursor is at start of text -> done;
+  if (cursor.atStart())
+  {
+    return;
+  }
+
+  // Move one char left to get previous char:
+  cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+
+  // Check if char is ".", if not -> done.
+  if ('.' != this->document()->characterAt(cursor.position()))
+  {
+    cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+    return;
+  }
+
+  // Recursively move to previous word:
+  cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+  this->moveToStartOfWord(cursor);
+}
+
+
+void
+CodeCell::moveToEndOfWord(QTextCursor &cursor)
+{
+  // Simply move the cursor to start of the word.
+  cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+
+  // If cursor is at end of text -> done;
+  if (cursor.atEnd())
+  {
+    return;
+  }
+
+  // Check if current char is ".", if not -> done.
+  if ('.' != this->document()->characterAt(cursor.position()))
+  {
+    return;
+  }
+
+  // Move cursor on char right:
+  cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+
+  // Recursively move to next word:
+  this->moveToEndOfWord(cursor);
 }
 
 

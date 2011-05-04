@@ -28,42 +28,73 @@
 #include "pythonhighlighter.hh"
 
 
+/**
+ * Implements the part of the cell that shows the python-code.
+ *
+ * Implements syntax highlighting, highlighting of exception origin and
+ * the auto-completion feature.
+ */
 class CodeCell : public QTextEdit
 {
     Q_OBJECT
 
 protected:
-    PythonHighlighter *higlighter;
-    QSize _text_size;
-    QCompleter *_completer;
+  /**
+   * Holds the reference (and ownership) of the python highlighter.
+   */
+  PythonHighlighter *higlighter;
+
+  /**
+   * Internal used variable to hold the height of the text in pixel. Is needed to resize the
+   * view to avoid scrolling.
+   */
+  QSize _text_size;
+
+  /**
+   * Holds a weak reference to the completer for auto-completion.
+   */
+  QCompleter *_completer;
 
 
 protected:
-    QString textUnderCursor();
+  /**
+   * Returns the word under the cursor or "" if there is none.
+   */
+  QString textUnderCursor();
 
-    virtual void keyPressEvent(QKeyEvent *e);
+  void moveToStartOfWord(QTextCursor &cursor);
+  void moveToEndOfWord(QTextCursor &cursor);
+
+  /**
+   * Handles key-press event to show and updated auto-completion.
+   */
+  virtual void keyPressEvent(QKeyEvent *e);
 
 
 public:
-    explicit CodeCell(QWidget *parent = 0);
-    ~CodeCell();
+  /**
+   * Constructs a new and empty code-cell.
+   */
+  explicit CodeCell(QWidget *parent = 0);
 
-    virtual QSize minimumSizeHint() const;
-    virtual QSize sizeHint() const;
+  ~CodeCell();
 
-    void setCompleter(QCompleter *completer);
-    QCompleter *completer();
+  virtual QSize minimumSizeHint() const;
+  virtual QSize sizeHint() const;
+
+  void setCompleter(QCompleter *completer);
+  QCompleter *completer();
 
 
 public slots:
-    void onTextChanged();
+  void onTextChanged();
 
-    void markLine(size_t line);
-    void clearLineMarks();
+  void markLine(size_t line);
+  void clearLineMarks();
 
 
 protected slots:
-    void insertCompletion(const QString &completion);
+  void insertCompletion(const QString &completion);
 };
 
 #endif // CODECELL_H
