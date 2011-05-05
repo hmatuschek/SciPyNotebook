@@ -20,7 +20,7 @@ build-stamp:
 	#dh_testdir
 
 	# Add here commands to compile the package.
-	cmake $(CURDIR)/scipynotebook-0.2.1 -DCMAKE_INSTALL_PREFIX=$(CURDIR)/debian/scipynotebook
+	cmake $(CURDIR)/scipynotebook-0.3.0 -DCMAKE_INSTALL_PREFIX=$(CURDIR)/debian/scipynotebook
 	make
 
 	touch build-stamp

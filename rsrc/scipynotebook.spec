@@ -1,12 +1,11 @@
 Summary: Notebook like editor for NumPy/SciPy.
 
-%define version 0.2.1
+%define version 0.3.0
 
 License: GPLv2
 Group: Development
 Name: scipynotebook
 Prefix: /usr
-#Provides: scipynotebook
 Release: 1
 Source: scipynotebook-%{version}.tar.gz
 URL: https://github.com/downloads/hmatuschek/SciPyNotebook/
@@ -37,3 +36,4 @@ rm -rf $RPM_BUILD_ROOT
 /usr/bin/scipynotebook
 /usr/share/SciPyNotebook
 /usr/share/applications/scipynotebook.desktop
+/usr/share/icons/scipynotebook.png

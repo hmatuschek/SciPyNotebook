@@ -142,6 +142,7 @@ PythonContext::updateNamesFrom(QStringList &prefix)
   {
     QStringList name_list;
     this->_names->setStringList(name_list);
+    return;
   }
 
   // Remove first name from prefix list:

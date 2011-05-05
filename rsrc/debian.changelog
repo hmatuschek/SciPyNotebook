@@ -1,3 +1,11 @@
+scipynotebook (0.3.0-1) stable; urgency=low
+
+  * Added auto-completion feature.
+  * Fixed minor issues.
+
+ -- Hannes Matuschek <hmatuschek@gmail.com> May 5th, 2011 00:00:00 +0100
+
+
 scipynotebook (0.2.1-1) stable; urgency=low
 
   * First usable Release
