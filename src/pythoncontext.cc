@@ -12,6 +12,8 @@
 #include "pythoncontext.hh"
 #include "pythonengine.hh"
 
+#include <QFileInfo>
+#include <QDir>
 #include <iostream>
 
 
@@ -88,6 +90,30 @@ PythonContext::setFileName(const QString &filename)
     // Store filename into local and global context
     PyDict_SetItemString(this->_globals, "__file__", fname);
     PyDict_SetItemString(this->_locals, "__file__", fname);
+
+    // Append directory of file to sys.path
+    QDir file_dir = QFileInfo(filename).dir();
+
+    // Load sys module:
+    PyObject *sys_module = 0;
+    if (0 == (sys_module = PyImport_AddModule("sys")))
+    {
+        qFatal("Can not import 'sys'");
+        exit(-1);
+    }
+
+    PyObject *sys_path = 0;
+    if (0 == (sys_path = PyDict_GetItemString(PyModule_GetDict(sys_module), "path")))
+    {
+      qFatal("Can not get 'sys.path'.");
+      exit(-1);
+    }
+
+    if(PyList_Insert(sys_path, 0, PyString_FromString(file_dir.path().toStdString().c_str())))
+    {
+      qFatal("Can not prepend file-directory to sys.path.");
+      exit(-1);
+    }
 }
 
 
@@ -191,6 +217,7 @@ PythonContext::updateNamesFrom(PyObject *object, QStringList &prefix)
     }
 
     if (PyErr_Occurred()) {
+      // oops, clear name list and python-error and return!
       name_list.clear();
       PyErr_Clear();
     }
