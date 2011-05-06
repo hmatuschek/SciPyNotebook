@@ -34,6 +34,5 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root, -)
 %doc README.rst LICENSE
 /usr/bin/scipynotebook
-/usr/share/SciPyNotebook
 /usr/share/applications/scipynotebook.desktop
 /usr/share/icons/scipynotebook.png
