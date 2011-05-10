@@ -20,15 +20,29 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     Preferences *preferences = Preferences::get();
 
-    // Create a new, empty notbook
-    NotebookWindow w;
-    w.show();
+    NotebookWindow *window = 0;
+    if(2 == argc)
+    {
+      // openfile give by cmd line
+      window = new NotebookWindow(argv[1]);
+    }
+    else
+    {
+      // Open new, empty notebook window
+      window = new NotebookWindow();
+    }
+    window->show();
 
+    // Execute application
     int ret_val = a.exec();
+
+    // Free window
+    delete window;
 
     // Shutdown python engine:
     if (PythonEngine::isRunning())
         delete PythonEngine::get();
 
+    // Done.
     return ret_val;
 }

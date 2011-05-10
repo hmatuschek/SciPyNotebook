@@ -52,7 +52,7 @@ public:
      */
     explicit NotebookWindow(QWidget *parent = 0);
 
-    NotebookWindow(const QString &filename, QWidget *parent);
+    NotebookWindow(const QString &filename, QWidget *parent=0);
 
     ~NotebookWindow();
 
