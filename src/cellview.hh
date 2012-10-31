@@ -57,8 +57,6 @@ private:
   QBoxLayout *_cellbox;
   /** A simple widget to show the status of the cell. */
   CellStatus *_cell_status;
-  /** The syntax highlighter for the code view. */
-  PythonHighlighter *_syntax_highlighter;
 };
 
 #endif // __SCIPY_NOTEBOOK_CELLVIEW_H__

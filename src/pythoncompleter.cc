@@ -3,8 +3,8 @@
 PythonCompleter::PythonCompleter(PythonContext *ctx, QObject *parent) :
     QCompleter(parent), _context(ctx)
 {
-  this->_context_prefix = "";
-  this->setModel(ctx->getNamesOf(this->_context_prefix));
+  _context_prefix = "";
+  setModel(ctx->getNamesOf(_context_prefix));
 }
 
 
@@ -12,13 +12,11 @@ void
 PythonCompleter::setContextPrefix(const QString &prefix)
 {
   // If context prefix changed -> update model;
-  if (this->_context_prefix != prefix)
-  {
-    this->setModel(this->_context->getNamesOf(prefix));
+  if (_context_prefix != prefix) {
+    setModel(_context->getNamesOf(prefix));
   }
-
   // store prefix;
-  this->_context_prefix = prefix;
+  _context_prefix = prefix;
 }
 
 
@@ -32,6 +30,6 @@ PythonCompleter::setCompletionPrefix(const QString &prefix)
 
   QString context_prefix = names.join(".");
 
-  this->setContextPrefix(context_prefix);
+  setContextPrefix(context_prefix);
   QCompleter::setCompletionPrefix(name);
 }

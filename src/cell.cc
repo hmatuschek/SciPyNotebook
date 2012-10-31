@@ -23,7 +23,8 @@
 
 
 Cell::Cell(Notebook *notebook) :
-  QObject(notebook), _notebook(notebook), _stdoutStream(), _stderrStream(), _split_position(0), _is_modified(true)
+  QObject(notebook), _notebook(notebook), _stdoutStream(), _stderrStream(), _split_position(0),
+  _is_modified(true)
 {
   // Allocate documents for code && result:
   _codedocument = new QTextDocument(this);
@@ -49,6 +50,10 @@ void
 Cell::setEvaluationState(EvaluationState state) {
   emit evaluationStateChanged(_evaluation_state, state);
   _evaluation_state = state;
+  // Update context:
+  if (Cell::EVALUATED == state) {
+    _notebook->context()->updateGlobalNames();
+  }
 }
 
 Cell::EvaluationState

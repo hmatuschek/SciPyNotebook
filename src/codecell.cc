@@ -23,12 +23,18 @@ CodeCell::CodeCell(Cell *cell, QWidget *parent) :
 {
   setDocument(cell->codeDocument());
 
+  _completer = cell->completer();
+  _completer->setWidget(this);
+  _completer->setCompletionMode(QCompleter::PopupCompletion);
+  _completer->setCaseSensitivity(Qt::CaseSensitive);
+  QObject::connect(_completer, SIGNAL(activated(QString)), this, SLOT(insertCompletion(QString)));
+
   // Disable word-wrap
-  this->setWordWrapMode(QTextOption::NoWrap);
+  setWordWrapMode(QTextOption::NoWrap);
 
   // install syntax highlighter
   _higlighter = new PythonHighlighter(this);
-  _higlighter->setDocument(this->document());
+  _higlighter->setDocument(document());
 
   // Get default font from preferences:
   Preferences *prefs = Preferences::get();
@@ -47,9 +53,6 @@ CodeCell::CodeCell(Cell *cell, QWidget *parent) :
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
   setFrameShape(QFrame::NoFrame);
-
-  // Set completer:
-  _completer = cell->completer();
 
   QObject::connect(this, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
   QObject::connect(_cell, SIGNAL(destroyed()), this, SLOT(onCellDeleted()));
@@ -117,29 +120,12 @@ CodeCell::clearLineMarks() {
 
 
 void
-CodeCell::setCompleter(QCompleter *completer) {
-  if(this->_completer) {
-    QObject::disconnect(this->_completer, 0, this, 0);
-  }
-
-  _completer = completer;
-  if(! this->_completer)
-    return;
-
-  _completer->setWidget(this);
-  _completer->setCompletionMode(QCompleter::PopupCompletion);
-  _completer->setCaseSensitivity(Qt::CaseSensitive);
-  QObject::connect(_completer, SIGNAL(activated(QString)), this, SLOT(insertCompletion(QString)));
-}
-
-
-void
 CodeCell::insertCompletion(const QString &completion) {
-  if (this->_completer->widget() != this)
+  if (_completer->widget() != this)
     return;
 
-  QTextCursor tc = this->textCursor();
-  int extra = completion.length() - this->_completer->completionPrefix().length();
+  QTextCursor tc = textCursor();
+  int extra = completion.length() - _completer->completionPrefix().length();
   tc.movePosition(QTextCursor::Left);
   tc.movePosition(QTextCursor::EndOfWord);
   tc.insertText(completion.right(extra));
@@ -158,22 +144,17 @@ QString
 CodeCell::textUnderCursor()
 {
   // Select current "word" this includes dotted names like "sys.version" etc
-  QTextCursor tc = this->textCursor();
-
+  QTextCursor tc = textCursor();
   int current_position = tc.position();
 
   // First, move to start of dotted word:
-  this->moveToStartOfWord(tc);
+  moveToStartOfWord(tc);
 
   // If cursor is at start of the word -> do nothing (for indentation)
-  if(current_position == tc.position())
-  {
-    return "";
-  }
+  if(current_position == tc.position()) { return ""; }
 
   // start selection
-  this->moveToEndOfWord(tc);
-
+  moveToEndOfWord(tc);
   return tc.selectedText();
 }
 
@@ -185,8 +166,7 @@ CodeCell::moveToStartOfWord(QTextCursor &cursor)
   cursor.movePosition(QTextCursor::StartOfWord);
 
   // If cursor is at start of text -> done;
-  if (cursor.atStart())
-  {
+  if (cursor.atStart()) {
     return;
   }
 
@@ -194,15 +174,14 @@ CodeCell::moveToStartOfWord(QTextCursor &cursor)
   cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
 
   // Check if char is ".", if not -> done.
-  if ('.' != this->document()->characterAt(cursor.position()))
-  {
+  if ('.' != document()->characterAt(cursor.position())) {
     cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
     return;
   }
 
   // Recursively move to previous word:
   cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
-  this->moveToStartOfWord(cursor);
+  moveToStartOfWord(cursor);
 }
 
 
@@ -213,14 +192,10 @@ CodeCell::moveToEndOfWord(QTextCursor &cursor)
   cursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
 
   // If cursor is at end of text -> done;
-  if (cursor.atEnd())
-  {
-    return;
-  }
+  if (cursor.atEnd()) { return; }
 
   // Check if current char is ".", if not -> done.
-  if ('.' != this->document()->characterAt(cursor.position()))
-  {
+  if ('.' != document()->characterAt(cursor.position())) {
     return;
   }
 
@@ -228,15 +203,14 @@ CodeCell::moveToEndOfWord(QTextCursor &cursor)
   cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
 
   // Recursively move to next word:
-  this->moveToEndOfWord(cursor);
+  moveToEndOfWord(cursor);
 }
 
 
 void
 CodeCell::keyPressEvent(QKeyEvent *e)
 {
-  if (this->_completer && this->_completer->popup()->isVisible())
-  {
+  if (_completer && _completer->popup()->isVisible()) {
     // The following keys are forwarded by the completer to the widget
     switch (e->key())
     {
@@ -259,22 +233,20 @@ CodeCell::keyPressEvent(QKeyEvent *e)
     QString completionPrefix = textUnderCursor();
 
     // If there is no text under the cursor -> handle <tab> by TextEdit
-    if (0 == completionPrefix.length())
-    {
+    if (0 == completionPrefix.length()) {
       isShortcut = false;
-    }
-    else
-    {
+    } else {
       qWarning("Complete: %s", completionPrefix.toStdString().c_str());
       isShortcut = true;
     }
   }
 
-  if(!this->_completer || !Preferences::get()->autoCompletion() || !isShortcut)
-    QTextEdit::keyPressEvent(e);
+  if(!_completer || !Preferences::get()->autoCompletion() || !isShortcut) {
+    QTextEdit::keyPressEvent(e); return;
+  }
 
   const bool ctrlOrShift = e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
-  if ((! this->_completer) || (! Preferences::get()->autoCompletion())
+  if ((! _completer) || (! Preferences::get()->autoCompletion())
     || (ctrlOrShift && e->text().isEmpty()))
   {
     return;
@@ -288,21 +260,21 @@ CodeCell::keyPressEvent(QKeyEvent *e)
                       completionPrefix.length() < Preferences::get()->autoCompletionThreshold()
                       || eow.contains(e->text().right(1))))
   {
-    this->_completer->popup()->hide();
+    _completer->popup()->hide();
     return;
   }
 
-  if (completionPrefix != this->_completer->completionPrefix())
+  if (completionPrefix != _completer->completionPrefix())
   {
-    this->_completer->setCompletionPrefix(completionPrefix);
-    this->_completer->popup()->setCurrentIndex(this->_completer->completionModel()->index(0, 0));
+    _completer->setCompletionPrefix(completionPrefix);
+    _completer->popup()->setCurrentIndex(_completer->completionModel()->index(0, 0));
   }
 
   QRect cr = cursorRect();
-  cr.setWidth(this->_completer->popup()->sizeHintForColumn(0)
-              + this->_completer->popup()->verticalScrollBar()->sizeHint().width());
+  cr.setWidth(_completer->popup()->sizeHintForColumn(0)
+              + _completer->popup()->verticalScrollBar()->sizeHint().width());
   // popup it up!
-  this->_completer->complete(cr);
+  _completer->complete(cr);
 }
 
 

@@ -16,7 +16,7 @@
 #include <QVBoxLayout>
 #include <QTextDocument>
 #include <QTextCharFormat>
-
+#include <QTimer>
 #include "pythoncompleter.hh"
 #include "cellinputstream.hh"
 

@@ -120,10 +120,10 @@ PythonContext::getNamesOf(const QString &prefix)
     _current_names_prefix = prefix;
 
     if ("" == prefix) {
-      this->updateGlobalNames();
+      updateGlobalNames();
     } else {
       QStringList prefix_list = prefix.split('.', QString::SkipEmptyParts);
-      this->updateNamesFrom(prefix_list);
+      updateNamesFrom(prefix_list);
     }
   }
 
@@ -137,9 +137,15 @@ PythonContext::updateGlobalNames()
   QStringList name_list;
 
   PyObject *key = 0; ssize_t pos = 0;
-  while (PyDict_Next(this->_globals, &pos, &key, NULL)) {
+  while (PyDict_Next(_globals, &pos, &key, NULL)) {
     name_list.append(PyString_AsString(key));
   }
+
+  std::cerr << "Compl Ctx: ";
+  foreach(QString name , name_list) {
+    std::cerr << name.toStdString() << ", ";
+  }
+  std::cerr << std::endl;
 
   _names->setStringList(name_list);
 }
@@ -154,7 +160,7 @@ PythonContext::updateNamesFrom(QStringList &prefix)
   }
 
   PyObject *object = 0;
-  if (0 == (object = PyDict_GetItemString(this->_globals, prefix.front().toStdString().c_str()))) {
+  if (0 == (object = PyDict_GetItemString(_globals, prefix.front().toStdString().c_str()))) {
     QStringList name_list;
     _names->setStringList(name_list);
     return;
@@ -162,7 +168,7 @@ PythonContext::updateNamesFrom(QStringList &prefix)
 
   // Remove first name from prefix list:
   prefix.pop_front();
-  this->updateNamesFrom(object, prefix);
+  updateNamesFrom(object, prefix);
 }
 
 

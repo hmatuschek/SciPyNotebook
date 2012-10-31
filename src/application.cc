@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include "notebookwindow.hh"
+#include "aboutdialog.hh"
 
 
 Application::Application(int &argc, char **argv) :
@@ -28,6 +29,7 @@ Application::Application(int &argc, char **argv) :
 
   QObject::connect(_quitAct, SIGNAL(triggered()), this, SLOT(onQuit()));
   QObject::connect(_newAct, SIGNAL(triggered()), this, SLOT(onNewNotebook()));
+  QObject::connect(_aboutAct, SIGNAL(triggered()), this, SLOT(onShowAbout()));
 }
 
 
@@ -85,3 +87,8 @@ Application::onQuit()
   QApplication::quit();
 }
 
+
+void
+Application::onShowAbout() {
+  AboutDialog dialog; dialog.exec();
+}

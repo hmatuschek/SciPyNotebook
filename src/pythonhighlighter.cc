@@ -51,22 +51,9 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     operatorFormat.setFont(defaultFont);
     operatorFormat.setForeground(QColor(0xAA, 0x00, 0xFF));
 
-    foreach (QString kw, keywords)
-    {
-        rule.pattern = QRegExp("\\b" + kw + "\\b", Qt::CaseInsensitive);
-        rule.format = keywordFormat;
-        rule.group = 0;
-        this->rules.append(rule);
-    }
-
     rule.pattern = QRegExp("#[^\n]*");
     rule.format = singleLineCommentFormat;
     rule.group = 0;
-    rules.append(rule);
-
-    rule.pattern = QRegExp("\\b(def|class)\\s+(\\w+)\\b");
-    rule.format = definitionFormat;
-    rule.group = 2;
     rules.append(rule);
 
     rule.pattern = QRegExp("\'.*\'");
@@ -79,6 +66,18 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     rule.pattern.setMinimal(true);
     rule.format = quotationFormat;
     rule.group = 0;
+    rules.append(rule);
+
+    foreach (QString kw, keywords) {
+      rule.pattern = QRegExp("\\b" + kw + "\\b", Qt::CaseInsensitive);
+      rule.format = keywordFormat;
+      rule.group = 0;
+      rules.append(rule);
+    }
+
+    rule.pattern = QRegExp("\\b(def|class)\\s+(\\w+)\\b");
+    rule.format = definitionFormat;
+    rule.group = 2;
     rules.append(rule);
 
     rule.pattern = QRegExp("\\b\\d+\\b");

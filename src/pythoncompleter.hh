@@ -14,12 +14,11 @@ protected:
   QString _context_prefix;
 
 public:
-    explicit PythonCompleter(PythonContext *ctx, QObject *parent = 0);
-
-    void setContextPrefix(const QString &prefix);
+  explicit PythonCompleter(PythonContext *ctx, QObject *parent = 0);
+  void setContextPrefix(const QString &prefix);
 
 public slots:
-    void setCompletionPrefix(const QString &prefix);
+  void setCompletionPrefix(const QString &prefix);
 };
 
 #endif // PYTHONCOMPLETER_HH

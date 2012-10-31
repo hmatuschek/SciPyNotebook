@@ -46,8 +46,6 @@ public:
   virtual QSize minimumSizeHint() const;
   virtual QSize sizeHint() const;
 
-  void setCompleter(QCompleter *completer);
-
 
 public slots:
   void onTextChanged();

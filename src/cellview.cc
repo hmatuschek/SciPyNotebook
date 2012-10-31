@@ -24,7 +24,6 @@ CellView::CellView(Cell *cell, QWidget *parent)
 
   // Instantiate empty code cell
   _codecell = new CodeCell(cell);
-  _syntax_highlighter = new PythonHighlighter(_codecell);
 
   // Instantiate result cell
   _resultcell = new ResultCell(cell);
