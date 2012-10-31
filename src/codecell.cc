@@ -18,83 +18,79 @@
 #include <QScrollBar>
 
 
-CodeCell::CodeCell(QWidget *parent) :
-    QTextEdit(parent)
+CodeCell::CodeCell(Cell *cell, QWidget *parent) :
+  QTextEdit(parent), _cell(cell)
 {
-    // Disable word-wrap
-    this->setWordWrapMode(QTextOption::NoWrap);
+  setDocument(cell->codeDocument());
 
-    // install syntax highlighter
-    this->higlighter = new PythonHighlighter(this);
-    this->higlighter->setDocument(this->document());
+  // Disable word-wrap
+  this->setWordWrapMode(QTextOption::NoWrap);
 
-    // Get default font from preferences:
-    Preferences *prefs = Preferences::get();
-    this->document()->setDefaultFont(prefs->font());
+  // install syntax highlighter
+  _higlighter = new PythonHighlighter(this);
+  _higlighter->setDocument(this->document());
 
-    // Set tab size:
-    int tabsize = QFontMetrics(prefs->font()).width(' ');
-    tabsize *= prefs->tabSize();
-    this->setTabStopWidth(tabsize);
+  // Get default font from preferences:
+  Preferences *prefs = Preferences::get();
+  document()->setDefaultFont(prefs->font());
 
-    // Layout specific stuff...
-    this->_text_size = this->document()->size().toSize();
-    this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+  // Set tab size:
+  int tabsize = QFontMetrics(prefs->font()).width(' ');
+  tabsize *= prefs->tabSize();
+  setTabStopWidth(tabsize);
 
-    QObject::connect(this, SIGNAL(textChanged()),
-                     this, SLOT(onTextChanged()));
+  // Layout specific stuff...
+  _text_size = document()->size().toSize();
+  setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    this->setFrameShape(QFrame::NoFrame);
+  setFrameShape(QFrame::NoFrame);
 
-    // Set completer:
-    this->_completer = 0;
+  // Set completer:
+  _completer = cell->completer();
+
+  QObject::connect(this, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
+  QObject::connect(_cell, SIGNAL(destroyed()), this, SLOT(onCellDeleted()));
+  QObject::connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(onCursorMoved()));
 }
 
 
-CodeCell::~CodeCell()
-{
-    // destroy the syntax highlighter
-    delete this->higlighter;
-}
-
-
-
-QSize
-CodeCell::minimumSizeHint() const
-{
-    return this->document()->size().toSize();
+CodeCell::~CodeCell() {
+  // destroy the syntax highlighter
+  delete _higlighter;
 }
 
 
 QSize
-CodeCell::sizeHint() const
-{
-    QSize csize(QTextEdit::sizeHint());
-    csize.setHeight(this->document()->size().toSize().height());
+CodeCell::minimumSizeHint() const {
+  return document()->size().toSize();
+}
 
-    return csize;
+
+QSize
+CodeCell::sizeHint() const {
+  QSize csize(QTextEdit::sizeHint());
+  csize.setHeight(document()->size().toSize().height());
+  return csize;
 }
 
 
 void
-CodeCell::onTextChanged()
-{
+CodeCell::onTextChanged() {
   // If there are any line-marks -> clear them
-  if (0 != this->extraSelections().size())
-    this->clearLineMarks();
+  if (0 != extraSelections().size())
+    clearLineMarks();
 
   // Updated text height and width
-  this->_text_size = this->document()->size().toSize();
-  this->updateGeometry();
+  _text_size = this->document()->size().toSize();
+  updateGeometry();
 }
 
 
 void
-CodeCell::markLine(size_t line)
-{
+CodeCell::markLine(size_t line) {
   QTextEdit::ExtraSelection highlight;
 
   // Move cursor to position
@@ -108,13 +104,12 @@ CodeCell::markLine(size_t line)
 
   QList<QTextEdit::ExtraSelection> extras;
   extras << highlight;
-  this->setExtraSelections( extras );
+  setExtraSelections( extras );
 }
 
 
 void
-CodeCell::clearLineMarks()
-{
+CodeCell::clearLineMarks() {
   // just reset with empty extra selections
   QList<QTextEdit::ExtraSelection> extras;
   this->setExtraSelections(extras);
@@ -122,38 +117,26 @@ CodeCell::clearLineMarks()
 
 
 void
-CodeCell::setCompleter(PythonCompleter *completer)
-{
-  if(this->_completer)
-  {
+CodeCell::setCompleter(QCompleter *completer) {
+  if(this->_completer) {
     QObject::disconnect(this->_completer, 0, this, 0);
   }
 
-  this->_completer = completer;
-
+  _completer = completer;
   if(! this->_completer)
     return;
 
-  this->_completer->setWidget(this);
-  this->_completer->setCompletionMode(QCompleter::PopupCompletion);
-  this->_completer->setCaseSensitivity(Qt::CaseSensitive);
-  QObject::connect(this->_completer, SIGNAL(activated(QString)),
-                   this, SLOT(insertCompletion(QString)));
-}
-
-
-PythonCompleter *
-CodeCell::completer()
-{
-  return this->_completer;
+  _completer->setWidget(this);
+  _completer->setCompletionMode(QCompleter::PopupCompletion);
+  _completer->setCaseSensitivity(Qt::CaseSensitive);
+  QObject::connect(_completer, SIGNAL(activated(QString)), this, SLOT(insertCompletion(QString)));
 }
 
 
 void
-CodeCell::insertCompletion(const QString &completion)
-{
+CodeCell::insertCompletion(const QString &completion) {
   if (this->_completer->widget() != this)
-           return;
+    return;
 
   QTextCursor tc = this->textCursor();
   int extra = completion.length() - this->_completer->completionPrefix().length();
@@ -161,6 +144,13 @@ CodeCell::insertCompletion(const QString &completion)
   tc.movePosition(QTextCursor::EndOfWord);
   tc.insertText(completion.right(extra));
   setTextCursor(tc);
+}
+
+
+void
+CodeCell::onCellDeleted() {
+  _cell = 0;
+  setDocument(0);
 }
 
 
@@ -313,4 +303,27 @@ CodeCell::keyPressEvent(QKeyEvent *e)
               + this->_completer->popup()->verticalScrollBar()->sizeHint().width());
   // popup it up!
   this->_completer->complete(cr);
+}
+
+
+void
+CodeCell::focusInEvent(QFocusEvent *e)
+{
+  if (0 != _cell) { _cell->setActive(); }
+  QTextEdit::focusInEvent(e);
+}
+
+void
+CodeCell::focusOutEvent(QFocusEvent *e)
+{
+  if (0 != _cell) { _cell->setInactive(); }
+  QTextEdit::focusOutEvent(e);
+}
+
+void
+CodeCell::onCursorMoved() {
+  if (0 == _cell) { return; }
+  QTextCursor cursor = textCursor();
+  cursor.movePosition(QTextCursor::StartOfLine);
+  _cell->setSplitPosition(cursor.position());
 }

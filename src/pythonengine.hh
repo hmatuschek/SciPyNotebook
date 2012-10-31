@@ -13,32 +13,52 @@
 #define PYTHONENGINE_HH
 
 #include <QObject>
+#include <QThread>
+#include <QMutex>
+#include <QWaitCondition>
 
 #include <Python.h>
 #include "cellinputstream.hh"
 
 
-class PythonEngine: public QObject
+// Forward declaration
+class Cell;
+
+
+/** This class implements the Python execution engine, which is run in a separate thread to
+ * avoid a blocking GUI when evaluating python code. */
+class PythonEngine: protected QThread
 {
-    Q_OBJECT;
+  Q_OBJECT;
 
 protected:
-    static PythonEngine *instance;
+  /** Hidden constructor, avoids direct instantiation. */
+  explicit PythonEngine(QObject *parent=0);
 
-
-protected:
-    explicit PythonEngine(QObject *parent=0);
-
+  /** Implements the execution part. */
+  virtual void run();
 
 public:
-    static PythonEngine *get();
+  /** Factory method. */
+  static PythonEngine *get();
+  /** Destructor. */
+  virtual ~PythonEngine();
 
-    ~PythonEngine();
+  /** Adds a cell to the queue. */
+  void queueCell(Cell *cell);
 
-    void setStdout(CellInputStream *stream);
-    void setStderr(CellInputStream *stream);
+protected:
+  /** Holds the singleton instance of the engine. */
+  static PythonEngine *_instance;
+  /** Is true while the thread is running. */
+  bool _isrunning;
 
-    static bool isRunning();
+  /** The cell queue. */
+  QList<Cell *> _queue;
+  /** The queue mutex. */
+  QMutex _mutex;
+  /** The consumer condition. */
+  QWaitCondition _notEmptyCondition;
 };
 
 

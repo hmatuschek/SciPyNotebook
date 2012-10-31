@@ -15,15 +15,14 @@
 #include <QObject>
 #include <QFont>
 #include <QFile>
+#include <QSettings>
 
-
-class Preferences : public QObject
+class Preferences : public QSettings
 {
-    Q_OBJECT
+  Q_OBJECT
 
 protected:
   static Preferences *_instance;
-
 
 protected:
   QFont _font;
@@ -37,30 +36,27 @@ protected:
 protected:
   explicit Preferences(QObject *parent = 0);
 
-
 public:  
-    QFont font() const;
-    QString preamble() const;
-    int tabSize();
+  QFont font() const;
+  QString preamble() const;
+  int tabSize();
 
-    bool autoCompletion();
-    int autoCompletionThreshold();
+  bool autoCompletion();
+  int autoCompletionThreshold();
 
 public:
-    static Preferences *get();
+  static Preferences *get();
 
 signals:
-    void fontChanged();
-    void tabSizeChanged();
+  void fontChanged();
+  void tabSizeChanged();
 
 public slots:
-    void setFont(const QFont &font);
-    void setPreamble(const QString &text);
-    void setTabSize(int size);
-    void setAutoCompletion(bool enabled);
-    void setAutoCompletionThreshold(int thres);
-
-    void save();
+  void setFont(const QFont &font);
+  void setPreamble(const QString &text);
+  void setTabSize(int size);
+  void setAutoCompletion(bool enabled);
+  void setAutoCompletionThreshold(int thres);
 };
 
 #endif // PREFERENCES_HH

@@ -11,92 +11,167 @@
 
 #include "pythonengine.hh"
 #include "streamwrapper.hh"
+#include "cell.hh"
 
 #include <iostream>
 
 
-PythonEngine *PythonEngine::instance = 0;
+PythonEngine *PythonEngine::_instance = 0;
 
 
-
-
-
-PythonEngine::PythonEngine(QObject *parent) :
-        QObject(parent)
+PythonEngine::PythonEngine(QObject *parent)
+  : QThread(parent), _isrunning(true)
 {
-    Py_Initialize();
-    PythonEngine::instance = this;
+  Py_Initialize();
 
-    // Register SciPyNotebookStreamWrapper class:
-    if (0 > SciPyNotebookStreamWrapperType_init())
-    {
-        std::cerr << "Oops: Can not register stream wrapper type..." << std::endl;
-        exit(0);
-    }
+  PythonEngine::_instance = this;
 
-    std::cerr << "Python interpreter started..." << std::endl;
+  // Register SciPyNotebookStreamWrapper class:
+  if (0 > SciPyNotebookStreamWrapperType_init()) {
+    std::cerr << "Oops: Can not register stream wrapper type..." << std::endl;
+    exit(-1);
+  }
 }
 
 
 
 PythonEngine::~PythonEngine()
 {
-    std::cerr << "Finalize python interpreter..." << std::endl;
     Py_Finalize();
-    PythonEngine::instance = 0;
+    PythonEngine::_instance = 0;
 }
 
 
 PythonEngine *
 PythonEngine::get()
 {
-    if (0 != PythonEngine::instance)
-    {
-        return PythonEngine::instance;
-    }
+  if (0 != PythonEngine::_instance) {
+    return PythonEngine::_instance;
+  }
 
-    PythonEngine::instance = new PythonEngine();
-    return PythonEngine::instance;
+  // Create engine...
+  PythonEngine::_instance = new PythonEngine();
+  // Start engine...
+  PythonEngine::_instance->start();
+
+  return PythonEngine::_instance;
 }
 
 
 void
-PythonEngine::setStdout(CellInputStream *stream)
-{
-    // Load sys:
-    PyObject *sys_module = 0;
-    if (0 == (sys_module = PyImport_AddModule("sys")))
-    {
-        std::cerr << "Opps: Can not import 'sys'" << std::endl;
-        exit(-1);
-    }
+PythonEngine::queueCell(Cell *cell) {
+  _mutex.lock();
+  cell->setEvaluationState(Cell::QUEUED);
+  _queue.append(cell);
+  _notEmptyCondition.wakeAll();
+  _mutex.unlock();
+}
 
-    PyObject *sys_dict = PyModule_GetDict(sys_module);
+
+void
+PythonEngine::run()
+{
+  // Get global sys module:
+  PyObject *sys_module = 0;
+  if (0 == (sys_module = PyImport_AddModule("sys"))) {
+    std::cerr << "Opps: Can not import 'sys'" << std::endl;
+    exit(-1);
+  }
+  PyObject *sys_dict = PyModule_GetDict(sys_module);
+
+  // This will hold the current cell being executed:
+  Cell *current_cell = 0;
+
+  // Loop...
+  while (_isrunning) {
+    _mutex.lock();
+    // Wait for new cells if queue is empty:
+    if (0 == _queue.size()) { _notEmptyCondition.wait(&_mutex); }
+    // If there was no cell in the queue -> retry
+    if (0 == _queue.size()) { continue; }
+    // Take next cell from queue
+    current_cell = _queue.front(); _queue.pop_front();
+    _mutex.unlock();
+
+    // Update state of cell
+    current_cell->setEvaluationState(Cell::EVALUATING);
+
+    // Redirect stderr & stdout streams:
     PyDict_SetItem(sys_dict, PyString_FromString("stdout"),
-                   SciPyNotebookStreamWrapper_new(stream));
-}
+                   SciPyNotebookStreamWrapper_new(current_cell->stdoutStream()));
+    PyDict_SetItem(sys_dict, PyString_FromString("stderr"),
+                   SciPyNotebookStreamWrapper_new(current_cell->stderrStream()));
 
+    // Get code
+    QString code = current_cell->codeDocument()->toPlainText();
 
-void
-PythonEngine::setStderr(CellInputStream *stream)
-{
-    // Load sys:
-    PyObject *sys_module = 0;
-    if (0 == (sys_module = PyImport_AddModule("sys")))
-    {
-        std::cerr << "Opps: Can not import 'sys'" << std::endl;
-        exit(-1);
+    // Precompile code:
+    PyObject *prec_code = Py_CompileString(code.toStdString().c_str(), "<cell>", Py_file_input);
+    if (0 == prec_code) {
+      // Extract Exception:
+      PyObject *exec, *pvalue, *traceback;
+      PyErr_Fetch(&exec, &pvalue, &traceback);
+
+      if (0 == pvalue) {
+        // oops:
+        qWarning("Compilation failed but no exception found.");
+        current_cell->setEvaluationState(Cell::ERROR);
+        continue;
+      }
+
+      // If there is a traceback:
+      if (0 != traceback) {
+        // Extract the line number of the first frame and mark the line in codecell
+        PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
+        current_cell->markCodeLine(PyInt_AsSsize_t(lineno));
+        Py_DECREF(lineno);
+      }
+
+      // Restore exception to be printed:
+      PyErr_Restore(exec, pvalue, traceback);
+      PyErr_Print();
+
+      current_cell->setEvaluationState(Cell::ERROR);
+      continue;
     }
 
-    PyObject *sys_dict = PyModule_GetDict(sys_module);
-    PyDict_SetItem(sys_dict, PyString_FromString("stderr"),
-                   SciPyNotebookStreamWrapper_new(stream));
-}
+    // Evaluate code:
+    PyObject *result = PyEval_EvalCode(
+          (PyCodeObject *)prec_code, current_cell->globalContext(), current_cell->globalContext());
 
+    if (0 == result) {
+      // Extract Exception:
+      PyObject *exec, *pvalue, *traceback;
+      PyErr_Fetch(&exec, &pvalue, &traceback);
 
-bool
-PythonEngine::isRunning()
-{
-    return 0 != PythonEngine::instance;
+      if (0 == pvalue) {
+        // oops:
+        qWarning("Compilation failed but no exception found.");
+        current_cell->setEvaluationState(Cell::ERROR);
+        continue;
+      }
+
+      // If there is a traceback:
+      if (0 != traceback) {
+        // Extract the line number of the first frame and mark the line in codecell
+        PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
+        Py_DECREF(lineno);
+      }
+
+      // Restore exception to be printed:
+      PyErr_Restore(exec, pvalue, traceback);
+      // print traceback to sys.stderr
+      PyErr_Print();
+
+      current_cell->setEvaluationState(Cell::ERROR);
+      continue;
+    }
+
+    /// @todo Notify context has changed.
+    current_cell->setEvaluationState(Cell::EVALUATED);
+
+    Py_DECREF(result);
+    Py_DECREF(prec_code);
+  }
 }
 

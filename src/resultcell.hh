@@ -23,37 +23,26 @@
 
 #include <QTextEdit>
 #include "cellinputstream.hh"
+#include "cell.hh"
 
 
 class ResultCell : public QTextEdit
 {
-    Q_OBJECT
+  Q_OBJECT
 
 private:
-    QSize _text_size;
-    CellInputStream _stdout_stream;
-    CellInputStream _stderr_stream;
-
-    QTextCharFormat stdoutFormat;
-    QTextCharFormat stderrFormat;
+  QSize _text_size;
 
 public:
-    explicit ResultCell(QWidget *parent = 0);
+  explicit ResultCell(Cell *cell, QWidget *parent = 0);
+  virtual ~ResultCell();
 
-    virtual QSize minimumSizeHint() const;
-    virtual QSize sizeHint() const;
-
-    CellInputStream *getStdoutStream();
-    CellInputStream *getStderrStream();
-
-
-signals:
-
+  virtual QSize minimumSizeHint() const;
+  virtual QSize sizeHint() const;
 
 public slots:
-    void onTextChanged();
-    void onStdoutText(const QString &data);
-    void onStderrText(const QString &data);
+  void onTextChanged();
+  void onCellDeleted();
 };
 
 #endif // RESULTCELL_HH

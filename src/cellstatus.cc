@@ -53,7 +53,7 @@ CellStatus::setStatusRunning()
 {
     // Set background color.
     QPalette pal = this->palette();
-    pal.setColor(QPalette::Window, Qt::yellow);
+    pal.setColor(QPalette::Window, Qt::blue);
     this->setPalette(pal);
 }
 
@@ -67,6 +67,14 @@ CellStatus::setStatusError()
     this->setPalette(pal);
 }
 
+void
+CellStatus::setStatusQueued()
+{
+    // Set background color.
+    QPalette pal = this->palette();
+    pal.setColor(QPalette::Window, Qt::yellow);
+    this->setPalette(pal);
+}
 
 void
 CellStatus::setStatusModified()

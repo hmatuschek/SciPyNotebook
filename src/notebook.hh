@@ -18,141 +18,96 @@
 #include <QScrollArea>
 #include <QList>
 #include <QLayout>
+#include <QAction>
 
 #include <Python.h>
 
 
-/**
- * The notebook class.
- */
-class Notebook : public QFrame
+/** A notebook is a list of cells representing a code file. */
+class Notebook : public QObject
 {
     Q_OBJECT
 
-protected:
-  /**
-   * Holds all cells of the notebook.
-   */
-  QList<Cell *> _cells;
-
-  /**
-   * The BoxLayout to layout the cells.
-   */
-  QBoxLayout *_cell_layout;
-
-  /**
-   * Holds the filename of the notebook.
-   *
-   * Can be set/get via filename(), setFilename();
-   */
-  QString _filename;
-
-  /**
-   * Is true if the notebook is not saved, that means if it was modified since the last
-   * save.
-   */
-  bool _is_modified;
-
-  /**
-   * The python context (namespaces and scopes) of the notebook.
-   */
-  PythonContext *_python_context;
-
-
 public:
-    /**
-     * Constructs a new, empty notebook.
-     */
-    explicit Notebook(QWidget *parent = 0);
+  /** Constructs a new, empty notebook. */
+  explicit Notebook(QObject *parent = 0);
 
-    /**
-     * Constructs a new empty notebook from the given file.
-     */
-    Notebook(const QString &filename, QWidget *parent);
+  /** Constructs a notebook from the given file. */
+  explicit Notebook(const QString &path, QObject *parent = 0);
 
-    /**
-     * Returns true, if a filename is associated with the notebook.
-     */
-    bool hasFileName();
+  /** Returns the context of the Notebook */
+  PythonContext *context();
 
-    /**
-     * Returns the filename associated with the notebook.
-     */
-    const QString &fileName();
+  bool hasFileName() const;
+  void setFileName(const QString &filename);
+  const QString &fileName() const;
 
-    /**
-     * (Re-) Sets the filename associated with the note book.
-     *
-     * You need to call save() to save the notebook content into the file.
-     */
-    void setFileName(const QString &filename);
+  size_t numCells() const;
+  Cell *cell(size_t i);
 
-    /**
-     * Returns true if the notebook was modified since the last save.
-     */
-    bool isModified();
+  inline QAction *saveNotebookAction() { return _saveAction; }
+  inline QAction *saveNotebookAsAction() { return _saveAsAction; }
+  inline QAction *printNotebookAction() { return _printAction; }
 
-    /**
-     * Returns the context of the Notebook
-     */
-    PythonContext *pythonContext();
+  inline QAction *undoAction() { return _undoAction; }
+  inline QAction *redoAction() { return _redoAction; }
 
+  inline QAction *newCellAction() { return _newCellAction; }
+  inline QAction *deleteCellAction() { return _deleteCellAction; }
+  inline QAction *splitCellAction() { return _splitCellAction; }
+  inline QAction *joinCellsAction() { return _joinCellsAction; }
+  inline QAction *evalCellAction() { return _evalCellAction; }
+  inline QAction *evalAllCellsAction() { return _evalAllCellsAction; }
 
-protected:
-    /**
-     * Internal helper function to setup the layout of the notebook.
-     */
-    void initNotebookLayout();
-
+  bool isModified() const;
 
 signals:
-    /**
-     * This signal is emitted if the given part of the notebook needs to be visible.
-     */
-    void makeVisible(QPoint coord);
+  void cellAdded(int index, Cell *cell);
+  void cellRemoved(int index);
+  void modifiedStateChanged();
 
-    /**
-     * This signal is emitted, if the one of the cells is modified since the last save.
-     */
-    void modified();
+private slots:
+  void onCellActivated(Cell *cell);
+  void onCellDeactivated(Cell *cell);
+  void onCellModifiedStateChanged(bool state);
 
-    /**
-     * This signal is emitted, if the notebook was saved.
-     */
-    void saved();
+  void onUndo();
+  void onRedo();
 
+  void onSave();
+  void onSaveAs();
 
-public slots:
-    /**
-     * Saves the notebook to the given file.
-     *
-     * If no filename is associated with the notebook, nothing will be done.
-     */
-    void save();
+  void onNewCell();
+  void onDeleteCell();
+  void onSplitCell();
+  void onJoinCell();
+  void onEvalCell();
+  void onEvalAllCells();
 
-    void evalCellSlot();
-    void evalAllCellsSlot();
+private:
+  /** Holds all cells of the notebook. */
+  QList<Cell *> _cells;
+  /** The current active cell (the cell with KB focus). */
+  Cell *_active_cell;
 
-    void onNewCell();
+  /** Holds the filepath if one is assigned to the notebook. */
+  QString _filepath;
+  /** The python context (namespaces and scopes) of the notebook. */
+  PythonContext *_python_context;
+  QAction *_saveAction;
+  QAction *_saveAsAction;
+  QAction *_printAction;
+  QAction *_undoAction;
+  QAction *_redoAction;
+  QAction *_newCellAction;
+  QAction *_deleteCellAction;
+  QAction *_splitCellAction;
+  QAction *_joinCellsAction;
+  QAction *_evalCellAction;
+  QAction *_evalAllCellsAction;
 
-    void undoSlot();
-    void redoSlot();
-
-    void splitCellSlot();
-    void joinCellsSlot();
-    void delCellSlot();
-
-
-  protected slots:
-    /**
-     * Is connected to all cells to emit a makeVisible signal.
-     */
-    void makeCellVisible(QPoint coord);
-
-    /**
-     * Is connected to all cells to emit a isModified() signal.
-     */
-    void cellModified();
+private:
+  void _createActions();
 };
 
 #endif // NOTEBOOK_H

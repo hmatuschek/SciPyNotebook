@@ -22,97 +22,64 @@
 #include <iostream>
 
 
-ResultCell::ResultCell(QWidget *parent) :
+ResultCell::ResultCell(Cell *cell, QWidget *parent) :
     QTextEdit(parent)
 {
-    // Please, no line wraps...
-    this->setLineWrapMode(QTextEdit::NoWrap);
+  setDocument(cell->resultDocument());
 
-    // Disable editing...
-    this->setReadOnly(true);
+  // Please, no line wraps...
+  setLineWrapMode(QTextEdit::NoWrap);
+  setReadOnly(true);
+  setVisible(false);
 
-    this->_text_size = this->document()->size().toSize();
-    this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+  _text_size = document()->size().toSize();
+  setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
 
-    QObject::connect(this, SIGNAL(textChanged()),
-                     this, SLOT(onTextChanged()));
+  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  // Set background color.
+  QPalette pal = this->palette();
+  pal.setColor(QPalette::Base, Qt::lightGray);
+  setPalette(pal);
+  setAutoFillBackground(true);
 
-    // Set background color.
-    QPalette pal = this->palette();
-    pal.setColor(QPalette::Base, Qt::lightGray);
-    this->setPalette(pal);
-    this->setAutoFillBackground(true);
+  // Disable widget, will be activated once the code runs
+  setFrameShape(QFrame::NoFrame);
 
-    // Disable widget, will be activated once the code runs    
-    this->setFrameShape(QFrame::NoFrame);
+  // Connect events:
+  QObject::connect(this, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
+  QObject::connect(cell, SIGNAL(destroyed()), this, SLOT(onCellDeleted()));
+}
 
-    // Connect to CellInputStream events:
-    QObject::connect(&(this->_stdout_stream), SIGNAL(newData(QString)),
-                     this, SLOT(onStdoutText(QString)));
-    QObject::connect(&(this->_stderr_stream), SIGNAL(newData(QString)),
-                     this, SLOT(onStderrText(QString)));
 
-    // Setup format for stderr and stdout...
-    this->stdoutFormat.setFontStyleHint(QFont::TypeWriter, QFont::PreferMatch);
-    this->stdoutFormat.setForeground(QColor(0x00, 0x00, 0x00));
-    this->stderrFormat.setFontStyleHint(QFont::TypeWriter, QFont::PreferMatch);
-    this->stderrFormat.setForeground(QColor(0xa0, 0x00, 0x00));
+ResultCell::~ResultCell() {
+}
+
+QSize
+ResultCell::minimumSizeHint() const {
+  return this->document()->size().toSize();
 }
 
 
 QSize
-ResultCell::minimumSizeHint() const
-{
-    return this->document()->size().toSize();
-}
-
-
-QSize
-ResultCell::sizeHint() const
-{
-    QSize csize(QTextEdit::sizeHint());
-    csize.setHeight(this->document()->size().toSize().height());
-
-    return csize;
+ResultCell::sizeHint() const {
+  QSize csize(QTextEdit::sizeHint());
+  csize.setHeight(this->document()->size().toSize().height());
+  return csize;
 }
 
 
 void
 ResultCell::onTextChanged()
 {
-    this->_text_size = this->document()->size().toSize();
-    this->updateGeometry();
-}
-
-
-CellInputStream *
-ResultCell::getStdoutStream()
-{
-    return &(this->_stdout_stream);
-}
-
-
-CellInputStream *
-ResultCell::getStderrStream()
-{
-    return &(this->_stderr_stream);
-}
-
-
-void
-ResultCell::onStdoutText(const QString &data)
-{
-    this->textCursor().insertText(data, this->stdoutFormat);
-    this->setVisible(true);
+  _text_size = document()->size().toSize();
+  updateGeometry();
+  if (1 >= document()->characterCount()) { setVisible(false); }
+  else { setVisible(true); }
 }
 
 void
-ResultCell::onStderrText(const QString &data)
-{
-    this->textCursor().insertText(data, this->stderrFormat);
-    this->setVisible(true);
+ResultCell::onCellDeleted() {
+  setDocument(0);
 }
-

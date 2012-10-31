@@ -14,22 +14,14 @@
 
 #include <QDialog>
 
-/**
- * Shows some information about SciPy Notebook.
- *
- * \todo Buityfy
- */
+/** Shows some information about SciPy Notebook. */
 class AboutDialog : public QDialog
 {
-    Q_OBJECT
-
+  Q_OBJECT
 
 public:
-  /**
-   * Contructs a new dialog.
-   */
+  /** Contructs a new dialog. */
   explicit AboutDialog(QWidget *parent = 0);
-
 };
 
 #endif // ABOUTDIALOG_HH

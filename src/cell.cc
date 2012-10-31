@@ -17,227 +17,149 @@
 #include "notebook.hh"
 
 #include <QStringListModel>
+#include <QTextCursor>
 
 #include <iostream>
 
 
-Cell::Cell(Notebook *parent) :
-    QFrame(parent)
+Cell::Cell(Notebook *notebook) :
+  QObject(notebook), _notebook(notebook), _stdoutStream(), _stderrStream(), _split_position(0)
 {
-  // Store notebook
-  this->notebook = parent;
+  // Allocate documents for code && result:
+  _codedocument = new QTextDocument(this);
+  _resultdocument = new QTextDocument(this);
 
-  // Init the layout
-  QHBoxLayout *hbox = new QHBoxLayout();
-
-  this->cell_status = new CellStatus(this);
-  QObject::connect(this->cell_status, SIGNAL(clicked()), this, SLOT(onStatusClicked()));
-
-  hbox->addWidget(this->cell_status);
-  hbox->setSpacing(0);
-  hbox->setContentsMargins(0,3,0,0);
-
-  this->cellbox = new QVBoxLayout();
-  this->cellbox->setContentsMargins(0,0,0,0);
-  this->cellbox->setSizeConstraint(QLayout::SetMinimumSize);
-  this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-  this->cellbox->setSpacing(0);
-  hbox->addLayout(this->cellbox);
-
-  // Instantiate empty code cell
-  this->codecell = new CodeCell(this);
-  // Connect to signals
-  QObject::connect(this->codecell, SIGNAL(cursorPositionChanged()),
-                   this, SLOT(onCursorPositionChanged()));
-  QObject::connect(this->codecell, SIGNAL(textChanged()),
-                   this, SLOT(onCodeCellChanged()));
-  // add cell to layout
-  this->cellbox->addWidget(this->codecell);
-
-  // Set set codecell to be focus-proxy of the cell
-  this->setFocusProxy(this->codecell);
+  // Setup format for stderr and stdout...
+  _stdoutFormat.setFontStyleHint(QFont::TypeWriter, QFont::PreferMatch);
+  _stdoutFormat.setForeground(QColor(0x00, 0x00, 0x00));
+  _stderrFormat.setFontStyleHint(QFont::TypeWriter, QFont::PreferMatch);
+  _stderrFormat.setForeground(QColor(0xa0, 0x00, 0x00));
 
   // Setup autocompletion
-  PythonCompleter *completer = new PythonCompleter(this->notebook->pythonContext());
-  this->codecell->setCompleter(completer);
+  _completer = new PythonCompleter(_notebook->context());
 
-  // Instantiate result cell
-  this->resultcell = new ResultCell(this);
-  this->cellbox->addWidget(this->resultcell);
-  this->resultcell->setVisible(false);
-
-  // Eye candy
-  this->setLayout(hbox);
+  // Setup streams:
+  QObject::connect(&_stdoutStream, SIGNAL(newData(QString)), this, SLOT(onStdoutText(QString)));
+  QObject::connect(&_stderrStream, SIGNAL(newData(QString)), this, SLOT(onStderrText(QString)));
+  QObject::connect(_codedocument, SIGNAL(contentsChanged()), this, SLOT(onCodeChanged()));
 }
 
+
+void
+Cell::setEvaluationState(EvaluationState state) {
+  emit evaluationStateChanged(_evaluation_state, state);
+  _evaluation_state = state;
+}
+
+Cell::EvaluationState
+Cell::evaluationState() {
+  return _evaluation_state;
+}
+
+void
+Cell::serializeCode(QIODevice &device) {
+  // Remove tailing newlines:
+  device.write(_codedocument->toPlainText().toAscii().trimmed());
+}
+
+void
+Cell::setCode(const QString &code) {
+  _codedocument->setPlainText(code);
+  _codedocument->adjustSize();
+}
+
+QTextDocument *
+Cell::codeDocument() {
+  return _codedocument;
+}
+
+QTextDocument *
+Cell::resultDocument() {
+  return _resultdocument;
+}
+
+
+CellInputStream *
+Cell::stdoutStream() {
+  return &_stdoutStream;
+}
+
+CellInputStream *
+Cell::stderrStream() {
+  return &_stderrStream;
+}
+
+PyObject *
+Cell::globalContext() {
+  return _notebook->context()->getGlobals();
+}
+
+PyObject *
+Cell::localContext() {
+  return _notebook->context()->getLocals();
+}
+
+QCompleter *
+Cell::completer() {
+  return _completer;
+}
+
+size_t
+Cell::splitPosition() const {
+  return _split_position;
+}
 
 bool
-Cell::evaluate(PythonContext *ctx)
-{
-    // Get execution engine
-    PythonEngine *engine = PythonEngine::get();
+Cell::isModified() const {
+  return _is_modified;
+}
 
-    // Get code as ASCII
-    QString code = this->codecell->document()->toPlainText();
-
-    // signal cell evaluation
-    this->cell_status->setStatusRunning();
-
-    // Clear line marks in codecell:
-    this->codecell->clearLineMarks();
-
-    // Redirect stdout and stderr:
-    engine->setStdout(this->resultcell->getStdoutStream());
-    engine->setStderr(this->resultcell->getStderrStream());
-
-    // Clear and hide result cell:
-    this->resultcell->document()->clear();
-    this->resultcell->setVisible(false);
-
-    // Precompile code:
-    PyObject *prec_code = 0;
-    if (0 == (prec_code = Py_CompileString(code.toStdString().c_str(), "<cell>",
-                                           Py_file_input)))
-    {
-        // Change color of cell status bar:
-        this->cell_status->setStatusError();
-
-        // Extract Exception:
-        PyObject *exec, *pvalue, *traceback;
-        PyErr_Fetch(&exec, &pvalue, &traceback);
-
-        if (0 == pvalue)
-        {
-          // oops:
-          qWarning("Compilation failed but no exception found.");
-          return false;
-        }
-
-        // If there is a traceback:
-        if (0 != traceback)
-        {
-          // Extract the line number of the first frame and mark the line in codecell
-          PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
-          this->codecell->markLine(PyInt_AsSsize_t(lineno));
-          Py_DECREF(lineno);
-        }
-
-        // Restore exception to be printed:
-        PyErr_Restore(exec, pvalue, traceback);
-
-        // Show exception:
-        this->resultcell->setVisible(true);
-
-        PyErr_Print();
-
-        // Done.
-        return false;
-    }
-
-    // Evaluate code:
-    /// \todo Make sure this runs in a separate thread
-    PyObject *result = 0;
-    if (0 == (result = PyEval_EvalCode((PyCodeObject *)prec_code,
-                                       ctx->getGlobals(), ctx->getGlobals())))
-    {
-        // Change color of cell status bar
-        this->cell_status->setStatusError();
-
-        // Extract Exception:
-        PyObject *exec, *pvalue, *traceback;
-        PyErr_Fetch(&exec, &pvalue, &traceback);
-
-        if (0 == pvalue)
-        {
-          // oops:
-          qWarning("Compilation failed but no exception found.");
-          return false;
-        }
-
-        // If there is a traceback:
-        if (0 != traceback)
-        {
-          // Extract the line number of the first frame and mark the line in codecell
-          PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
-          this->codecell->markLine(PyInt_AsSsize_t(lineno));
-          Py_DECREF(lineno);
-        }
-
-        // Restore exception to be printed:
-        PyErr_Restore(exec, pvalue, traceback);
-
-        // Show result cell
-        this->resultcell->setVisible(true);
-
-        // print traceback to sys.stderr
-        PyErr_Print();
-
-        return false;
-    }
-
-    this->cell_status->setStatusSuccess();
-
-    Py_DECREF(result);
-    Py_DECREF(prec_code);
-
-    // Update Model for global namespace
-    ctx->updateGlobalNames();
-
-    return true;
+void
+Cell::setModified(bool modified) {
+  _is_modified = modified;
+  emit modifiedStateChanged(_is_modified);
 }
 
 
 void
-Cell::serializeCode(QIODevice &device)
-{
-  // Remove tailing newlines:
-  device.write(this->codecell->document()->toPlainText().toAscii().trimmed());
+Cell::setSplitPosition(size_t pos) {
+  QTextCursor cursor(_codedocument);
+  cursor.setPosition(pos); cursor.movePosition(QTextCursor::StartOfLine);
+  _split_position = cursor.position();
+}
+
+void
+Cell::markCodeLine(size_t line) {
+  emit highlightLine(line);
+}
+
+void
+Cell::setActive() {
+  emit cellActivated(this);
+}
+
+void
+Cell::setInactive() {
+  emit cellDeactivated(this);
 }
 
 
 void
-Cell::setCode(const QString &code)
-{
-  this->codecell->document()->setPlainText(code);
-  this->codecell->document()->adjustSize();
+Cell::onStdoutText(QString text) {
+  QTextCursor cursor(_resultdocument);
+  cursor.movePosition(QTextCursor::End);
+  cursor.insertText(text, _stdoutFormat);
 }
 
-
 void
-Cell::undoSlot()
-{
-  this->codecell->undo();
+Cell::onStderrText(QString text) {
+  QTextCursor cursor(_resultdocument);
+  cursor.movePosition(QTextCursor::End);
+  cursor.insertText(text, _stderrFormat);
 }
 
-
 void
-Cell::redoSlot()
-{
-  this->codecell->redo();
-}
-
-
-void
-Cell::onStatusClicked()
-{
-  emit this->statusClicked();
-}
-
-
-void
-Cell::onCursorPositionChanged()
-{
-  QPoint coord = this->codecell->cursorRect().topLeft()+this->codecell->pos()+this->pos();
-  emit this->makeVisible(coord);
-}
-
-
-void
-Cell::onCodeCellChanged()
-{
-  // Mark cell as unevaluated:
-  this->cell_status->setStatusModified();
-
-  // And signal modification of cell
-  emit this->cellChanged();
+Cell::onCodeChanged() {
+  setEvaluationState(Cell::UNEVALUATED);
+  setModified(true);
 }

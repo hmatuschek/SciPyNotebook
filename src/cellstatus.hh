@@ -32,6 +32,7 @@ public:
 
     void setStatusSuccess();
     void setStatusError();
+    void setStatusQueued();
     void setStatusRunning();
     void setStatusModified();
 

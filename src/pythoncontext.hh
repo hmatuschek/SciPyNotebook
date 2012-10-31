@@ -22,25 +22,27 @@ class PythonContext : public QObject
     Q_OBJECT
 
 protected:
-    PyObject *_globals;
-    PyObject *_locals;
+  PyObject *_main_module;
+  PyObject *_globals;
+  PyObject *_locals;
 
-    QString _current_names_prefix;
-    QStringListModel *_names;
+  QString _current_names_prefix;
+  QStringListModel *_names;
 
 
 public:
-    explicit PythonContext(QObject *parent = 0);
-    ~PythonContext();
+  /** Constucts a new python context.  */
+  explicit PythonContext(QObject *parent = 0);
 
-    PyObject *getGlobals();
-    PyObject *getLocals();
+  virtual ~PythonContext();
 
-    void setFileName(const QString &filename);
+  PyObject *getGlobals();
+  PyObject *getLocals();
 
-    void updateGlobalNames();
-    QStringListModel *getNamesOf(const QString &prefix);
+  void setFileName(const QString &filename);
 
+  void updateGlobalNames();
+  QStringListModel *getNamesOf(const QString &prefix);
 
 protected:
   void updateNamesFrom(QStringList &prefix);

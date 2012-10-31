@@ -23,9 +23,9 @@
 
 #include <QPlainTextEdit>
 #include <QShortcut>
-
+#include <QCompleter>
 #include "pythonhighlighter.hh"
-#include "pythoncompleter.hh"
+#include "cell.hh"
 
 /**
  * Implements the part of the cell that shows the python-code.
@@ -35,65 +35,53 @@
  */
 class CodeCell : public QTextEdit
 {
-    Q_OBJECT
-
-protected:
-  /**
-   * Holds the reference (and ownership) of the python highlighter.
-   */
-  PythonHighlighter *higlighter;
-
-  /**
-   * Holds a weak reference to the completer for auto-completion.
-   */
-  PythonCompleter *_completer;
-
-  /**
-   * Internal used variable to hold the height of the text in pixel. Is needed to resize the
-   * view to avoid scrolling.
-   */
-  QSize _text_size;
-
-
-protected:
-  /**
-   * Returns the word under the cursor or "" if there is none.
-   */
-  QString textUnderCursor();
-
-  void moveToStartOfWord(QTextCursor &cursor);
-  void moveToEndOfWord(QTextCursor &cursor);
-
-  /**
-   * Handles key-press event to show and updated auto-completion.
-   */
-  virtual void keyPressEvent(QKeyEvent *e);
-
+  Q_OBJECT
 
 public:
-  /**
-   * Constructs a new and empty code-cell.
-   */
-  explicit CodeCell(QWidget *parent = 0);
+  /** Constructs a new and empty code-cell. */
+  explicit CodeCell(Cell *cell, QWidget *parent = 0);
 
   ~CodeCell();
 
   virtual QSize minimumSizeHint() const;
   virtual QSize sizeHint() const;
 
-  void setCompleter(PythonCompleter *completer);
-  PythonCompleter *completer();
+  void setCompleter(QCompleter *completer);
 
 
 public slots:
   void onTextChanged();
-
   void markLine(size_t line);
   void clearLineMarks();
 
-
-protected slots:
+private slots:
   void insertCompletion(const QString &completion);
+  void onCellDeleted();
+  void onCursorMoved();
+
+protected:
+  /** Returns the word under the cursor or "" if there is none. */
+  QString textUnderCursor();
+
+  void moveToStartOfWord(QTextCursor &cursor);
+  void moveToEndOfWord(QTextCursor &cursor);
+
+  /** Handles key-press event to show and updated auto-completion. */
+  virtual void keyPressEvent(QKeyEvent *e);
+
+  virtual void focusInEvent(QFocusEvent *e);
+  virtual void focusOutEvent(QFocusEvent *e);
+
+protected:
+  /** Holds the reference (and ownership) of the python highlighter. */
+  PythonHighlighter *_higlighter;
+  /** Holds a weak reference to the completer for auto-completion. */
+  QCompleter *_completer;
+  /** Internal used variable to hold the height of the text in pixel. Is needed to resize the
+   * view to avoid scrolling. */
+  QSize _text_size;
+  /** A weak reference to the cell. */
+  Cell *_cell;
 };
 
 #endif // CODECELL_H

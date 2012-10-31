@@ -6,78 +6,31 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QAction>
-
+#include "notebookview.hh"
 
 
 class NotebookWindow : public QMainWindow
 {
-    Q_OBJECT
+  Q_OBJECT
 
 protected:
-    Notebook *notebook;
-    QScrollArea *scrolledWindow;
+  NotebookView *_notebook_view;
+  QScrollArea *_scrolledWindow;
 
-    QMenu *fileMenu;
-    QAction *newAct;
-    QAction *openAct;
-    QAction *closeAct;
-    QAction *saveAct;
-    QAction *saveAsAct;
-    QAction *printAct;
-    QAction *quitAct;
-
-    QMenu *editMenu;
-    QAction *undoAct;
-    QAction *redoAct;
-    QAction *copyAct;
-    QAction *cutAct;
-    QAction *pasteAct;
-    QAction *prefAct;
-
-    QMenu *cellMenu;
-    QAction *newCellAct;
-    QAction *delCellAct;
-    QAction *splitCellAct;
-    QAction *joinCellsAct;
-    QAction *evalCellAct;
-    QAction *runAllAct;
-
-    QMenu *helpMenu;
-    QAction *aboutAct;
+  QMenu *_fileMenu;
+  QMenu *_editMenu;
+  QMenu *_cellMenu;
+  QMenu *_helpMenu;
 
 
 public:
-    /**
-     * Constructs a new notebook window with an empty notebook.
-     */
-    explicit NotebookWindow(QWidget *parent = 0);
-
-    NotebookWindow(const QString &filename, QWidget *parent=0);
-
-    ~NotebookWindow();
-
+  /** Constructs a new notebook window with an empty notebook. */
+  explicit NotebookWindow(QWidget *parent = 0);
+  NotebookWindow(const QString &filename, QWidget *parent=0);
+  virtual ~NotebookWindow();
 
 protected:
-    void initNotebookWindow(Notebook *notebook);
-
-
-public slots:
-    void preferencesSlot();
-
-    void newSlot();
-    void openSlot();
-    void closeSlot();
-    void saveSlot();
-    void saveAsSlot();
-    void quitSlot();
-
-    void aboutSlot();
-
-
-  protected slots:
-    void makeVisible(QPoint coord);
-    void notebookModified();
-    void notebookSaved();
+  void _initNotebookWindow();
 };
 
 #endif // NOTEBOOKWINDOW_HH

@@ -14,105 +14,103 @@
 
 #include <QObject>
 #include <QVBoxLayout>
+#include <QTextDocument>
+#include <QTextCharFormat>
 
-#include "codecell.hh"
-#include "resultcell.hh"
-#include "cellstatus.hh"
-#include "pythoncontext.hh"
+#include "pythoncompleter.hh"
+#include "cellinputstream.hh"
 
-/* forward declarations. */
+// Foward declarations
 class Notebook;
-
 
 /**
  * The cell class combines two cells, one for the input of code and another for the
  * output, this code generates or error messages.
  */
-class Cell : public QFrame
+class Cell : public QObject
 {
   Q_OBJECT
 
-  /**
-   * \todo May not be needed in future.
-   */
-  friend class Notebook;
-
-
-protected:
-  /**
-   * Holds a weak reference to the notebook, that owns this cell.
-   */
-  Notebook *notebook;
-
-  /**
-   * The layout for the code and result cells.
-   */
-  QBoxLayout *cellbox;
-
-  /**
-   * Holds the instance of the code cell.
-   */
-  CodeCell *codecell;
-
-  /**
-   * Holds the instance of the result cell.
-   */
-  ResultCell *resultcell;
-
-  /**
-   * A simple widget to show the status of the cell.
-   */
-  CellStatus *cell_status;
-
+public:
+  typedef enum {
+    UNEVALUATED,
+    QUEUED,
+    EVALUATING,
+    EVALUATED,
+    ERROR
+  } EvaluationState;
 
 public:
-  /**
-   * Construct a new (empty) cell.
-   *
+  /** Construct a new (empty) cell.
    * \param notebook Specifies a weak reference to the notebook, that owns this cell.
    */
   explicit Cell(Notebook *notebook);
 
-  /**
-   * Evaluates the cell in the given PythonContext.
-   */
-  bool evaluate(PythonContext *ctx);
-
-  /**
-   * Serializes the code of the codecell into the given device.
-   */
+  /** Serializes the code of the codecell into the given device. */
   void serializeCode(QIODevice &device);
 
-  /**
-   * Replaces the code in the codecell with the given text.
-   */
+  /** Replaces the code in the codecell with the given text. */
   void setCode(const QString &code);
 
+  QTextDocument *codeDocument();
+  QTextDocument *resultDocument();
 
-signals:
-  void statusClicked();
+  CellInputStream *stdoutStream();
+  CellInputStream *stderrStream();
 
-  void makeVisible(QPoint coord);
+  void setEvaluationState(EvaluationState state);
+  EvaluationState evaluationState();
 
-  void cellChanged();
+  PyObject *globalContext();
+  PyObject *localContext();
 
+  QCompleter *completer();
+
+  void markCodeLine(size_t line);
+  void setSplitPosition(size_t pos);
+  size_t splitPosition() const;
+
+  bool isModified() const;
+  void setModified(bool modified=true);
 
 public slots:
-  /**
-   * Forward to codecell.undo().
-   */
-  void undoSlot();
+  void setActive();
+  void setInactive();
 
-  /**
-   * Forward to codecell.redo().
-   */
-  void redoSlot();
+signals:
+  void cellActivated(Cell *active_cell);
+  void cellDeactivated(Cell *active_cell);
+  void evaluationStateChanged(unsigned int old_state, unsigned int new_state);
+  void modifiedStateChanged(bool modified);
+  void highlightLine(int line);
+
+private slots:
+  void onStderrText(QString text);
+  void onStdoutText(QString text);
+  void onCodeChanged();
 
 
-protected slots:
-  void onStatusClicked();
-  void onCursorPositionChanged();
-  void onCodeCellChanged();
+protected:
+  Notebook *_notebook;
+  EvaluationState _evaluation_state;
+  bool _is_modified;
+
+  /** Holds the instance of the code cell. */
+  QTextDocument *_codedocument;
+
+  /** Holds the instance of the result cell. */
+  QTextDocument *_resultdocument;
+
+  /** Hold the stdout stream to the result cell. */
+  CellInputStream _stdoutStream;
+  /** Hold the stderr stream to the result cell. */
+  CellInputStream _stderrStream;
+
+  QTextCharFormat _stdoutFormat;
+  QTextCharFormat _stderrFormat;
+
+  PythonCompleter *_completer;
+  size_t _split_position;
 };
 
 #endif // __SCIPY_NOTEBOOK_CELL_H__

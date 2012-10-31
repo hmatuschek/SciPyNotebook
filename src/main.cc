@@ -13,21 +13,17 @@
 #include "notebookwindow.hh"
 #include "pythonengine.hh"
 #include "preferences.hh"
-
+#include "application.hh"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    Preferences *preferences = Preferences::get();
+    Application a(argc, argv);
 
     NotebookWindow *window = 0;
-    if(2 == argc)
-    {
+    if(2 == argc) {
       // openfile give by cmd line
       window = new NotebookWindow(argv[1]);
-    }
-    else
-    {
+    } else {
       // Open new, empty notebook window
       window = new NotebookWindow();
     }
@@ -40,8 +36,7 @@ int main(int argc, char *argv[])
     delete window;
 
     // Shutdown python engine:
-    if (PythonEngine::isRunning())
-        delete PythonEngine::get();
+    //PythonEngine::shutdown();
 
     // Done.
     return ret_val;

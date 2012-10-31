@@ -20,20 +20,18 @@
 static PyObject *
 SciPyNotebookStreamWrapper_write(SciPyNotebookStreamWrapper *self, PyObject *args)
 {
-    PyObject *text = 0;
+  // Get text to write from args
+  PyObject *text = 0;
+  if(!PyArg_ParseTuple(args, "S", &text)) {
+    std::cerr << "Invalid args..." << std::endl;
+    return NULL;
+  }
 
-    // Get text to write from args
-    if(!PyArg_ParseTuple(args, "S", &text))
-    {
-        std::cerr << "Invalid args..." << std::endl;
-        return NULL;
-    }
+  // Extract string and send it to stream:
+  self->stream->write(PyString_AsString(text));
 
-    // Extract string and send it to stream:
-    self->stream->write(PyString_AsString(text));
-
-    // Return number of bytes send
-    Py_RETURN_NONE;
+  // Return number of bytes send
+  Py_RETURN_NONE;
 }
 
 
@@ -42,8 +40,8 @@ SciPyNotebookStreamWrapper_write(SciPyNotebookStreamWrapper *self, PyObject *arg
  */
 static PyMethodDef SciPyNotebookStreamWrapperType_methods[] =
 {
-    {"write", (PyCFunction)SciPyNotebookStreamWrapper_write, METH_VARARGS, "..."},
-    {NULL, NULL, 0, NULL}
+  {"write", (PyCFunction)SciPyNotebookStreamWrapper_write, METH_VARARGS, "..."},
+  {NULL, NULL, 0, NULL}
 };
 
 
@@ -52,16 +50,16 @@ static PyMethodDef SciPyNotebookStreamWrapperType_methods[] =
  * Defines the StreamWrapper type.
  */
 static PyTypeObject SciPyNotebookStreamWrapperType = {
-    PyObject_HEAD_INIT(NULL)
-    0,
-    "SciPyNotebookStreamWrapper",
-    sizeof(SciPyNotebookStreamWrapperType),
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    Py_TPFLAGS_DEFAULT,
-    "Wrapper of stderr and stdout.",
-    0,0,0,0,0,0,
-    SciPyNotebookStreamWrapperType_methods,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  PyObject_HEAD_INIT(NULL)
+  0,
+  "SciPyNotebookStreamWrapper",
+  sizeof(SciPyNotebookStreamWrapperType),
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  Py_TPFLAGS_DEFAULT,
+  "Wrapper of stderr and stdout.",
+  0,0,0,0,0,0,
+  SciPyNotebookStreamWrapperType_methods,
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
 
@@ -69,20 +67,19 @@ static PyTypeObject SciPyNotebookStreamWrapperType = {
 PyObject *
 SciPyNotebookStreamWrapper_new(CellInputStream *stream)
 {
-    SciPyNotebookStreamWrapper *self;
+  SciPyNotebookStreamWrapper *self;
 
-    if (0 == (self = (SciPyNotebookStreamWrapper *)SciPyNotebookStreamWrapperType.tp_alloc(&SciPyNotebookStreamWrapperType, 0)))
-    {
-        return 0;
-    }
+  if (0 == (self = (SciPyNotebookStreamWrapper *)SciPyNotebookStreamWrapperType.tp_alloc(&SciPyNotebookStreamWrapperType, 0))) {
+    return 0;
+  }
 
-    // Init object
-    self = (SciPyNotebookStreamWrapper *)PyObject_Init((PyObject *)self, &SciPyNotebookStreamWrapperType);
+  // Init object
+  self = (SciPyNotebookStreamWrapper *)PyObject_Init((PyObject *)self, &SciPyNotebookStreamWrapperType);
 
-    // Store stream instance:
-    self->stream = stream;
+  // Store stream instance:
+  self->stream = stream;
 
-    return (PyObject *) self;
+  return (PyObject *) self;
 }
 
 

@@ -23,119 +23,111 @@ PythonContext::PythonContext(QObject *parent) :
     // Instantiate python engine if not happend yet.
     PythonEngine::get();
 
-    // Allcocate initial variable scopes (top-level)
-    this->_locals = PyDict_New();
-    this->_globals = PyDict_New();
-
-    if (0 == this->_globals || 0 == this->_locals)
-    {
-        qFatal("Can not create scopes...");
-        exit(-1);
-    }
-
     // Load __main__ module:
-    PyObject *main_module = 0;
-    if (0 == (main_module = PyImport_AddModule("__main__")))
-    {
+    if (0 == (_main_module = PyImport_AddModule("__main__"))) {
         qFatal("Can not import '__main__'");
         exit(-1);
     }
 
-    // Populate local and global scope
-    if (0 > PyDict_Merge(this->_globals, PyModule_GetDict(main_module), 1))
-    {
-        qCritical("Error while merging global variable scopes.");
+    // Allcocate initial variable scopes (top-level)
+    if (0 == (_globals = PyDict_New())) {
+      qFatal("Can not create global scope!");
+      exit(-1);
+    }
+    if (0 == (_locals = PyDict_New())) {
+      qFatal("Can not create local scope!");
+      exit(-1);
     }
 
-    if (0 > PyDict_Merge(this->_locals, this->_globals, 0))
-    {
+    // Populate local and global scope
+    if (0 > PyDict_Merge(_globals, PyModule_GetDict(_main_module), 1)) {
+        qCritical("Error while merging global variable scopes.");
+    }
+    if (0 > PyDict_Merge(_locals, _globals, 1)) {
         qCritical("Error while merging local variable scopes.");
     }
 
     // Instantiate listmodel of all symbols defined
-    this->_names = new QStringListModel();
+    _names = new QStringListModel();
 
     // update names from global context
-    this->updateGlobalNames();
+    updateGlobalNames();
 }
 
 
 PythonContext::~PythonContext()
 {
   // Free ListModel for names.
-  delete this->_names;
+  delete _names;
+
+  // Decrement variable scopes:
+  Py_DECREF(_globals);
+  Py_DECREF(_locals);
+  Py_DECREF(_main_module);
 }
 
 
 PyObject *
-PythonContext::getGlobals()
-{
-    return this->_globals;
+PythonContext::getGlobals() {
+  return _globals;
 }
 
 
 PyObject *
-PythonContext::getLocals()
-{
-    return this->_locals;
+PythonContext::getLocals() {
+  return _locals;
 }
 
 
 void
 PythonContext::setFileName(const QString &filename)
 {
-    // Convert string to python string
-    PyObject *fname = PyString_FromString(filename.toStdString().c_str());
+  // Convert string to python string
+  PyObject *fname = PyString_FromString(filename.toStdString().c_str());
 
-    // Store filename into local and global context
-    PyDict_SetItemString(this->_globals, "__file__", fname);
-    PyDict_SetItemString(this->_locals, "__file__", fname);
+  // Store filename into local and global context
+  PyDict_SetItemString(_globals, "__file__", fname);
+  PyDict_SetItemString(_locals, "__file__", fname);
 
-    // Append directory of file to sys.path
-    QDir file_dir = QFileInfo(filename).dir();
+  // Append directory of file to sys.path
+  QDir file_dir = QFileInfo(filename).dir();
 
-    // Load sys module:
-    PyObject *sys_module = 0;
-    if (0 == (sys_module = PyImport_AddModule("sys")))
-    {
-        qFatal("Can not import 'sys'");
-        exit(-1);
-    }
+  // Load sys module:
+  PyObject *sys_module = 0;
+  if (0 == (sys_module = PyImport_AddModule("sys"))) {
+    qFatal("Can not import 'sys'");
+    exit(-1);
+  }
 
-    PyObject *sys_path = 0;
-    if (0 == (sys_path = PyDict_GetItemString(PyModule_GetDict(sys_module), "path")))
-    {
+  PyObject *sys_path = 0;
+  if (0 == (sys_path = PyDict_GetItemString(PyModule_GetDict(sys_module), "path"))) {
       qFatal("Can not get 'sys.path'.");
       exit(-1);
-    }
+  }
 
-    if(PyList_Insert(sys_path, 0, PyString_FromString(file_dir.path().toStdString().c_str())))
-    {
-      qFatal("Can not prepend file-directory to sys.path.");
-      exit(-1);
-    }
+  if(PyList_Insert(sys_path, 0, PyString_FromString(file_dir.path().toStdString().c_str()))) {
+    qFatal("Can not prepend file-directory to sys.path.");
+    exit(-1);
+  }
 }
 
 
 QStringListModel *
 PythonContext::getNamesOf(const QString &prefix)
 {
-  if (this->_current_names_prefix != prefix)
+  if (_current_names_prefix != prefix)
   {
-    this->_current_names_prefix = prefix;
+    _current_names_prefix = prefix;
 
-    if ("" == prefix)
-    {
+    if ("" == prefix) {
       this->updateGlobalNames();
-    }
-    else
-    {
+    } else {
       QStringList prefix_list = prefix.split('.', QString::SkipEmptyParts);
       this->updateNamesFrom(prefix_list);
     }
   }
 
-  return this->_names;
+  return _names;
 }
 
 
@@ -145,29 +137,26 @@ PythonContext::updateGlobalNames()
   QStringList name_list;
 
   PyObject *key = 0; ssize_t pos = 0;
-  while (PyDict_Next(this->_globals, &pos, &key, NULL))
-  {
+  while (PyDict_Next(this->_globals, &pos, &key, NULL)) {
     name_list.append(PyString_AsString(key));
   }
 
-  this->_names->setStringList(name_list);
+  _names->setStringList(name_list);
 }
 
 
 void
 PythonContext::updateNamesFrom(QStringList &prefix)
 {
-  if (0 == prefix.length())
-  {
-    this->updateGlobalNames();
+  if (0 == prefix.length()) {
+    updateGlobalNames();
     return;
   }
 
   PyObject *object = 0;
-  if (0 == (object = PyDict_GetItemString(this->_globals, prefix.front().toStdString().c_str())))
-  {
+  if (0 == (object = PyDict_GetItemString(this->_globals, prefix.front().toStdString().c_str()))) {
     QStringList name_list;
-    this->_names->setStringList(name_list);
+    _names->setStringList(name_list);
     return;
   }
 

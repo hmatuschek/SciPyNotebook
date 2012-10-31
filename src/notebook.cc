@@ -10,416 +10,347 @@
  */
 
 #include "notebook.hh"
+#include "cell.hh"
 #include "preferences.hh"
+#include "pythonengine.hh"
 
-#include <QApplication>
 #include <QFile>
+#include <QApplication>
+#include <QMessageBox>
+#include <QFileDialog>
+
+#include <iostream>
 
 
-Notebook::Notebook(QWidget *parent) :
-    QFrame(parent)
+
+Notebook::Notebook(QObject *parent)
+  : QObject(parent), _filepath(""), _python_context(0)
 {
-    // initialize python context of notebook:
-    this->_python_context = new PythonContext(this);
+  // Create new, empty context.
+  _python_context = new PythonContext(this);
 
-    // initialize notebook layout and connect signals
-    this->initNotebookLayout();
+  // Create new cell with default preamble
+  Cell *cell = new Cell(this);
+  cell->setCode(Preferences::get()->preamble());
+  _cells.append(cell);
+  QObject::connect(cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
+  QObject::connect(cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
+  QObject::connect(cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
 
-    // Create an empty cell
-    Cell *new_cell = new Cell(this);
-
-    // set preamble code from preferences
-    new_cell->setCode(Preferences::get()->preamble());
-
-    // Connect to signals
-    QObject::connect(new_cell, SIGNAL(makeVisible(QPoint)),
-                     this, SLOT(makeCellVisible(QPoint)));
-    QObject::connect(new_cell, SIGNAL(cellChanged()),
-                     this, SLOT(cellModified()));
-
-    // Append cell to list:
-    this->_cell_layout->addWidget(new_cell);
-    this->_cells.append(new_cell);
-
-    // Set focus to new cell
-    new_cell->setFocus();
+  // Create actions
+  _createActions();
 }
 
 
-Notebook::Notebook(const QString &filename, QWidget *parent) :
-    QFrame(parent)
+Notebook::Notebook(const QString &path, QObject *parent)
+  : QObject(parent), _filepath(path), _python_context(0)
 {
-  // initialize python context of notebook:
-  this->_python_context = new PythonContext(this);
-  this->_python_context->setFileName(filename);
+  // Create new empty context
+  _python_context = new PythonContext(this);
 
-  // initialize notebook layout and connect signals
-  this->initNotebookLayout();
+  // Read from file:
+  QFile file(_filepath);
+  if (! file.open(QIODevice::ReadOnly | QIODevice::Text)) { return; }
 
-  // Open file...
-  this->_filename = filename;
-  QFile file(this->_filename);
-  file.open(QIODevice::ReadOnly | QIODevice::Text);
-
-  // Check if file is open for reading:
-  if(! file.isOpen())
-  {
-      qCritical("Oops, file (%s) not open...", filename.toStdString().c_str());
-      exit(-1);
-  }
-
-  // Read file content line-by-line
   QRegExp cellSepExpr("^#\\s+-\\*-\\s+snip\\s+-\\*-\\s*$");
   QList<QByteArray> cells;
   cells.append(QByteArray());
 
-  while(! file.atEnd())
-  {
+  while(! file.atEnd()) {
     // Read line:
     QByteArray line = file.readLine();
-
     // check if line is cell separator
-    if (cellSepExpr.indexIn(line) != -1)
-    {
+    if (cellSepExpr.indexIn(line) != -1) {
       // add an new cell to list
       cells.append(QByteArray());
-    }
-    else
-    {
+    } else {
       // append line to current cell
       cells.back().append(line);
     }
   }
 
   // Create cells from code:
-  foreach (QByteArray code, cells)
-  {
+  foreach (QByteArray code, cells) {
     Cell *cell = new Cell(this);
-    this->_cells.append(cell);
-    this->_cell_layout->addWidget(cell);
-
-    cell->setCode(code.trimmed());
-
-    QObject::connect(cell, SIGNAL(makeVisible(QPoint)),
-                     this, SLOT(makeCellVisible(QPoint)));    
-    QObject::connect(cell, SIGNAL(cellChanged()),
-                     this, SLOT(cellModified()));
+    cell->setCode(code);
+    cell->setModified(false);
+    _cells.append(cell);
+    QObject::connect(cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
+    QObject::connect(cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
+    QObject::connect(cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
   }
+
+  // Create actions
+  _createActions();
 }
 
 
 void
-Notebook::initNotebookLayout()
+Notebook::_createActions()
 {
-  this->_cell_layout = new QVBoxLayout();
-  this->_cell_layout->setSpacing(0);
-  this->_cell_layout->setContentsMargins(0,0,0,0);
-  this->setLayout(this->_cell_layout);
-  this->_cell_layout->setSizeConstraint(QLayout::SetMinimumSize);
-  this->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-}
+  _saveAction = new QAction(tr("Save"), this);
+  _saveAction->setShortcut(QKeySequence::Save);
 
+  _saveAsAction = new QAction(tr("Save as..."), this);
+  _saveAsAction->setShortcut(QKeySequence::SaveAs);
 
-void
-Notebook::onNewCell()
-{
-  int index = -1;
+  _printAction = new QAction(tr("Print..."), this);
+  _printAction->setShortcut(QKeySequence::Print);
+  _printAction->setVisible(false);
 
-  // Get the current cell and its index (if known)
-  if (0 != QApplication::focusWidget())
-  {
-    QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
-    index = this->layout()->indexOf(w);
+  _undoAction = new QAction(tr("Undo"), this);
+  _undoAction->setShortcut(QKeySequence::Undo);
 
-    // If focus widget is not in notebook layout
-    if(0 <= index)
-      index++;
-  }
+  _redoAction = new QAction(tr("Redo"), this);
+  _redoAction->setShortcut(QKeySequence::Redo);
 
-  //Append a new cell
-  Cell *new_cell = new Cell(this);
-  new_cell->setFocus();
-  QObject::connect(new_cell, SIGNAL(makeVisible(QPoint)),
-                   this, SLOT(makeCellVisible(QPoint)));
-  QObject::connect(new_cell, SIGNAL(cellChanged()),
-                   this, SLOT(cellModified()));
+  _newCellAction = new QAction(tr("New Cell"), this);
+  _newCellAction->setShortcut(Qt::SHIFT + Qt::CTRL + Qt::Key_N);
 
-  // Insert cell
-  if (0 > index)
-  {
-    this->_cell_layout->addWidget(new_cell);
-    this->_cells.push_back(new_cell);
-  }
-  else
-  {
-    this->_cell_layout->insertWidget(index, new_cell);
-    this->_cells.insert(index, new_cell);
-  }
-}
+  _deleteCellAction = new QAction(tr("Delete Cell"), this);
+  _deleteCellAction->setShortcut(Qt::CTRL + Qt::Key_Backspace);
 
+  _splitCellAction = new QAction(tr("Split Cell"), this);
+  _splitCellAction->setShortcut(Qt::CTRL + Qt::Key_Space);
 
-bool
-Notebook::hasFileName()
-{
-  return 0 != this->_filename.size();
-}
+  _joinCellsAction = new QAction(tr("Join Cells"), this);
+  _joinCellsAction->setShortcut(Qt::SHIFT + Qt::CTRL + Qt::Key_Space);
 
+  _evalCellAction = new QAction(tr("Evaluate Cell"), this);
+  _evalCellAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return));
 
-const QString &
-Notebook::fileName()
-{
-  return this->_filename;
-}
+  _evalAllCellsAction = new QAction(tr("Evaluate all Cells"), this);
+  _evalAllCellsAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Return));
 
-
-void
-Notebook::setFileName(const QString &filename)
-{
-  this->_filename = filename;
-  this->_python_context->setFileName(filename);
+  QObject::connect(_saveAction, SIGNAL(triggered()), this, SLOT(onSave()));
+  QObject::connect(_saveAsAction, SIGNAL(triggered()), this, SLOT(onSaveAs()));
+  QObject::connect(_undoAction, SIGNAL(triggered()), this, SLOT(onUndo()));
+  QObject::connect(_redoAction, SIGNAL(triggered()), this, SLOT(onRedo()));
+  QObject::connect(_newCellAction, SIGNAL(triggered()), this, SLOT(onNewCell()));
+  QObject::connect(_deleteCellAction, SIGNAL(triggered()), this, SLOT(onDeleteCell()));
+  QObject::connect(_joinCellsAction, SIGNAL(triggered()), this, SLOT(onJoinCell()));
+  QObject::connect(_splitCellAction, SIGNAL(triggered()), this, SLOT(onSplitCell()));
+  QObject::connect(_evalCellAction, SIGNAL(triggered()), this, SLOT(onEvalCell()));
+  QObject::connect(_evalAllCellsAction, SIGNAL(triggered()), this, SLOT(onEvalAllCells()));
 }
 
 
 PythonContext *
-Notebook::pythonContext()
-{
-  return this->_python_context;
+Notebook::context() {
+  return _python_context;
 }
 
 
 bool
-Notebook::isModified()
-{
-  return this->_is_modified;
+Notebook::hasFileName() const {
+  return 0 != _filepath.size();
+}
+
+void
+Notebook::setFileName(const QString &filename) {
+  _filepath = filename;
+}
+
+const QString &
+Notebook::fileName() const {
+  return _filepath;
+}
+
+size_t
+Notebook::numCells() const {
+  return _cells.size();
+}
+
+Cell *
+Notebook::cell(size_t i) {
+  return _cells.at(i);
 }
 
 
-void
-Notebook::evalCellSlot()
-{
-  // Get selected cell:
-  Cell *cell = (Cell *)(QApplication::focusWidget()->parent());
-
-  // Check if w is a Cell object and if it is associated with this notebook.
-  if(-1 == this->layout()->indexOf(cell))
-    return;
-
-  cell->evaluate(this->_python_context);
-}
-
-
-void
-Notebook::evalAllCellsSlot()
-{
-  // Evaluate all cells in order
-  foreach(Cell *cell, this->_cells)
-  {
-    // Evaluate cell but stop iteration if evaluation fails
-    if (! cell->evaluate(this->_python_context))
-    {
-      return;
-    }
+bool
+Notebook::isModified() const {
+  for (QList<Cell *>::const_iterator cell=_cells.constBegin(); cell!=_cells.constEnd(); cell++) {
+    if ((*cell)->isModified()) { return true; }
   }
+  return false;
 }
 
 
 void
-Notebook::save()
-{
-  // Do nothing if no filename is set...
-  if (!this->hasFileName())
-  {
+Notebook::onCellActivated(Cell *cell) {
+  if (! _cells.contains(cell)) {
+    _active_cell = 0;
+    _evalCellAction->setEnabled(false);
     return;
   }
 
-  // open file;
-  QFile file(this->_filename);
+  _active_cell = cell;
+  _evalCellAction->setEnabled(true);
+}
 
-  /// \todo Show message if file can not be saved.
-  file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text);
+void
+Notebook::onCellDeactivated(Cell *cell) {
+  _active_cell = 0;
+  _evalCellAction->setEnabled(false);
+}
 
-  size_t index = 1;
-  foreach(Cell *cell, this->_cells)
-  {
-    // Write code into file;
-    cell->serializeCode(file);
 
-    // Write cell separator if not last cell
-    if (index != this->_cells.size())
-    {
-      /// \todo Make lineendings more platform specific.
+void
+Notebook::onCellModifiedStateChanged(bool state) {
+  emit modifiedStateChanged();
+}
 
-      file.write("\n");
-      file.write("# -*- snip -*-");
-      file.write("\n");
-    }
 
-    index++;
+void
+Notebook::onSave() {
+  if (! hasFileName()) {
+    onSaveAs(); return;
   }
 
-  // emit the "isSaved" signal
-  this->_is_modified = false;
-  emit this->saved();
+  QFile file(fileName());
+  if(! file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    QMessageBox::critical(0, tr("Can not save file"), tr("Can not save as %1.").arg(fileName()));
+    return;
+  }
+
+  // Serialize
+  for (QList<Cell *>::iterator cell=_cells.begin(); cell!=_cells.end(); cell++) {
+    file.write((*cell)->codeDocument()->toPlainText().toAscii());
+    if ((*cell) != _cells.back()) {
+      file.write("\n# -*- snip -*-\n");
+    }
+    (*cell)->setModified(false);
+  }
+  file.close();
 }
 
 
 void
-Notebook::undoSlot()
-{
-  // Get the current cell and its index (if known)
-  QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
-  int index = this->layout()->indexOf(w);
-
-  if(0 > index)
-      return;
-
-  // forward to current cell
-  this->_cells[index]->undoSlot();
+Notebook::onSaveAs() {
+  QString file_name = QFileDialog::getSaveFileName(0, tr("Save as..."), "", "Python Code Files (*.py)");
+  if (0 == file_name.size()) { return; }
+  setFileName(file_name);
+  onSave();
 }
 
 
 void
-Notebook::redoSlot()
+Notebook::onUndo() {
+  if (0 == _active_cell) { return; }
+  _active_cell->codeDocument()->undo();
+}
+
+void
+Notebook::onRedo() {
+  if (0 == _active_cell) { return; }
+  _active_cell->codeDocument()->redo();
+}
+
+void
+Notebook::onNewCell()
 {
-  // Get the current cell and its index (if known)
-  QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
-  int index = this->layout()->indexOf(w);
+  // If no cell is selected -> append cell
+  if (0 == _active_cell) {
+    Cell *cell = new Cell(this);
+    QObject::connect(cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
+    QObject::connect(cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
+    QObject::connect(cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
+    _cells.append(cell);
+    emit cellAdded(_cells.size()-1, cell);
+    return;
+  }
 
-  if(0 > index)
-      return;
+  // Otherwise insert cell after active cell
+  Cell *cell = new Cell(this);
+  QObject::connect(cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
+  QObject::connect(cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
+  QObject::connect(cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
+  int idx =_cells.indexOf(_active_cell)+1;
+  _cells.insert(idx, cell);
+  emit cellAdded(idx, cell);
+}
 
-  // forward to current cell
-  this->_cells[index]->redoSlot();
+void
+Notebook::onDeleteCell()
+{
+  // If there is no active cell
+  if (0 == _active_cell) { return; }
+
+  // If the active cell is evaluated or event queued to be evaluated:
+  if ( (Cell::QUEUED == _active_cell->evaluationState()) ||
+       (Cell::EVALUATING == _active_cell->evaluationState()) ) {
+    return;
+  }
+
+  Cell *cell = _active_cell;
+  QObject::disconnect(cell, 0, this, 0);
+
+  int idx = _cells.indexOf(cell);
+  emit cellRemoved(idx);
+  QApplication::instance()->processEvents();
+
+  _cells.removeAt(idx);
+  cell->deleteLater();
+  _active_cell = 0;
+}
+
+void
+Notebook::onSplitCell() {
+  if (0 == _active_cell) { return; }
+  int idx = _cells.indexOf(_active_cell);
+  int split_at = _active_cell->splitPosition();
+
+  QString text = _active_cell->codeDocument()->toPlainText();
+  _active_cell->codeDocument()->setPlainText(text.left(split_at));
+
+  Cell *new_cell = new Cell(this);
+  new_cell->codeDocument()->setPlainText(text.mid(split_at));
+  QObject::connect(new_cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
+  QObject::connect(new_cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
+  QObject::connect(new_cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
+  _cells.insert(idx+1, new_cell);
+  emit cellAdded(idx+1, new_cell);
 }
 
 
 void
-Notebook::splitCellSlot()
-{
-  // Get the current cell and its index (if known)
-  QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
-  int index = this->layout()->indexOf(w);
+Notebook::onJoinCell() {
+  if (0 == _active_cell) { return; }
+  int idx = _cells.indexOf(_active_cell);
+  if (idx == _cells.size()-1) { return; }
+  Cell *next_cell = _cells.at(idx+1);
 
-  // If no cell has focus, done.
-  if(0 > index)
-      return;
+  // If the next cell is evaluated or event queued to be evaluated:
+  if ( (Cell::QUEUED == next_cell->evaluationState()) ||
+       (Cell::EVALUATING == next_cell->evaluationState()) ) {
+    return;
+  }
 
-  // Cast to cell widget
-  Cell *cell = (Cell *)w;
+  QString text = _active_cell->codeDocument()->toPlainText();
+  text.append("\n"); text.append(next_cell->codeDocument()->toPlainText());
+  _active_cell->codeDocument()->setPlainText(text);
 
-  // Get cursor position and split text
-  int pos = cell->codecell->textCursor().position();
-  QString text = cell->codecell->document()->toPlainText();
-  QString text1 = text.left(pos);
-  QString text2 = text.right(text.length()-pos);
+  QObject::disconnect(next_cell, 0, this, 0);
+  emit cellRemoved(idx+1);
+  QApplication::instance()->processEvents();
 
-  // Reset text of "old cell"
-  cell->setCode(text1);
-
-  // Create new cell and add its text:
-  cell = new Cell(this);
-  QObject::connect(cell, SIGNAL(makeVisible(QPoint)),
-                   this, SLOT(makeCellVisible(QPoint)));
-  QObject::connect(cell, SIGNAL(cellChanged()),
-                   this, SLOT(cellModified()));
-
-  // Add "new" cell to layout and list of cells:
-  this->_cell_layout->insertWidget(index+1, cell);
-  this->_cells.insert(index+1, cell);
-
-  // Set code of second (new) cell
-  cell->setCode(text2);
-
-  // signal modification
-  this->cellModified();
+  _cells.removeAt(idx+1);
+  next_cell->deleteLater();
 }
 
 
 void
-Notebook::joinCellsSlot()
-{
-    // Get the current cell and its index (if known)
-    QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
-    int index = this->layout()->indexOf(w);
-
-    // If no cell has focus or the last cell has the focus:
-    if(0 > index || index == this->_cells.size()-1)
-        return;
-
-    // Get cell at index:
-    Cell *cell1 = this->_cells[index];
-    Cell *cell2 = this->_cells[index+1];
-
-    // Get and join code:
-    /// \todo Make line break platform depended.
-    QString code = cell1->codecell->document()->toPlainText()
-                   + "\n"
-                   + cell2->codecell->document()->toPlainText();
-    cell1->setCode(code);
-
-    // remove widget from layout and list:
-    this->layout()->removeWidget(cell2);
-    this->_cells.removeAt(index+1);
-
-    // Disconnect from all signals of the cell
-    QObject::disconnect(cell2, 0, this, 0);
-
-    // free it
-    delete cell2;
-
-    // signal modification
-    this->cellModified();
+Notebook::onEvalCell() {
+  if (0 == _active_cell) { return; }
+  // Clear result cell:
+  _active_cell->resultDocument()->clear();
+  PythonEngine::get()->queueCell(_active_cell);
 }
-
 
 void
-Notebook::delCellSlot()
-{
-    // Get the current cell and its index (if known)
-    QWidget *w = (QWidget *)(QApplication::focusWidget()->parent());
-    int index = this->layout()->indexOf(w);
-
-    // If no cell has focus:
-    if(0 > index)
-        return;
-
-    // Get cell at index:
-    Cell *cell = this->_cells[index];
-
-    // Remove cell from list and layout:
-    this->layout()->removeWidget(cell);
-    this->_cells.removeAt(index);
-
-    // Reset focus:
-    if(0 == this->_cells.length())
-      this->setFocus();
-    else if(index >= this->_cells.length())
-      this->_cells.back()->setFocus();
-    else
-      this->_cells.at(index)->setFocus();
-
-    // Disconnect from all signals of the cell
-    QObject::disconnect(cell, 0, this, 0);
-
-    // free cell
-    delete cell;
-
-    // signal modification
-    this->cellModified();
+Notebook::onEvalAllCells() {
+  for(QList<Cell *>::iterator cell=_cells.begin(); cell!=_cells.end(); cell++) {
+    (*cell)->resultDocument()->clear();
+    PythonEngine::get()->queueCell(*cell);
+  }
 }
-
-
-void
-Notebook::makeCellVisible(QPoint coord)
-{
-  emit this->makeVisible(coord);
-}
-
-
-void
-Notebook::cellModified()
-{
-  if (! this->_is_modified)
-    emit this->modified();
-}
-
