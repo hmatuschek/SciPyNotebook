@@ -13,6 +13,7 @@
 #include "cell.hh"
 #include "preferences.hh"
 #include "pythonengine.hh"
+#include "application.hh"
 
 #include <QFile>
 #include <QApplication>
@@ -29,9 +30,14 @@ Notebook::Notebook(QObject *parent)
   // Create new, empty context.
   _python_context = new PythonContext(this);
 
+  // Register notebook at application:
+  Application *application = static_cast<Application *>(QApplication::instance());
+  application->addNotebook(this);
+
   // Create new cell with default preamble
   Cell *cell = new Cell(this);
   cell->setCode(Preferences::get()->preamble());
+  cell->setModified(true);
   _cells.append(cell);
   QObject::connect(cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
   QObject::connect(cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
@@ -47,6 +53,10 @@ Notebook::Notebook(const QString &path, QObject *parent)
 {
   // Create new empty context
   _python_context = new PythonContext(this);
+
+  // Register notebook at application:
+  Application *application = static_cast<Application *>(QApplication::instance());
+  application->addNotebook(this);
 
   // Read from file:
   QFile file(_filepath);
@@ -100,9 +110,14 @@ Notebook::_createActions()
 
   _undoAction = new QAction(tr("Undo"), this);
   _undoAction->setShortcut(QKeySequence::Undo);
-
   _redoAction = new QAction(tr("Redo"), this);
   _redoAction->setShortcut(QKeySequence::Redo);
+  _copyAction = new QAction(tr("Copy"), this);
+  _copyAction->setShortcut(QKeySequence::Copy);
+  _cutAction = new QAction(tr("Cut"), this);
+  _cutAction->setShortcut(QKeySequence::Cut);
+  _pasteAction = new QAction(tr("Paste"), this);
+  _pasteAction->setShortcut(QKeySequence::Paste);
 
   _newCellAction = new QAction(tr("New Cell"), this);
   _newCellAction->setShortcut(Qt::SHIFT + Qt::CTRL + Qt::Key_N);

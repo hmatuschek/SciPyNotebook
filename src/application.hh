@@ -25,6 +25,8 @@ public:
 
 private slots:
   void onQuit();
+  void onNewNotebook();
+  void onOpenNotebook();
   void onNotebookDelete(QObject *notebook);
 
 private:

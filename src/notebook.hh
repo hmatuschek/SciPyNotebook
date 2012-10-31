@@ -51,6 +51,9 @@ public:
 
   inline QAction *undoAction() { return _undoAction; }
   inline QAction *redoAction() { return _redoAction; }
+  inline QAction *copyAction() { return _copyAction; }
+  inline QAction *cutAction() { return _cutAction; }
+  inline QAction *pasteAction() { return _pasteAction; }
 
   inline QAction *newCellAction() { return _newCellAction; }
   inline QAction *deleteCellAction() { return _deleteCellAction; }
@@ -99,6 +102,9 @@ private:
   QAction *_printAction;
   QAction *_undoAction;
   QAction *_redoAction;
+  QAction *_copyAction;
+  QAction *_cutAction;
+  QAction *_pasteAction;
   QAction *_newCellAction;
   QAction *_deleteCellAction;
   QAction *_splitCellAction;

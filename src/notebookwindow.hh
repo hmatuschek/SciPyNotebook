@@ -29,8 +29,14 @@ public:
   NotebookWindow(const QString &filename, QWidget *parent=0);
   virtual ~NotebookWindow();
 
+  Notebook *notebook();
+
 protected:
   void _initNotebookWindow();
+
+private slots:
+  void updateWindowTitle();
+  void onCloseNotebook();
 };
 
 #endif // NOTEBOOKWINDOW_HH

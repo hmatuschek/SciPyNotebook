@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QApplication>
+#include <QMessageBox>
 
 #include "logo.hh"
 
@@ -18,6 +19,9 @@ NotebookWindow::NotebookWindow(QWidget *parent) :
   _notebook_view = new NotebookView();
   _notebook_view->setNotebook(new Notebook(this));
 
+  QObject::connect(_notebook_view->notebook(), SIGNAL(modifiedStateChanged()),
+                   this, SLOT(updateWindowTitle()));
+
   _initNotebookWindow();
 }
 
@@ -27,6 +31,8 @@ NotebookWindow::NotebookWindow(const QString &filename, QWidget *parent)
 {
   _notebook_view = new NotebookView();
   _notebook_view->setNotebook(new Notebook(filename, this));
+  QObject::connect(_notebook_view->notebook(), SIGNAL(modifiedStateChanged()),
+                   this, SLOT(updateWindowTitle()));
 
   _initNotebookWindow();
 }
@@ -37,14 +43,16 @@ NotebookWindow::~NotebookWindow() {
 }
 
 
+Notebook *
+NotebookWindow::notebook() {
+  return _notebook_view->notebook();
+}
+
 void
 NotebookWindow::_initNotebookWindow()
 {
   // Set window title
-  if (_notebook_view->notebook()->hasFileName())
-    setWindowTitle("SciPy Notebook - " + _notebook_view->notebook()->fileName());
-  else
-    setWindowTitle("SciPy Notebook - New File*");
+  updateWindowTitle();
   setWindowIcon(QIcon(QPixmap(logo_xpm)));
 
   // Set window size...
@@ -77,9 +85,9 @@ NotebookWindow::_initNotebookWindow()
   _editMenu->addAction(_notebook_view->notebook()->undoAction());
   _editMenu->addAction(_notebook_view->notebook()->redoAction());
   _editMenu->addSeparator();
-  /*_editMenu->addAction(COPY);
-  _editMenu->addAction(CUT);
-  _editMenu->addAction(PASTE);*/
+  _editMenu->addAction(_notebook_view->notebook()->copyAction());
+  _editMenu->addAction(_notebook_view->notebook()->cutAction());
+  _editMenu->addAction(_notebook_view->notebook()->pasteAction());
   _editMenu->addSeparator();
   _editMenu->addAction(application->showPreferencesAction());
 
@@ -91,9 +99,44 @@ NotebookWindow::_initNotebookWindow()
   _cellMenu->addSeparator();
   _cellMenu->addAction(_notebook_view->notebook()->evalCellAction());
   _cellMenu->addAction(_notebook_view->notebook()->evalAllCellsAction());
+  _cellMenu->addSeparator();
+  QAction *closeAction = new QAction(tr("Close Notebook"), this);
+  closeAction->setShortcut(QKeySequence::Close);
+  QObject::connect(closeAction, SIGNAL(triggered()), this, SLOT(onCloseNotebook()));
+  _cellMenu->addAction(closeAction);
 
   _helpMenu = this->menuBar()->addMenu(tr("&Help"));
   _helpMenu->addAction(application->showAboutAction());
 }
 
 
+void
+NotebookWindow::updateWindowTitle() {
+  QString title;
+  if (_notebook_view->notebook()->hasFileName()) {
+    title = "SciPy Notebook - " + _notebook_view->notebook()->fileName();
+  } else {
+    title = "SciPy Notebook - New File";
+  }
+
+  if (_notebook_view->notebook()->isModified()) {
+    title.append("*");
+  }
+  setWindowTitle(title);
+}
+
+
+void
+NotebookWindow::onCloseNotebook() {
+  if (notebook()->isModified()) {
+    if (QMessageBox::Yes != QMessageBox::question(0, tr("Discard changes"),
+                                                  tr("This notbook has unsaved changes, do you "
+                                                     "want to close it anyway?"),
+                                                  QMessageBox::Yes, QMessageBox::No))
+    {
+      return;
+    }
+  }
+
+  close();
+}

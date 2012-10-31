@@ -23,7 +23,7 @@
 
 
 Cell::Cell(Notebook *notebook) :
-  QObject(notebook), _notebook(notebook), _stdoutStream(), _stderrStream(), _split_position(0)
+  QObject(notebook), _notebook(notebook), _stdoutStream(), _stderrStream(), _split_position(0), _is_modified(true)
 {
   // Allocate documents for code && result:
   _codedocument = new QTextDocument(this);

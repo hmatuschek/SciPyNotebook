@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
       // Open new, empty notebook window
       window = new NotebookWindow();
     }
+
     window->show();
 
     // Execute application

@@ -1,5 +1,7 @@
 #include "application.hh"
 #include <QMessageBox>
+#include <QFileDialog>
+#include "notebookwindow.hh"
 
 
 Application::Application(int &argc, char **argv) :
@@ -23,6 +25,9 @@ Application::Application(int &argc, char **argv) :
 
   _aboutAct = new QAction(tr("About SciPy Notebook"), this);
   _aboutAct->setStatusTip(tr("Shows some information about SciPy Notebook."));
+
+  QObject::connect(_quitAct, SIGNAL(triggered()), this, SLOT(onQuit()));
+  QObject::connect(_newAct, SIGNAL(triggered()), this, SLOT(onNewNotebook()));
 }
 
 
@@ -36,6 +41,24 @@ Application::addNotebook(Notebook *notebook) {
 void
 Application::onNotebookDelete(QObject *notebook) {
   _notebooks.removeAll(static_cast<Notebook *>(notebook));
+}
+
+
+void
+Application::onNewNotebook() {
+  NotebookWindow *window = new NotebookWindow();
+  window->show();
+}
+
+
+void
+Application::onOpenNotebook() {
+  QString filename = QFileDialog::getOpenFileName(
+        0, tr("Open file..."), "", tr("Python Source File (*.py)"));
+  if (0 == filename.size()) { return; }
+
+  NotebookWindow *window = new NotebookWindow(filename);
+  window->show();
 }
 
 
