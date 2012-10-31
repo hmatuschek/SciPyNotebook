@@ -29,6 +29,7 @@ private slots:
   void onOpenNotebook();
   void onNotebookDelete(QObject *notebook);
   void onShowAbout();
+  void onShowPreferences();
 
 private:
   QList<Notebook *> _notebooks;

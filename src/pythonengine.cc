@@ -107,24 +107,32 @@ PythonEngine::run()
 
     // Precompile code:
     PyObject *prec_code = Py_CompileString(code.toStdString().c_str(), "<cell>", Py_file_input);
-    if (0 == prec_code) {
+    if (0 == prec_code)
+    {
       // Extract Exception:
       PyObject *exec, *pvalue, *traceback;
       PyErr_Fetch(&exec, &pvalue, &traceback);
 
       if (0 == pvalue) {
-        // oops:
         qWarning("Compilation failed but no exception found.");
         current_cell->setEvaluationState(Cell::ERROR);
         continue;
       }
 
-      // If there is a traceback:
-      if (0 != traceback) {
+      // Handle syntax error exception
+      if (exec == PyExc_SyntaxError) {
+        // Extract the line number of the first frame and mark the line in codecell
+        PyObject *lineno = PyObject_GetAttrString(pvalue, "lineno");
+        if (lineno) {
+          current_cell->markCodeLine(PyInt_AsSsize_t(lineno)); Py_DECREF(lineno);
+        }
+      } else if (0 != traceback) {
         // Extract the line number of the first frame and mark the line in codecell
         PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
-        current_cell->markCodeLine(PyInt_AsSsize_t(lineno));
-        Py_DECREF(lineno);
+        if (lineno) {
+          current_cell->markCodeLine(PyInt_AsSsize_t(lineno));
+          Py_DECREF(lineno);
+        }
       }
 
       // Restore exception to be printed:
@@ -155,7 +163,10 @@ PythonEngine::run()
       if (0 != traceback) {
         // Extract the line number of the first frame and mark the line in codecell
         PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
-        Py_DECREF(lineno);
+        if (lineno) {
+          current_cell->markCodeLine(PyInt_AsSsize_t(lineno));
+          Py_DECREF(lineno);
+        }
       }
 
       // Restore exception to be printed:

@@ -131,7 +131,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
                                                    Qt::Horizontal, this);
 
   // Connect to dialog
-  QObject::connect(buttons, SIGNAL(accepted()), this, SLOT(accept()));
+  QObject::connect(buttons, SIGNAL(accepted()), this, SLOT(onAccept()));
   QObject::connect(buttons, SIGNAL(rejected()), this, SLOT(reject()));
 
   // Add buttons to layout
@@ -142,39 +142,26 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
 }
 
 
-QFont
-PreferencesDialog::font()
+void
+PreferencesDialog::onAccept()
 {
-  QFont font(this->_fontBox->currentFont());
-  font.setPointSize(this->_fontSizeBox->value());
+  // Get preferences:
+  Preferences *preferences = Preferences::get();
 
-  return font;
-}
+  // Save font;
+  QFont font(_fontBox->currentFont());
+  font.setPointSize(_fontSizeBox->value());
+  preferences->setFont(font);
 
+  // Save preamble:
+  preferences->setPreamble(_preambleBox->document()->toPlainText());
 
-QString
-PreferencesDialog::preamble()
-{
-  return this->_preambleBox->document()->toPlainText();
-}
+  // Save tab size:
+  preferences->setTabSize(_tabSizeBox->value());
 
+  // Save autocompletion:
+  preferences->setAutoCompletion(_autoComplEnabledBox->isChecked());
+  preferences->setAutoCompletionThreshold(_autoComplThresBox->value());
 
-int
-PreferencesDialog::tabSize()
-{
-  return this->_tabSizeBox->value();
-}
-
-
-bool
-PreferencesDialog::autoCompletionEnabled()
-{
-  return Qt::Checked == this->_autoComplEnabledBox->checkState();
-}
-
-
-int
-PreferencesDialog::autoCompletionThreshold()
-{
-  return this->_autoComplThresBox->value();
+  accept();
 }

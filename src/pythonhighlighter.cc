@@ -51,23 +51,6 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     operatorFormat.setFont(defaultFont);
     operatorFormat.setForeground(QColor(0xAA, 0x00, 0xFF));
 
-    rule.pattern = QRegExp("#[^\n]*");
-    rule.format = singleLineCommentFormat;
-    rule.group = 0;
-    rules.append(rule);
-
-    rule.pattern = QRegExp("\'.*\'");
-    rule.pattern.setMinimal(true);
-    rule.format = quotationFormat;
-    rule.group = 0;
-    rules.append(rule);
-
-    rule.pattern = QRegExp("\".*\"");
-    rule.pattern.setMinimal(true);
-    rule.format = quotationFormat;
-    rule.group = 0;
-    rules.append(rule);
-
     foreach (QString kw, keywords) {
       rule.pattern = QRegExp("\\b" + kw + "\\b", Qt::CaseInsensitive);
       rule.format = keywordFormat;
@@ -91,55 +74,66 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     rule.format = operatorFormat;
     rule.group = 0;
     rules.append(rule);
+
+    rule.pattern = QRegExp("\'.*\'");
+    rule.pattern.setMinimal(true);
+    rule.format = quotationFormat;
+    rule.group = 0;
+    rules.append(rule);
+
+    rule.pattern = QRegExp("\".*\"");
+    rule.pattern.setMinimal(true);
+    rule.format = quotationFormat;
+    rule.group = 0;
+    rules.append(rule);
+
+    rule.pattern = QRegExp("#[^\n]*");
+    rule.format = singleLineCommentFormat;
+    rule.group = 0;
+    rules.append(rule);
 }
 
 
 void
 PythonHighlighter::highlightBlock(const QString &text)
 {
-    // Set default font for all text:
-    this->setFormat(0, text.length(), this->defaultFont);
+  // Set default font for all text:
+  setFormat(0, text.length(), defaultFont);
 
-    // Perform pattern matching (also stolen from Scribus sources)
-    foreach (HighlightingRule rule, rules)
-    {
-        // compile pattern:
-        QRegExp expression(rule.pattern);
-        // match and get position of matched group
-        expression.indexIn(text);
-        int index = expression.pos(rule.group);
+  // Perform pattern matching (also stolen from Scribus sources)
+  foreach (HighlightingRule rule, rules) {
+    // compile pattern:
+    QRegExp expression(rule.pattern);
+    // match and get position of matched group
+    expression.indexIn(text);
+    int index = expression.pos(rule.group);
 
-        while (index >= 0)
-        {
-            int length = expression.cap(rule.group).size();
-            setFormat(index, length, rule.format);
-            expression.indexIn(text, index + length);
-            index = expression.pos(rule.group);
-        }
+    while (index >= 0) {
+      int length = expression.cap(rule.group).size();
+      setFormat(index, length, rule.format);
+      expression.indexIn(text, index + length);
+      index = expression.pos(rule.group);
     }
+  }
 
-    setCurrentBlockState(0);
+  setCurrentBlockState(0);
 
-    // multiline strings handling
-    int startIndex = 0;
-    if (previousBlockState() != 1)
-        startIndex = text.indexOf("\"\"\"");
+  // multiline strings handling
+  int startIndex = 0;
+  if (previousBlockState() != 1)
+    startIndex = text.indexOf("\"\"\"");
 
-    while (startIndex >= 0)
-    {
-        int endIndex = text.indexOf("\"\"\"", startIndex);
-        int commentLength;
+  while (startIndex >= 0) {
+    int endIndex = text.indexOf("\"\"\"", startIndex);
+    int commentLength;
 
-        if (endIndex == -1)
-        {
-            setCurrentBlockState(1);
-            commentLength = text.length() - startIndex;
-        }
-        else
-        {
-            commentLength = endIndex - startIndex + 3;//commentEndExpression.matchedLength();
-        }
-        setFormat(startIndex, commentLength, quotationFormat);
-        startIndex = text.indexOf("\"\"\"", startIndex + commentLength);
+    if (endIndex == -1) {
+      setCurrentBlockState(1);
+      commentLength = text.length() - startIndex;
+    } else {
+      commentLength = endIndex - startIndex + 3;//commentEndExpression.matchedLength();
     }
+    setFormat(startIndex, commentLength, quotationFormat);
+    startIndex = text.indexOf("\"\"\"", startIndex + commentLength);
+  }
 }

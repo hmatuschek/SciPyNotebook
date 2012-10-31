@@ -33,13 +33,10 @@ protected:
   QSpinBox *_autoComplThresBox;
 
 public:
-    explicit PreferencesDialog(QWidget *parent = 0);
+  explicit PreferencesDialog(QWidget *parent = 0);
 
-    QFont font();
-    QString preamble();
-    int tabSize();
-    bool autoCompletionEnabled();
-    int autoCompletionThreshold();
+private slots:
+  void onAccept();
 };
 
 #endif // PREFERENCESDIALOG_HH

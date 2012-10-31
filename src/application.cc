@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include "notebookwindow.hh"
 #include "aboutdialog.hh"
+#include "preferencesdialog.hh"
 
 
 Application::Application(int &argc, char **argv) :
@@ -29,7 +30,9 @@ Application::Application(int &argc, char **argv) :
 
   QObject::connect(_quitAct, SIGNAL(triggered()), this, SLOT(onQuit()));
   QObject::connect(_newAct, SIGNAL(triggered()), this, SLOT(onNewNotebook()));
+  QObject::connect(_openAct, SIGNAL(triggered()), this, SLOT(onOpenNotebook()));
   QObject::connect(_aboutAct, SIGNAL(triggered()), this, SLOT(onShowAbout()));
+  QObject::connect(_preferencesAct, SIGNAL(triggered()), this, SLOT(onShowPreferences()));
 }
 
 
@@ -91,4 +94,9 @@ Application::onQuit()
 void
 Application::onShowAbout() {
   AboutDialog dialog; dialog.exec();
+}
+
+void
+Application::onShowPreferences() {
+  PreferencesDialog dialog; dialog.exec();
 }

@@ -23,6 +23,13 @@
 #include <iostream>
 
 
+void __remove_whitespaces_from_end(QByteArray &array) {
+  if (0 == array.size()) { return; }
+  while (isspace(array[array.size()-1])) {
+    array.remove(array.size()-1, 1);
+  }
+}
+
 
 Notebook::Notebook(QObject *parent)
   : QObject(parent), _filepath(""), _python_context(0)
@@ -82,6 +89,7 @@ Notebook::Notebook(const QString &path, QObject *parent)
   // Create cells from code:
   foreach (QByteArray code, cells) {
     Cell *cell = new Cell(this);
+    __remove_whitespaces_from_end(code);
     cell->setCode(code);
     cell->setModified(false);
     _cells.append(cell);

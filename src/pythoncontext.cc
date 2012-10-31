@@ -141,12 +141,6 @@ PythonContext::updateGlobalNames()
     name_list.append(PyString_AsString(key));
   }
 
-  std::cerr << "Compl Ctx: ";
-  foreach(QString name , name_list) {
-    std::cerr << name.toStdString() << ", ";
-  }
-  std::cerr << std::endl;
-
   _names->setStringList(name_list);
 }
 
