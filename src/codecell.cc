@@ -16,6 +16,8 @@
 #include <QFontMetrics>
 #include <QAbstractItemView>
 #include <QScrollBar>
+#include <iostream>
+
 
 
 CodeCell::CodeCell(Cell *cell, QWidget *parent) :
@@ -250,6 +252,15 @@ CodeCell::keyPressEvent(QKeyEvent *e)
     return;
   }
 
+  // Handle arrow down key press, if in last line, move focus to next cell. */
+  if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_Down)) {
+    QTextCursor cursor = textCursor(); cursor.movePosition(QTextCursor::EndOfLine);
+    QWidget *next = nextInFocusChain();
+    if (cursor.atEnd()) { std::cerr << "move focus to next widget: " << next << std::endl; }
+    if (cursor.atEnd() && next) { next->setFocus(); }
+    else { QTextEdit::keyPressEvent(e); }
+    return;
+  }
   // Determine if the <Tab> means completion:
   bool isShortcut = false;
   if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_Tab)) {

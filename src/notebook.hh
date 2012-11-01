@@ -45,23 +45,6 @@ public:
   size_t numCells() const;
   Cell *cell(size_t i);
 
-  inline QAction *saveNotebookAction() { return _saveAction; }
-  inline QAction *saveNotebookAsAction() { return _saveAsAction; }
-  inline QAction *printNotebookAction() { return _printAction; }
-
-  inline QAction *undoAction() { return _undoAction; }
-  inline QAction *redoAction() { return _redoAction; }
-  inline QAction *copyAction() { return _copyAction; }
-  inline QAction *cutAction() { return _cutAction; }
-  inline QAction *pasteAction() { return _pasteAction; }
-
-  inline QAction *newCellAction() { return _newCellAction; }
-  inline QAction *deleteCellAction() { return _deleteCellAction; }
-  inline QAction *splitCellAction() { return _splitCellAction; }
-  inline QAction *joinCellsAction() { return _joinCellsAction; }
-  inline QAction *evalCellAction() { return _evalCellAction; }
-  inline QAction *evalAllCellsAction() { return _evalAllCellsAction; }
-
   bool isModified() const;
 
 signals:
@@ -69,51 +52,26 @@ signals:
   void cellRemoved(int index);
   void modifiedStateChanged();
 
+public slots:
+  void save();
+  void saveAs();
+  void newCell(int index);
+  void deleteCell(int index);
+  void splitCell(int index, int off);
+  void joinCell(int index);
+  void evalCell(int index);
+  void evalAllCells();
+
 private slots:
-  void onCellActivated(Cell *cell);
-  void onCellDeactivated(Cell *cell);
   void onCellModifiedStateChanged(bool state);
-
-  void onUndo();
-  void onRedo();
-
-  void onSave();
-  void onSaveAs();
-
-  void onNewCell();
-  void onDeleteCell();
-  void onSplitCell();
-  void onJoinCell();
-  void onEvalCell();
-  void onEvalAllCells();
 
 private:
   /** Holds all cells of the notebook. */
   QList<Cell *> _cells;
-  /** The current active cell (the cell with KB focus). */
-  Cell *_active_cell;
-
   /** Holds the filepath if one is assigned to the notebook. */
   QString _filepath;
   /** The python context (namespaces and scopes) of the notebook. */
   PythonContext *_python_context;
-  QAction *_saveAction;
-  QAction *_saveAsAction;
-  QAction *_printAction;
-  QAction *_undoAction;
-  QAction *_redoAction;
-  QAction *_copyAction;
-  QAction *_cutAction;
-  QAction *_pasteAction;
-  QAction *_newCellAction;
-  QAction *_deleteCellAction;
-  QAction *_splitCellAction;
-  QAction *_joinCellsAction;
-  QAction *_evalCellAction;
-  QAction *_evalAllCellsAction;
-
-private:
-  void _createActions();
 };
 
 #endif // NOTEBOOK_H

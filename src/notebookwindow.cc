@@ -66,6 +66,55 @@ NotebookWindow::_initNotebookWindow()
   _scrolledWindow->setWidgetResizable(true);
   setCentralWidget(_scrolledWindow);
 
+  // Create actions:
+  QAction *saveAction = new QAction(tr("Save"), this);
+  saveAction->setShortcut(QKeySequence::Save);
+  QAction *saveAsAction = new QAction(tr("Save"), this);
+  saveAsAction->setShortcut(QKeySequence::SaveAs);
+
+  QAction *undoAction = new QAction(tr("Undo"), this);
+  undoAction->setShortcut(QKeySequence::Undo);
+  QAction *redoAction = new QAction(tr("Redo"), this);
+  redoAction->setShortcut(QKeySequence::Redo);
+  QAction *copyAction = new QAction(tr("Copy"), this);
+  copyAction->setShortcut(QKeySequence::Copy);
+  QAction *cutAction = new QAction(tr("Cut"), this);
+  cutAction->setShortcut(QKeySequence::Cut);
+  QAction *pasteAction = new QAction(tr("Paste"), this);
+  pasteAction->setShortcut(QKeySequence::Paste);
+
+  QAction *newCellAction = new QAction(tr("New cell"), this);
+  newCellAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_N));
+  QAction *delCellAction = new QAction(tr("Delete cell"), this);
+  delCellAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Backspace));
+  QAction *splitCellAction = new QAction(tr("Split cell"), this);
+  splitCellAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Space));
+  QAction *joinCellAction = new QAction(tr("Join cells"), this);
+  joinCellAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Space));
+  QAction *evalCellAction = new QAction(tr("Evaluate cell"), this);
+  evalCellAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return));
+  QAction *evalAllCellsAction = new QAction(tr("Evaluate all cells"), this);
+  evalAllCellsAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Return));
+
+  QAction *closeAction = new QAction(tr("Close Notebook"), this);
+  closeAction->setShortcut(QKeySequence::Close);
+
+  QObject::connect(saveAction, SIGNAL(triggered()), _notebook_view->notebook(), SLOT(save()));
+  QObject::connect(saveAsAction, SIGNAL(triggered()), _notebook_view->notebook(), SLOT(saveAs()));
+
+  QObject::connect(newCellAction, SIGNAL(triggered()), _notebook_view, SLOT(newCell()));
+  QObject::connect(delCellAction, SIGNAL(triggered()), _notebook_view, SLOT(deleteCell()));
+  QObject::connect(splitCellAction, SIGNAL(triggered()), _notebook_view, SLOT(splitCell()));
+  QObject::connect(joinCellAction, SIGNAL(triggered()), _notebook_view, SLOT(joinCell()));
+  QObject::connect(evalCellAction, SIGNAL(triggered()), _notebook_view, SLOT(evalCell()));
+  QObject::connect(evalAllCellsAction, SIGNAL(triggered()), _notebook_view->notebook(), SLOT(evalAllCells()));
+  QObject::connect(closeAction, SIGNAL(triggered()), this, SLOT(onCloseNotebook()));
+
+  QObject::connect(undoAction, SIGNAL(triggered()), _notebook_view, SLOT(undo()));
+  QObject::connect(redoAction, SIGNAL(triggered()), _notebook_view, SLOT(redo()));
+  QObject::connect(copyAction, SIGNAL(triggered()), _notebook_view, SLOT(copy()));
+  QObject::connect(cutAction, SIGNAL(triggered()), _notebook_view, SLOT(cut()));
+  QObject::connect(pasteAction, SIGNAL(triggered()), _notebook_view, SLOT(paste()));
 
   // Assemble menu:
   Application *application = static_cast<Application *>(QApplication::instance());
@@ -74,38 +123,35 @@ NotebookWindow::_initNotebookWindow()
   _fileMenu->addAction(application->newNotebookAction());
   _fileMenu->addAction(application->openFileAction());
   _fileMenu->addSeparator();
-  _fileMenu->addAction(_notebook_view->notebook()->saveNotebookAction());
-  _fileMenu->addAction(_notebook_view->notebook()->saveNotebookAsAction());
+  _fileMenu->addAction(saveAction);
+  _fileMenu->addAction(saveAsAction);
   _fileMenu->addSeparator();
-  _fileMenu->addAction(_notebook_view->notebook()->printNotebookAction());
+  //_fileMenu->addAction(_notebook_view->notebook()->printNotebookAction());
   _fileMenu->addSeparator();
   _fileMenu->addAction(application->quitAction());
 
-  _editMenu = this->menuBar()->addMenu(tr("&Edit"));
-  _editMenu->addAction(_notebook_view->notebook()->undoAction());
-  _editMenu->addAction(_notebook_view->notebook()->redoAction());
+  _editMenu = menuBar()->addMenu(tr("&Edit"));
+  _editMenu->addAction(undoAction);
+  _editMenu->addAction(redoAction);
   _editMenu->addSeparator();
-  _editMenu->addAction(_notebook_view->notebook()->copyAction());
-  _editMenu->addAction(_notebook_view->notebook()->cutAction());
-  _editMenu->addAction(_notebook_view->notebook()->pasteAction());
+  _editMenu->addAction(copyAction);
+  _editMenu->addAction(cutAction);
+  _editMenu->addAction(pasteAction);
   _editMenu->addSeparator();
   _editMenu->addAction(application->showPreferencesAction());
 
-  _cellMenu = this->menuBar()->addMenu(tr("&Notebook"));
-  _cellMenu->addAction(_notebook_view->notebook()->newCellAction());
-  _cellMenu->addAction(_notebook_view->notebook()->deleteCellAction());
-  _cellMenu->addAction(_notebook_view->notebook()->splitCellAction());
-  _cellMenu->addAction(_notebook_view->notebook()->joinCellsAction());
+  _cellMenu = menuBar()->addMenu(tr("&Notebook"));
+  _cellMenu->addAction(newCellAction);
+  _cellMenu->addAction(delCellAction);
+  _cellMenu->addAction(splitCellAction);
+  _cellMenu->addAction(joinCellAction);
   _cellMenu->addSeparator();
-  _cellMenu->addAction(_notebook_view->notebook()->evalCellAction());
-  _cellMenu->addAction(_notebook_view->notebook()->evalAllCellsAction());
+  _cellMenu->addAction(evalCellAction);
+  _cellMenu->addAction(evalAllCellsAction);
   _cellMenu->addSeparator();
-  QAction *closeAction = new QAction(tr("Close Notebook"), this);
-  closeAction->setShortcut(QKeySequence::Close);
-  QObject::connect(closeAction, SIGNAL(triggered()), this, SLOT(onCloseNotebook()));
   _cellMenu->addAction(closeAction);
 
-  _helpMenu = this->menuBar()->addMenu(tr("&Help"));
+  _helpMenu = menuBar()->addMenu(tr("&Help"));
   _helpMenu->addAction(application->showAboutAction());
 }
 

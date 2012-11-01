@@ -13,13 +13,11 @@
 #define NOTEBOOKVIEW_H
 
 #include "notebook.hh"
+#include "cellview.hh"
 
 #include <QScrollArea>
 #include <QList>
 #include <QLayout>
-
-#include <Python.h>
-
 
 /**
  * The notebook view class.
@@ -28,21 +26,39 @@ class NotebookView : public QFrame
 {
   Q_OBJECT
 
-protected:
-  /** Holds the notebook instance being displayed. */
-  Notebook *_notebook;
-  /** The BoxLayout to layout the cells. */
-  QBoxLayout *_cell_layout;
-
 public:
   explicit NotebookView(QWidget *parent = 0);
-
   void setNotebook(Notebook *notebook);
   Notebook *notebook();
+
+public slots:
+  void undo();
+  void redo();
+  void copy();
+  void cut();
+  void paste();
+
+  void newCell();
+  void deleteCell();
+  void splitCell();
+  void joinCell();
+  void evalCell();
 
 private slots:
   void onCellAdded(int index, Cell *cell);
   void onCellRemoved(int index);
+  void onCellActivated(CellView *cell);
+  void onCellDeactivated(CellView *cell);
+
+protected:
+  /** Holds the notebook instance being displayed. */
+  Notebook *_notebook;
+  /** Holds a list of weak references to the @c CellView instances of the notebook view. */
+  QList<CellView *> _cells;
+  /** The BoxLayout to layout the cells. */
+  QBoxLayout *_cell_layout;
+  /** Holds the currently active cell. */
+  CellView *_active_cell;
 };
 
 #endif // NOTEBOOKVIEW_H

@@ -39,6 +39,7 @@ protected:
 private slots:
   void updateWindowTitle();
   void onCloseNotebook();
+
 };
 
 #endif // NOTEBOOKWINDOW_HH

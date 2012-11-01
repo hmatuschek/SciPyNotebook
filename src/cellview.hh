@@ -41,13 +41,32 @@ public:
   /** Destructor. */
   virtual ~CellView();
 
+  /** Returns the cell of the view. */
+  Cell *cell();
+
+  /** Returns the offset in chars of the beginning of the current line.*/
+  int currentLineOffset();
+
+public slots:
+  void undo();
+  void redo();
+  void copy();
+  void cut();
+  void paste();
+
+signals:
+  void cellActivated(CellView *cell);
+  void cellDeactivated(CellView *cell);
+
 private slots:
   void onCellEvaluationStateChanged(unsigned int last_state, unsigned int new_state);
   void onCellDeleted();
   void onHighlightLine(int line);
+  void onCellActivated(Cell *cell);
+  void onCellDeactivated(Cell *cell);
 
 private:
-  /** Holds the pointer to the cell object. */
+  /** Holds a weak reference to the cell object. */
   Cell *_cell;
   /** Holds the code cell view. */
   CodeCell *_codecell;

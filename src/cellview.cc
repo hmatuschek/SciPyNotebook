@@ -53,6 +53,8 @@ CellView::CellView(Cell *cell, QWidget *parent)
                    this, SLOT(onCellEvaluationStateChanged(uint,uint)));
   QObject::connect(_cell, SIGNAL(destroyed()), this, SLOT(onCellDeleted()));
   QObject::connect(_cell, SIGNAL(highlightLine(int)), this, SLOT(onHighlightLine(int)));
+  QObject::connect(_cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
+  QObject::connect(_cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
 }
 
 
@@ -60,6 +62,17 @@ CellView::~CellView() {
   // Pass...
 }
 
+Cell *
+CellView::cell() {
+  return _cell;
+}
+
+int
+CellView::currentLineOffset() {
+  QTextCursor cursor = _codecell->textCursor();
+  cursor.movePosition(QTextCursor::StartOfLine);
+  return cursor.position();
+}
 
 void
 CellView::onCellEvaluationStateChanged(unsigned int last_state, unsigned int new_state)
@@ -99,3 +112,40 @@ void
 CellView::onHighlightLine(int line) {
   _codecell->markLine(line);
 }
+
+
+void
+CellView::onCellActivated(Cell *cell) {
+  emit cellActivated(this);
+}
+
+void
+CellView::onCellDeactivated(Cell *cell) {
+  emit cellDeactivated(this);
+}
+
+void
+CellView::undo() {
+  _codecell->undo();
+}
+
+void
+CellView::redo() {
+  _codecell->redo();
+}
+
+void
+CellView::copy() {
+  _codecell->copy();
+}
+
+void
+CellView::cut() {
+  _codecell->cut();
+}
+
+void
+CellView::paste() {
+  _codecell->paste();
+}
+

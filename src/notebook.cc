@@ -46,12 +46,7 @@ Notebook::Notebook(QObject *parent)
   cell->setCode(Preferences::get()->preamble());
   cell->setModified(true);
   _cells.append(cell);
-  QObject::connect(cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
-  QObject::connect(cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
   QObject::connect(cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
-
-  // Create actions
-  _createActions();
 }
 
 
@@ -94,68 +89,8 @@ Notebook::Notebook(const QString &path, QObject *parent)
     cell->setCode(code);
     cell->setModified(false);
     _cells.append(cell);
-    QObject::connect(cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
-    QObject::connect(cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
     QObject::connect(cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
   }
-
-  // Create actions
-  _createActions();
-}
-
-
-void
-Notebook::_createActions()
-{
-  _saveAction = new QAction(tr("Save"), this);
-  _saveAction->setShortcut(QKeySequence::Save);
-
-  _saveAsAction = new QAction(tr("Save as..."), this);
-  _saveAsAction->setShortcut(QKeySequence::SaveAs);
-
-  _printAction = new QAction(tr("Print..."), this);
-  _printAction->setShortcut(QKeySequence::Print);
-  _printAction->setVisible(false);
-
-  _undoAction = new QAction(tr("Undo"), this);
-  _undoAction->setShortcut(QKeySequence::Undo);
-  _redoAction = new QAction(tr("Redo"), this);
-  _redoAction->setShortcut(QKeySequence::Redo);
-  _copyAction = new QAction(tr("Copy"), this);
-  _copyAction->setShortcut(QKeySequence::Copy);
-  _cutAction = new QAction(tr("Cut"), this);
-  _cutAction->setShortcut(QKeySequence::Cut);
-  _pasteAction = new QAction(tr("Paste"), this);
-  _pasteAction->setShortcut(QKeySequence::Paste);
-
-  _newCellAction = new QAction(tr("New Cell"), this);
-  _newCellAction->setShortcut(Qt::SHIFT + Qt::CTRL + Qt::Key_N);
-
-  _deleteCellAction = new QAction(tr("Delete Cell"), this);
-  _deleteCellAction->setShortcut(Qt::CTRL + Qt::Key_Backspace);
-
-  _splitCellAction = new QAction(tr("Split Cell"), this);
-  _splitCellAction->setShortcut(Qt::CTRL + Qt::Key_Space);
-
-  _joinCellsAction = new QAction(tr("Join Cells"), this);
-  _joinCellsAction->setShortcut(Qt::SHIFT + Qt::CTRL + Qt::Key_Space);
-
-  _evalCellAction = new QAction(tr("Evaluate Cell"), this);
-  _evalCellAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return));
-
-  _evalAllCellsAction = new QAction(tr("Evaluate all Cells"), this);
-  _evalAllCellsAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Return));
-
-  QObject::connect(_saveAction, SIGNAL(triggered()), this, SLOT(onSave()));
-  QObject::connect(_saveAsAction, SIGNAL(triggered()), this, SLOT(onSaveAs()));
-  QObject::connect(_undoAction, SIGNAL(triggered()), this, SLOT(onUndo()));
-  QObject::connect(_redoAction, SIGNAL(triggered()), this, SLOT(onRedo()));
-  QObject::connect(_newCellAction, SIGNAL(triggered()), this, SLOT(onNewCell()));
-  QObject::connect(_deleteCellAction, SIGNAL(triggered()), this, SLOT(onDeleteCell()));
-  QObject::connect(_joinCellsAction, SIGNAL(triggered()), this, SLOT(onJoinCell()));
-  QObject::connect(_splitCellAction, SIGNAL(triggered()), this, SLOT(onSplitCell()));
-  QObject::connect(_evalCellAction, SIGNAL(triggered()), this, SLOT(onEvalCell()));
-  QObject::connect(_evalAllCellsAction, SIGNAL(triggered()), this, SLOT(onEvalAllCells()));
 }
 
 
@@ -202,34 +137,15 @@ Notebook::isModified() const {
 
 
 void
-Notebook::onCellActivated(Cell *cell) {
-  if (! _cells.contains(cell)) {
-    _active_cell = 0;
-    _evalCellAction->setEnabled(false);
-    return;
-  }
-
-  _active_cell = cell;
-  _evalCellAction->setEnabled(true);
-}
-
-void
-Notebook::onCellDeactivated(Cell *cell) {
-  _active_cell = 0;
-  _evalCellAction->setEnabled(false);
-}
-
-
-void
 Notebook::onCellModifiedStateChanged(bool state) {
   emit modifiedStateChanged();
 }
 
 
 void
-Notebook::onSave() {
+Notebook::save() {
   if (! hasFileName()) {
-    onSaveAs(); return;
+    saveAs(); return;
   }
 
   QFile file(fileName());
@@ -251,99 +167,67 @@ Notebook::onSave() {
 
 
 void
-Notebook::onSaveAs() {
+Notebook::saveAs() {
   QString file_name = QFileDialog::getSaveFileName(0, tr("Save as..."), "", "Python Code Files (*.py)");
   if (0 == file_name.size()) { return; }
   setFileName(file_name);
-  onSave();
+  save();
 }
 
 
 void
-Notebook::onUndo() {
-  if (0 == _active_cell) { return; }
-  _active_cell->codeDocument()->undo();
-}
-
-void
-Notebook::onRedo() {
-  if (0 == _active_cell) { return; }
-  _active_cell->codeDocument()->redo();
-}
-
-void
-Notebook::onNewCell()
+Notebook::newCell(int index)
 {
-  // If no cell is selected -> append cell
-  if (0 == _active_cell) {
-    Cell *cell = new Cell(this);
-    QObject::connect(cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
-    QObject::connect(cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
-    QObject::connect(cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
-    _cells.append(cell);
-    emit cellAdded(_cells.size()-1, cell);
-    return;
-  }
-
-  // Otherwise insert cell after active cell
+  if (0 > index) { return; }
   Cell *cell = new Cell(this);
-  QObject::connect(cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
-  QObject::connect(cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
   QObject::connect(cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
-  int idx =_cells.indexOf(_active_cell)+1;
-  _cells.insert(idx, cell);
-  emit cellAdded(idx, cell);
+  _cells.insert(index, cell);
+  emit cellAdded(index, cell);
 }
 
 void
-Notebook::onDeleteCell()
+Notebook::deleteCell(int index)
 {
-  // If there is no active cell
-  if (0 == _active_cell) { return; }
+  if (0 > index) { return; }
+  Cell *active_cell = _cells.at(index);
 
   // If the active cell is evaluated or event queued to be evaluated:
-  if ( (Cell::QUEUED == _active_cell->evaluationState()) ||
-       (Cell::EVALUATING == _active_cell->evaluationState()) ) {
+  if ( (Cell::QUEUED == active_cell->evaluationState()) ||
+       (Cell::EVALUATING == active_cell->evaluationState()) ) {
     return;
   }
 
-  Cell *cell = _active_cell;
-  QObject::disconnect(cell, 0, this, 0);
-
-  int idx = _cells.indexOf(cell);
-  emit cellRemoved(idx);
+  QObject::disconnect(active_cell, 0, this, 0);
+  emit cellRemoved(index);
   QApplication::instance()->processEvents();
 
-  _cells.removeAt(idx);
-  cell->deleteLater();
-  _active_cell = 0;
+  _cells.removeAt(index);
+  active_cell->deleteLater();
 }
 
 void
-Notebook::onSplitCell() {
-  if (0 == _active_cell) { return; }
-  int idx = _cells.indexOf(_active_cell);
-  int split_at = _active_cell->splitPosition();
+Notebook::splitCell(int index, int split_at) {
+  if (0 > index) { return; }
 
-  QString text = _active_cell->codeDocument()->toPlainText();
-  _active_cell->codeDocument()->setPlainText(text.left(split_at));
+  Cell *active_cell = _cells.at(index);
+  QString text = active_cell->codeDocument()->toPlainText();
+  active_cell->codeDocument()->setPlainText(text.left(split_at));
 
   Cell *new_cell = new Cell(this);
   new_cell->codeDocument()->setPlainText(text.mid(split_at));
-  QObject::connect(new_cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
-  QObject::connect(new_cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
   QObject::connect(new_cell, SIGNAL(modifiedStateChanged(bool)), this, SLOT(onCellModifiedStateChanged(bool)));
-  _cells.insert(idx+1, new_cell);
-  emit cellAdded(idx+1, new_cell);
+  _cells.insert(index+1, new_cell);
+  emit cellAdded(index+1, new_cell);
 }
 
 
 void
-Notebook::onJoinCell() {
-  if (0 == _active_cell) { return; }
-  int idx = _cells.indexOf(_active_cell);
-  if (idx == _cells.size()-1) { return; }
-  Cell *next_cell = _cells.at(idx+1);
+Notebook::joinCell(int index)
+{
+  if (0 > index) { return; }
+  if (index == (_cells.size()-1)) { return; }
+  Cell *active_cell = _cells.at(index);
+  Cell *next_cell = _cells.at(index+1);
 
   // If the next cell is evaluated or event queued to be evaluated:
   if ( (Cell::QUEUED == next_cell->evaluationState()) ||
@@ -351,29 +235,30 @@ Notebook::onJoinCell() {
     return;
   }
 
-  QString text = _active_cell->codeDocument()->toPlainText();
+  QString text = active_cell->codeDocument()->toPlainText();
   text.append("\n"); text.append(next_cell->codeDocument()->toPlainText());
-  _active_cell->codeDocument()->setPlainText(text);
+  active_cell->codeDocument()->setPlainText(text);
 
   QObject::disconnect(next_cell, 0, this, 0);
-  emit cellRemoved(idx+1);
+  emit cellRemoved(index+1);
   QApplication::instance()->processEvents();
 
-  _cells.removeAt(idx+1);
+  _cells.removeAt(index+1);
   next_cell->deleteLater();
 }
 
 
 void
-Notebook::onEvalCell() {
-  if (0 == _active_cell) { return; }
+Notebook::evalCell(int index) {
+  if (0 > index) { return; }
+  Cell *active_cell = _cells.at(index);
   // Clear result cell:
-  _active_cell->resultDocument()->clear();
-  PythonEngine::get()->queueCell(_active_cell);
+  active_cell->resultDocument()->clear();
+  PythonEngine::get()->queueCell(active_cell);
 }
 
 void
-Notebook::onEvalAllCells() {
+Notebook::evalAllCells() {
   for(QList<Cell *>::iterator cell=_cells.begin(); cell!=_cells.end(); cell++) {
     (*cell)->resultDocument()->clear();
     PythonEngine::get()->queueCell(*cell);
