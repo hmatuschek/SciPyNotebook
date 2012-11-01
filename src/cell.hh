@@ -63,7 +63,11 @@ public:
 
   PyObject *globalContext();
   PyObject *localContext();
+  PythonContext *context();
 
+  Notebook *notebook();
+
+  /** @todo Move completer into CodeCell. */
   PythonCompleter *completer();
 
   void markCodeLine(size_t line);

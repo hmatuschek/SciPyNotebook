@@ -15,6 +15,7 @@
 #include <QObject>
 #include <Python.h>
 #include <QStringListModel>
+#include <QDir>
 
 
 class PythonContext : public QObject
@@ -25,6 +26,7 @@ protected:
   PyObject *_main_module;
   PyObject *_globals;
   PyObject *_locals;
+  QString _filepath;
 
 public:
   /** Constucts a new python context.  */
@@ -36,6 +38,8 @@ public:
   PyObject *getLocals();
 
   void setFileName(const QString &filename);
+  void setWorkingDirectory();
+  void setWorkingDirectory(const QDir &dir);
 
   void getNamesFor(const QString &path, QStringList &names);
 };

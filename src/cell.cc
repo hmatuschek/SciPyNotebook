@@ -100,6 +100,17 @@ Cell::localContext() {
   return _notebook->context()->getLocals();
 }
 
+PythonContext *
+Cell::context() {
+  return _notebook->context();
+}
+
+Notebook *
+Cell::notebook() {
+  return _notebook;
+}
+
+
 PythonCompleter *Cell::completer() {
   return _completer;
 }

@@ -18,34 +18,34 @@
 
 
 PythonContext::PythonContext(QObject *parent) :
-    QObject(parent)
+  QObject(parent), _main_module(0), _globals(0), _locals(0), _filepath("")
 {
-    // Instantiate python engine if not happend yet.
-    PythonEngine::get();
+  // Instantiate python engine if not happend yet.
+  PythonEngine::get();
 
-    // Load __main__ module:
-    if (0 == (_main_module = PyImport_AddModule("__main__"))) {
-        qFatal("Can not import '__main__'");
-        exit(-1);
-    }
+  // Load __main__ module:
+  if (0 == (_main_module = PyImport_AddModule("__main__"))) {
+    qFatal("Can not import '__main__'");
+    exit(-1);
+  }
 
-    // Allcocate initial variable scopes (top-level)
-    if (0 == (_globals = PyDict_New())) {
-      qFatal("Can not create global scope!");
-      exit(-1);
-    }
-    if (0 == (_locals = PyDict_New())) {
-      qFatal("Can not create local scope!");
-      exit(-1);
-    }
+  // Allcocate initial variable scopes (top-level)
+  if (0 == (_globals = PyDict_New())) {
+    qFatal("Can not create global scope!");
+    exit(-1);
+  }
+  if (0 == (_locals = PyDict_New())) {
+    qFatal("Can not create local scope!");
+    exit(-1);
+  }
 
-    // Populate local and global scope
-    if (0 > PyDict_Merge(_globals, PyModule_GetDict(_main_module), 1)) {
-        qCritical("Error while merging global variable scopes.");
-    }
-    if (0 > PyDict_Merge(_locals, _globals, 1)) {
-        qCritical("Error while merging local variable scopes.");
-    }
+  // Populate local and global scope
+  if (0 > PyDict_Merge(_globals, PyModule_GetDict(_main_module), 1)) {
+    qCritical("Error while merging global variable scopes.");
+  }
+  if (0 > PyDict_Merge(_locals, _globals, 1)) {
+    qCritical("Error while merging local variable scopes.");
+  }
 }
 
 
@@ -73,16 +73,35 @@ PythonContext::getLocals() {
 void
 PythonContext::setFileName(const QString &filename)
 {
+  // Store filename:
+  _filepath = filename;
+
   // Convert string to python string
-  PyObject *fname = PyString_FromString(filename.toStdString().c_str());
+  PyObject *fname = PyString_FromString(_filepath.toStdString().c_str());
 
   // Store filename into local and global context
   PyDict_SetItemString(_globals, "__file__", fname);
   PyDict_SetItemString(_locals, "__file__", fname);
 
-  // Append directory of file to sys.path
-  QDir file_dir = QFileInfo(filename).dir();
+  // Set working directory to file directory:
+  QDir file_dir = QFileInfo(_filepath).dir();
+  setWorkingDirectory(file_dir);
+}
 
+void
+PythonContext::setWorkingDirectory()
+{
+  // Skip if no filepath is set
+  if (0 == _filepath.size()) { return; }
+  // Get directory from file-path
+  QDir file_dir = QFileInfo(_filepath).dir();
+  // Set working directory
+  setWorkingDirectory(file_dir);
+}
+
+void
+PythonContext::setWorkingDirectory(const QDir &dir)
+{
   // Load sys module:
   PyObject *sys_module = 0;
   if (0 == (sys_module = PyImport_AddModule("sys"))) {
@@ -92,11 +111,11 @@ PythonContext::setFileName(const QString &filename)
 
   PyObject *sys_path = 0;
   if (0 == (sys_path = PyDict_GetItemString(PyModule_GetDict(sys_module), "path"))) {
-      qFatal("Can not get 'sys.path'.");
-      exit(-1);
+    qFatal("Can not get 'sys.path'.");
+    exit(-1);
   }
 
-  if(PyList_Insert(sys_path, 0, PyString_FromString(file_dir.path().toStdString().c_str()))) {
+  if(PyList_Insert(sys_path, 0, PyString_FromString(dir.path().toStdString().c_str()))) {
     qFatal("Can not prepend file-directory to sys.path.");
     exit(-1);
   }
@@ -108,18 +127,42 @@ PythonContext::getNamesFor(const QString &path, QStringList &names)
 {
   PyObject *object = _globals; Py_INCREF(object);
 
-  if ("" != path) {
-    foreach (QString name, path.split(".", QString::SkipEmptyParts)) {
-      PyObject *next = PyDict_GetItemString(object, name.toStdString().c_str());
-      Py_DECREF(object);
-      if (0 == next) { return; }
-      object = PyObject_Dir(next);
+  // If no path is given, assemble list from global dictionary:
+  if ("" == path) {
+    PyObject *key = 0; ssize_t pos = 0;
+    while (PyDict_Next(_globals, &pos, &key, NULL)) {
+      names.append(PyString_AsString(key));
     }
+    return;
   }
 
-  PyObject *key = 0; ssize_t pos = 0;
-  while (PyDict_Next(object, &pos, &key, NULL)) {
-    names.append(PyString_AsString(key));
+  // Find object referenced by path:
+  QStringList path_list = path.split(".", QString::SkipEmptyParts);
+  object = PyDict_GetItemString(_globals, path_list.first().toStdString().c_str());
+  path_list.pop_front(); Py_INCREF(object);
+  foreach (QString name, path_list) {
+    // Get a weak reference to the item of the dictionary:
+    PyObject *next = PyObject_GetAttrString(object, name.toStdString().c_str()); Py_DECREF(object);
+    if (0 == next) { return; } object = next;
   }
+
+  // Assemble list of attributes (for module object -> elements):
+  PyObject *keys = 0;
+  if (PyModule_Check(object)) {
+    keys = PyDict_Keys(PyModule_GetDict(object)); Py_DECREF(object);
+  } else {
+    keys = PyObject_Dir(object); Py_DECREF(object);
+  }
+
+  // Iterate over list of elements and assemble list of names:
+  for (size_t i=0; i<PyList_Size(keys); i++) {
+    names.append(PyString_AsString(PyList_GetItem(keys, i)));
+  }
+
+  std::cerr << "Found names in '" << path.toStdString() << "': ";
+  foreach(QString name, names) {
+    std::cerr << name.toStdString() << ", ";
+  }
+  std::cerr << std::endl;
 }
 

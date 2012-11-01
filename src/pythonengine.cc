@@ -102,6 +102,9 @@ PythonEngine::run()
     PyDict_SetItem(sys_dict, PyString_FromString("stderr"),
                    SciPyNotebookStreamWrapper_new(current_cell->stderrStream()));
 
+    // Set working directory to file dir if file path is set:
+    current_cell->context()->setWorkingDirectory();
+
     // Get code
     QString code = current_cell->codeDocument()->toPlainText();
 

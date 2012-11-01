@@ -60,6 +60,7 @@ Notebook::Notebook(const QString &path, QObject *parent)
 {
   // Create new empty context
   _python_context = new PythonContext(this);
+  _python_context->setFileName(path);
 
   // Register notebook at application:
   Application *application = static_cast<Application *>(QApplication::instance());
@@ -172,6 +173,7 @@ Notebook::hasFileName() const {
 void
 Notebook::setFileName(const QString &filename) {
   _filepath = filename;
+  _python_context->setFileName(_filepath);
 }
 
 const QString &
