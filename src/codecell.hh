@@ -55,7 +55,6 @@ public slots:
 private slots:
   void insertCompletion(const QString &completion);
   void onCellDeleted();
-  void onCursorMoved();
 
 protected:
   /** Returns the word under the cursor or "" if there is none. */

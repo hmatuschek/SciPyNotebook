@@ -63,7 +63,6 @@ CodeCell::CodeCell(Cell *cell, QWidget *parent) :
 
   QObject::connect(this, SIGNAL(textChanged()), this, SLOT(onTextChanged()));
   QObject::connect(_cell, SIGNAL(destroyed()), this, SLOT(onCellDeleted()));
-  QObject::connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(onCursorMoved()));
 }
 
 
@@ -317,12 +316,4 @@ CodeCell::focusOutEvent(QFocusEvent *e)
 {
   if (0 != _cell) { _cell->setInactive(); }
   QTextEdit::focusOutEvent(e);
-}
-
-void
-CodeCell::onCursorMoved() {
-  if (0 == _cell) { return; }
-  QTextCursor cursor = textCursor();
-  cursor.movePosition(QTextCursor::StartOfLine);
-  _cell->setSplitPosition(cursor.position());
 }

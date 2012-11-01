@@ -76,10 +76,6 @@ public:
 
   /** Emits a @c markCodeLine signal. */
   void markCodeLine(size_t line);
-  /** Sets the current cursor position (start of line). */
-  void setSplitPosition(size_t pos);
-  /** Retuns the current split position (start of line of the text cursor. */
-  size_t splitPosition() const;
 
   /** Retunrs true if the cell is modified. */
   bool isModified() const;
@@ -123,8 +119,6 @@ protected:
 
   QTextCharFormat _stdoutFormat;
   QTextCharFormat _stderrFormat;
-
-  size_t _split_position;
 };
 
 #endif // __SCIPY_NOTEBOOK_CELL_H__

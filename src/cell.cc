@@ -23,8 +23,7 @@
 
 
 Cell::Cell(Notebook *notebook) :
-  QObject(notebook), _notebook(notebook), _stdoutStream(), _stderrStream(), _split_position(0),
-  _is_modified(true)
+  QObject(notebook), _notebook(notebook), _stdoutStream(), _stderrStream(), _is_modified(true)
 {
   // Allocate documents for code && result:
   _codedocument = new QTextDocument(this);
@@ -108,11 +107,6 @@ Cell::notebook() {
 }
 
 
-size_t
-Cell::splitPosition() const {
-  return _split_position;
-}
-
 bool
 Cell::isModified() const {
   return _is_modified;
@@ -124,13 +118,6 @@ Cell::setModified(bool modified) {
   emit modifiedStateChanged(_is_modified);
 }
 
-
-void
-Cell::setSplitPosition(size_t pos) {
-  QTextCursor cursor(_codedocument);
-  cursor.setPosition(pos); cursor.movePosition(QTextCursor::StartOfLine);
-  _split_position = cursor.position();
-}
 
 void
 Cell::markCodeLine(size_t line) {
