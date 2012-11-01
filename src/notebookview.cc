@@ -84,8 +84,8 @@ NotebookView::onCellAdded(int index, Cell *cell) {
 void
 NotebookView::onCellRemoved(int index) {
   CellView *view = _cells.at(index);
-  // Disconnect from all signals:
   QObject::disconnect(view, 0, this, 0);
+  _cells.removeAt(index);
   QLayoutItem *item = _cell_layout->takeAt(index);
   if (0 != item) { delete item; }
 }
