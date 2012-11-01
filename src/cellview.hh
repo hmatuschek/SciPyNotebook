@@ -57,6 +57,8 @@ public slots:
 signals:
   void cellActivated(CellView *cell);
   void cellDeactivated(CellView *cell);
+  void activateNextCell(CellView *cell);
+  void activatePrevCell(CellView *cell);
 
 private slots:
   void onCellEvaluationStateChanged(unsigned int last_state, unsigned int new_state);
@@ -64,6 +66,8 @@ private slots:
   void onHighlightLine(int line);
   void onCellActivated(Cell *cell);
   void onCellDeactivated(Cell *cell);
+  void onActivateNextCell();
+  void onActivatePrevCell();
 
 private:
   /** Holds a weak reference to the cell object. */

@@ -49,6 +49,8 @@ private slots:
   void onCellRemoved(int index);
   void onCellActivated(CellView *cell);
   void onCellDeactivated(CellView *cell);
+  void onActivateNextCell(CellView *cell);
+  void onActivatePrevCell(CellView *cell);
 
 protected:
   /** Holds the notebook instance being displayed. */

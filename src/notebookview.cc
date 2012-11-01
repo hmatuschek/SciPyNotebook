@@ -53,10 +53,11 @@ NotebookView::setNotebook(Notebook *notebook)
   _notebook = notebook;
   for (size_t i=0; i<_notebook->numCells(); i++) {
     _cells.append(new CellView(notebook->cell(i)));
-    QObject::connect(
-          _cells.back(), SIGNAL(cellActivated(CellView*)), this, SLOT(onCellActivated(CellView*)));
-    QObject::connect(
-          _cells.back(), SIGNAL(cellDeactivated(CellView*)), this, SLOT(onCellDeactivated(CellView*)));
+    QObject::connect(_cells.back(), SIGNAL(cellActivated(CellView*)), this, SLOT(onCellActivated(CellView*)));
+    QObject::connect(_cells.back(), SIGNAL(cellDeactivated(CellView*)), this, SLOT(onCellDeactivated(CellView*)));
+    QObject::connect(_cells.back(), SIGNAL(activateNextCell(CellView*)), this, SLOT(onActivateNextCell(CellView*)));
+    QObject::connect(_cells.back(), SIGNAL(activatePrevCell(CellView*)), this, SLOT(onActivatePrevCell(CellView*)));
+
     _cell_layout->addWidget(_cells.back());
   }
 
@@ -78,6 +79,8 @@ NotebookView::onCellAdded(int index, Cell *cell) {
   _cell_layout->insertWidget(index, view);
   QObject::connect(view, SIGNAL(cellActivated(CellView*)), this, SLOT(onCellActivated(CellView*)));
   QObject::connect(view, SIGNAL(cellDeactivated(CellView*)), this, SLOT(onCellDeactivated(CellView*)));
+  QObject::connect(view, SIGNAL(activateNextCell(CellView*)), this, SLOT(onActivateNextCell(CellView*)));
+  QObject::connect(view, SIGNAL(activatePrevCell(CellView*)), this, SLOT(onActivatePrevCell(CellView*)));
   view->setFocus();
 }
 
@@ -92,17 +95,31 @@ NotebookView::onCellRemoved(int index) {
 
 
 void
-NotebookView::onCellActivated(CellView *cell)
-{
+NotebookView::onCellActivated(CellView *cell) {
   if (! _cells.contains(cell)) { return; }
   _active_cell = cell;
 }
 
 void
-NotebookView::onCellDeactivated(CellView *cell)
-{
+NotebookView::onCellDeactivated(CellView *cell) {
   _active_cell = 0;
 }
+
+void
+NotebookView::onActivateNextCell(CellView *cell) {
+  int index = _cells.indexOf(cell);
+  if (0 > index) { return; }
+  if (index == _cells.size()-1) { return; }
+  _cells.at(index+1)->setFocus();
+}
+
+void
+NotebookView::onActivatePrevCell(CellView *cell) {
+  int index = _cells.indexOf(cell);
+  if (0 >= index) { return; }
+  _cells.at(index-1)->setFocus();
+}
+
 
 void
 NotebookView::undo() {

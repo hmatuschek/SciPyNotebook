@@ -55,6 +55,8 @@ CellView::CellView(Cell *cell, QWidget *parent)
   QObject::connect(_cell, SIGNAL(highlightLine(int)), this, SLOT(onHighlightLine(int)));
   QObject::connect(_cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
   QObject::connect(_cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
+  QObject::connect(_codecell, SIGNAL(activateNextCell()), this, SLOT(onActivateNextCell()));
+  QObject::connect(_codecell, SIGNAL(activatePrevCell()), this, SLOT(onActivatePrevCell()));
 }
 
 
@@ -122,6 +124,16 @@ CellView::onCellActivated(Cell *cell) {
 void
 CellView::onCellDeactivated(Cell *cell) {
   emit cellDeactivated(this);
+}
+
+void
+CellView::onActivateNextCell() {
+  emit activateNextCell(this);
+}
+
+void
+CellView::onActivatePrevCell() {
+  emit activatePrevCell(this);
 }
 
 void

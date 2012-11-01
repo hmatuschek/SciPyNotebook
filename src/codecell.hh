@@ -47,6 +47,10 @@ public:
   virtual QSize sizeHint() const;
 
 
+signals:
+  void activateNextCell();
+  void activatePrevCell();
+
 public slots:
   void onTextChanged();
   void markLine(size_t line);
@@ -56,7 +60,7 @@ private slots:
   void insertCompletion(const QString &completion);
   void onCellDeleted();
 
-protected:
+private:
   /** Returns the word under the cursor or "" if there is none. */
   QString textUnderCursor();
 
@@ -65,11 +69,10 @@ protected:
 
   /** Handles key-press event to show and updated auto-completion. */
   virtual void keyPressEvent(QKeyEvent *e);
-
   virtual void focusInEvent(QFocusEvent *e);
   virtual void focusOutEvent(QFocusEvent *e);
 
-protected:
+private:
   /** Holds the reference (and ownership) of the python highlighter. */
   PythonHighlighter *_higlighter;
   /** Holds a weak reference to the completer for auto-completion. */

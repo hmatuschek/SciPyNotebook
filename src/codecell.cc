@@ -254,12 +254,21 @@ CodeCell::keyPressEvent(QKeyEvent *e)
   // Handle arrow down key press, if in last line, move focus to next cell. */
   if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_Down)) {
     QTextCursor cursor = textCursor(); cursor.movePosition(QTextCursor::EndOfLine);
-    QWidget *next = nextInFocusChain();
-    if (cursor.atEnd()) { std::cerr << "move focus to next widget: " << next << std::endl; }
-    if (cursor.atEnd() && next) { next->setFocus(); }
+    if (cursor.atEnd()) { emit activateNextCell(); }
     else { QTextEdit::keyPressEvent(e); }
     return;
+  } else if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_Up)) {
+    QTextCursor cursor = textCursor(); cursor.movePosition(QTextCursor::StartOfLine);
+    if (cursor.atStart()) { emit activatePrevCell(); }
+    else { QTextEdit::keyPressEvent(e); }
+    return;
+  } else if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_PageUp)) {
+    emit activatePrevCell();
+  } else if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_PageDown)) {
+    emit activateNextCell();
   }
+
+
   // Determine if the <Tab> means completion:
   bool isShortcut = false;
   if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_Tab)) {
