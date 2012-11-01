@@ -18,29 +18,42 @@
 #include <QDir>
 
 
+/**
+ * This class holds the python execution context for a notebook. This context contains the
+ * global and local scope of the notebook as well as the file-name and working directory.
+ */
 class PythonContext : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 
 protected:
+  /** Holds the built-in __main__ module for this context. */
   PyObject *_main_module;
+  /** Holds the global scope for this context. */
   PyObject *_globals;
+  /** Holds the local scope for this context. */
   PyObject *_locals;
+  /** Holds the file-path for the this context. */
   QString _filepath;
 
 public:
   /** Constucts a new python context.  */
   explicit PythonContext(QObject *parent = 0);
-
+  /** Destructor. */
   virtual ~PythonContext();
-
+  /** Returns the global scope as a @c PyDict. */
   PyObject *getGlobals();
+  /** Returns the local scope as a @c PyDict. */
   PyObject *getLocals();
 
+  /** Sets the file-name of the context. */
   void setFileName(const QString &filename);
+  /** Sets the working directory of the context to the directory of the file-path. */
   void setWorkingDirectory();
+  /** Sets the working directory of the context to the given dir. */
   void setWorkingDirectory(const QDir &dir);
-
+  /** Collects all attributes of the given path. If path is empty, returns the elements of the
+   * global scope. */
   void getNamesFor(const QString &path, QStringList &names);
 };
 
