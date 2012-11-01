@@ -36,9 +36,6 @@ Cell::Cell(Notebook *notebook) :
   _stderrFormat.setFontStyleHint(QFont::TypeWriter, QFont::PreferMatch);
   _stderrFormat.setForeground(QColor(0xa0, 0x00, 0x00));
 
-  // Setup autocompletion
-  _completer = new PythonCompleter(_notebook->context());
-
   // Setup streams:
   QObject::connect(&_stdoutStream, SIGNAL(newData(QString)), this, SLOT(onStdoutText(QString)));
   QObject::connect(&_stderrStream, SIGNAL(newData(QString)), this, SLOT(onStderrText(QString)));
@@ -110,10 +107,6 @@ Cell::notebook() {
   return _notebook;
 }
 
-
-PythonCompleter *Cell::completer() {
-  return _completer;
-}
 
 size_t
 Cell::splitPosition() const {

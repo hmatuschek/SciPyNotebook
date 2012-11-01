@@ -42,8 +42,7 @@ public:
 
 public:
   /** Construct a new (empty) cell.
-   * \param notebook Specifies a weak reference to the notebook, that owns this cell.
-   */
+   * \param notebook Specifies a weak reference to the notebook, that owns this cell. */
   explicit Cell(Notebook *notebook);
 
   /** Serializes the code of the codecell into the given device. */
@@ -51,34 +50,46 @@ public:
 
   /** Replaces the code in the codecell with the given text. */
   void setCode(const QString &code);
-
+  /** Returns the code @c QTextDocument. */
   QTextDocument *codeDocument();
+  /** Returns the result (stderr & stdout) @c QTextDocument. */
   QTextDocument *resultDocument();
-
+  /** Returns an input stream representing stdout. */
   CellInputStream *stdoutStream();
+  /** Returns an input stream representing stderr. */
   CellInputStream *stderrStream();
 
+  /** Resets the evaluation state, also emits @c evaluationStateChanged signal. */
   void setEvaluationState(EvaluationState state);
+  /** Returns the current evaluation state. */
   EvaluationState evaluationState();
 
+  /** Returns the global evaluation context as a @c PyDict.*/
   PyObject *globalContext();
+  /** Returns the local evaluation context as a @c PyDict.*/
   PyObject *localContext();
+  /** Returns the evaluation context.*/
   PythonContext *context();
 
+  /** Returns the parent notebook. */
   Notebook *notebook();
 
-  /** @todo Move completer into CodeCell. */
-  PythonCompleter *completer();
-
+  /** Emits a @c markCodeLine signal. */
   void markCodeLine(size_t line);
+  /** Sets the current cursor position (start of line). */
   void setSplitPosition(size_t pos);
+  /** Retuns the current split position (start of line of the text cursor. */
   size_t splitPosition() const;
 
+  /** Retunrs true if the cell is modified. */
   bool isModified() const;
+  /** Resets the "isModified" state, emits @c modifiedStateChanged signal. */
   void setModified(bool modified=true);
 
 public slots:
+  /** Gets called whenever the corresponding cell-view gets the focus. */
   void setActive();
+  /** Gets called whenever the corresponding cell-view looses the focus. */
   void setInactive();
 
 signals:
@@ -113,7 +124,6 @@ protected:
   QTextCharFormat _stdoutFormat;
   QTextCharFormat _stderrFormat;
 
-  PythonCompleter *_completer;
   size_t _split_position;
 };
 

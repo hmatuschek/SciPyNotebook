@@ -158,11 +158,5 @@ PythonContext::getNamesFor(const QString &path, QStringList &names)
   for (size_t i=0; i<PyList_Size(keys); i++) {
     names.append(PyString_AsString(PyList_GetItem(keys, i)));
   }
-
-  std::cerr << "Found names in '" << path.toStdString() << "': ";
-  foreach(QString name, names) {
-    std::cerr << name.toStdString() << ", ";
-  }
-  std::cerr << std::endl;
 }
 

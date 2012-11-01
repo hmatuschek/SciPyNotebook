@@ -43,6 +43,7 @@ public:
 
   bool autoCompletion();
   int autoCompletionThreshold();
+  bool autoIndent();
 
 public:
   static Preferences *get();
@@ -57,6 +58,7 @@ public slots:
   void setTabSize(int size);
   void setAutoCompletion(bool enabled);
   void setAutoCompletionThreshold(int thres);
+  void setAutoIndent(bool enabled);
 };
 
 #endif // PREFERENCES_HH

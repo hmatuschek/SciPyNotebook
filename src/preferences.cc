@@ -97,3 +97,13 @@ Preferences::setAutoCompletionThreshold(int thres) {
 }
 
 
+bool
+Preferences::autoIndent() {
+  return value("autoindent", true).toBool();
+}
+
+void
+Preferences::setAutoIndent(bool enabled) {
+  setValue("autoindent", enabled);
+}
+

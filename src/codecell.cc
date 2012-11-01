@@ -21,18 +21,23 @@
 CodeCell::CodeCell(Cell *cell, QWidget *parent) :
   QTextEdit(parent), _cell(cell)
 {
+  // Set the code document:
   setDocument(cell->codeDocument());
 
-  _completer = cell->completer();
+  // Create and install code completer:
+  _completer = new PythonCompleter(cell->context(), this);
   _completer->setWidget(this);
   _completer->setCompletionMode(QCompleter::PopupCompletion);
   _completer->setCaseSensitivity(Qt::CaseSensitive);
   QObject::connect(_completer, SIGNAL(activated(QString)), this, SLOT(insertCompletion(QString)));
 
-  // Disable word-wrap
+  // Configure text edit:
   setWordWrapMode(QTextOption::NoWrap);
+  setAutoFormatting(QTextEdit::AutoNone);
+  setAcceptRichText(false);
+  setAcceptDrops(true);
 
-  // install syntax highlighter
+  // create and install syntax highlighter
   _higlighter = new PythonHighlighter(this);
   _higlighter->setDocument(document());
 
@@ -210,6 +215,7 @@ CodeCell::moveToEndOfWord(QTextCursor &cursor)
 void
 CodeCell::keyPressEvent(QKeyEvent *e)
 {
+  // If the completer is visible:
   if (_completer && _completer->popup()->isVisible()) {
     // The following keys are forwarded by the completer to the widget
     switch (e->key())
@@ -227,20 +233,30 @@ CodeCell::keyPressEvent(QKeyEvent *e)
     }
   }
 
-  bool isShortcut = false;
-  if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_Tab))
-  {
-    QString completionPrefix = textUnderCursor();
-
-    // If there is no text under the cursor -> handle <tab> by TextEdit
-    if (0 == completionPrefix.length()) {
-      isShortcut = false;
-    } else {
-      qWarning("Complete: %s", completionPrefix.toStdString().c_str());
-      isShortcut = true;
+  // Handle auto-indent:
+  if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_Return)) {
+    // Get whitespaces of the current line:
+    QTextCursor cursor = textCursor(); cursor.select(QTextCursor::LineUnderCursor);
+    QString whitespace = cursor.selectedText(); QRegExp wsexpr("^(\\s+)");
+    if (0 <= wsexpr.indexIn(whitespace)) { whitespace = wsexpr.cap(1); }
+    else { whitespace = ""; }
+    // Forward event to QTextEdit
+    QTextEdit::keyPressEvent(e);
+    // If auto indent is enabled -> append the same amount of whitespaces to the new line
+    if (Preferences::get()->autoIndent()) {
+      textCursor().insertText(whitespace);
     }
+    // done.
+    return;
   }
 
+  // Determine if the <Tab> means completion:
+  bool isShortcut = false;
+  if ((e->modifiers() == Qt::NoModifier) && (e->key() == Qt::Key_Tab)) {
+    isShortcut = (0 != textUnderCursor().length());
+  }
+
+  // If there is no completer, auto completion disabled or it is not a autocompletion task
   if(!_completer || !Preferences::get()->autoCompletion() || !isShortcut) {
     QTextEdit::keyPressEvent(e); return;
   }

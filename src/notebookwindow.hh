@@ -9,6 +9,7 @@
 #include "notebookview.hh"
 
 
+/** Holds the notebook view and a menu bar. */
 class NotebookWindow : public QMainWindow
 {
   Q_OBJECT
@@ -32,6 +33,7 @@ public:
   Notebook *notebook();
 
 protected:
+  /** Assembles the notebook window. */
   void _initNotebookWindow();
 
 private slots:
