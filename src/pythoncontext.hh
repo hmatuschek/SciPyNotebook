@@ -26,10 +26,6 @@ protected:
   PyObject *_globals;
   PyObject *_locals;
 
-  QString _current_names_prefix;
-  QStringListModel *_names;
-
-
 public:
   /** Constucts a new python context.  */
   explicit PythonContext(QObject *parent = 0);
@@ -41,12 +37,7 @@ public:
 
   void setFileName(const QString &filename);
 
-  void updateGlobalNames();
-  QStringListModel *getNamesOf(const QString &prefix);
-
-protected:
-  void updateNamesFrom(QStringList &prefix);
-  void updateNamesFrom(PyObject *object, QStringList &prefix);
+  void getNamesFor(const QString &path, QStringList &names);
 };
 
 #endif // PYTHONCONTEXT_HH

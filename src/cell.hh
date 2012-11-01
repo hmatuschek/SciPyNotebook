@@ -64,7 +64,7 @@ public:
   PyObject *globalContext();
   PyObject *localContext();
 
-  QCompleter *completer();
+  PythonCompleter *completer();
 
   void markCodeLine(size_t line);
   void setSplitPosition(size_t pos);

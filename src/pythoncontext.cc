@@ -46,20 +46,11 @@ PythonContext::PythonContext(QObject *parent) :
     if (0 > PyDict_Merge(_locals, _globals, 1)) {
         qCritical("Error while merging local variable scopes.");
     }
-
-    // Instantiate listmodel of all symbols defined
-    _names = new QStringListModel();
-
-    // update names from global context
-    updateGlobalNames();
 }
 
 
 PythonContext::~PythonContext()
 {
-  // Free ListModel for names.
-  delete _names;
-
   // Decrement variable scopes:
   Py_DECREF(_globals);
   Py_DECREF(_locals);
@@ -112,130 +103,23 @@ PythonContext::setFileName(const QString &filename)
 }
 
 
-QStringListModel *
-PythonContext::getNamesOf(const QString &prefix)
+void
+PythonContext::getNamesFor(const QString &path, QStringList &names)
 {
-  if (_current_names_prefix != prefix)
-  {
-    _current_names_prefix = prefix;
+  PyObject *object = _globals; Py_INCREF(object);
 
-    if ("" == prefix) {
-      updateGlobalNames();
-    } else {
-      QStringList prefix_list = prefix.split('.', QString::SkipEmptyParts);
-      updateNamesFrom(prefix_list);
+  if ("" != path) {
+    foreach (QString name, path.split(".", QString::SkipEmptyParts)) {
+      PyObject *next = PyDict_GetItemString(object, name.toStdString().c_str());
+      Py_DECREF(object);
+      if (0 == next) { return; }
+      object = PyObject_Dir(next);
     }
   }
-
-  return _names;
-}
-
-
-void
-PythonContext::updateGlobalNames()
-{
-  QStringList name_list;
 
   PyObject *key = 0; ssize_t pos = 0;
-  while (PyDict_Next(_globals, &pos, &key, NULL)) {
-    name_list.append(PyString_AsString(key));
+  while (PyDict_Next(object, &pos, &key, NULL)) {
+    names.append(PyString_AsString(key));
   }
-
-  _names->setStringList(name_list);
 }
-
-
-void
-PythonContext::updateNamesFrom(QStringList &prefix)
-{
-  if (0 == prefix.length()) {
-    updateGlobalNames();
-    return;
-  }
-
-  PyObject *object = 0;
-  if (0 == (object = PyDict_GetItemString(_globals, prefix.front().toStdString().c_str()))) {
-    QStringList name_list;
-    _names->setStringList(name_list);
-    return;
-  }
-
-  // Remove first name from prefix list:
-  prefix.pop_front();
-  updateNamesFrom(object, prefix);
-}
-
-
-void
-PythonContext::updateNamesFrom(PyObject *object, QStringList &prefix)
-{
-  QStringList name_list;
-
-  if (0 == prefix.length())
-  {
-    PyObject *items = 0;
-    if (0 == (items = PyObject_Dir(object)))
-    {
-      PyErr_Clear();
-
-      // Set empty list:
-      this->_names->setStringList(name_list);
-      // done.
-      return;
-    }
-
-    // get iterator for list:
-    PyObject *iterator = 0;
-
-    if (0 == (iterator = PyObject_GetIter(items)))
-    {
-      // oops
-      this->_names->setStringList(name_list);
-      PyErr_Clear();
-      Py_DECREF(items);
-      // done.
-      return;
-    }
-
-    // Iterate over list:
-    PyObject *item = 0;
-    while(0 != (item = PyIter_Next(iterator)))
-    {
-      name_list.append(PyString_AsString(item));
-      Py_DECREF(item);
-    }
-
-    if (PyErr_Occurred()) {
-      // oops, clear name list and python-error and return!
-      name_list.clear();
-      PyErr_Clear();
-    }
-
-    Py_DECREF(iterator);
-    Py_DECREF(items);
-
-    // set list of names:
-    this->_names->setStringList(name_list);
-
-    return;
-  }
-
-  PyObject *child = 0;
-  if (0 == (child = PyObject_GetAttrString(object, prefix.front().toStdString().c_str())))
-  {
-    // Set empty name list:
-    this->_names->setStringList(name_list);
-    return;
-  }
-
-  // pop name from prefix:
-  prefix.pop_front();
-
-  // continue:
-  this->updateNamesFrom(child, prefix);
-
-  // free child:
-  Py_DECREF(child);
-}
-
 

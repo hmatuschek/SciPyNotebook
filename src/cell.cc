@@ -50,10 +50,6 @@ void
 Cell::setEvaluationState(EvaluationState state) {
   emit evaluationStateChanged(_evaluation_state, state);
   _evaluation_state = state;
-  // Update context:
-  if (Cell::EVALUATED == state) {
-    _notebook->context()->updateGlobalNames();
-  }
 }
 
 Cell::EvaluationState
@@ -104,8 +100,7 @@ Cell::localContext() {
   return _notebook->context()->getLocals();
 }
 
-QCompleter *
-Cell::completer() {
+PythonCompleter *Cell::completer() {
   return _completer;
 }
 

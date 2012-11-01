@@ -74,7 +74,7 @@ protected:
   /** Holds the reference (and ownership) of the python highlighter. */
   PythonHighlighter *_higlighter;
   /** Holds a weak reference to the completer for auto-completion. */
-  QCompleter *_completer;
+  PythonCompleter *_completer;
   /** Internal used variable to hold the height of the text in pixel. Is needed to resize the
    * view to avoid scrolling. */
   QSize _text_size;
