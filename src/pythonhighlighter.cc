@@ -22,7 +22,6 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     // Assemble rules for syntax highlighting (stolen from Scribus sources)
     // Reserved keywords in Python 2.4
     QStringList keywords;
-    HighlightingRule rule;
 
     keywords << "and" << "assert" << "break" << "class" << "continue" << "def"
         << "del" << "elif" << "else" << "except" << "exec" << "finally"
@@ -51,46 +50,84 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     operatorFormat.setFont(defaultFont);
     operatorFormat.setForeground(QColor(0xAA, 0x00, 0xFF));
 
+    // Keywords
     foreach (QString kw, keywords) {
+      HighlightingRule rule;
       rule.pattern = QRegExp("\\b" + kw + "\\b", Qt::CaseInsensitive);
       rule.format = keywordFormat;
       rule.group = 0;
       rules.append(rule);
     }
 
-    rule.pattern = QRegExp("\\b(def|class)\\s+(\\w+)\\b");
-    rule.format = definitionFormat;
-    rule.group = 2;
-    rules.append(rule);
+    { // Definitions
+      HighlightingRule rule;
+      rule.pattern = QRegExp("\\b(def|class)\\s+(\\w+)\\b");
+      rule.format = definitionFormat;
+      rule.group = 2;
+      rules.append(rule);
+    }
 
-    rule.pattern = QRegExp("\\b\\d+\\b");
-    rule.pattern.setMinimal(true);
-    rule.format = numberFormat;
-    rule.group = 0;
-    rules.append(rule);
+    { // Numbers
+      HighlightingRule rule;
+      rule.pattern = QRegExp("\\b\\d+\\b");
+      rule.pattern.setMinimal(true);
+      rule.format = numberFormat;
+      rule.group = 0;
+      rules.append(rule);
+    }
 
-    rule.pattern = QRegExp("[\\\\|\\<|\\>|\\=|\\!|\\+|\\-|\\*|\\/|\\%]+");
-    rule.pattern.setMinimal(true);
-    rule.format = operatorFormat;
-    rule.group = 0;
-    rules.append(rule);
+    { // Operators
+      HighlightingRule rule;
+      rule.pattern = QRegExp("[\\\\|\\<|\\>|\\=|\\!|\\+|\\-|\\*|\\/|\\%]+");
+      rule.pattern.setMinimal(true);
+      rule.format = operatorFormat;
+      rule.group = 0;
+      rules.append(rule);
+    }
 
-    rule.pattern = QRegExp("\'.*\'");
-    rule.pattern.setMinimal(true);
-    rule.format = quotationFormat;
-    rule.group = 0;
-    rules.append(rule);
+    { // multiline string
+      HighlightingRule rule;
+      rule.pattern = QRegExp("\"\"\".*\"\"\"");
+      rule.pattern.setMinimal(true);
+      rule.format = quotationFormat;
+      rule.group = 0;
+      rules.append(rule);
+    }
 
-    rule.pattern = QRegExp("\".*\"");
-    rule.pattern.setMinimal(true);
-    rule.format = quotationFormat;
-    rule.group = 0;
-    rules.append(rule);
+    { // multiline string
+      HighlightingRule rule;
+      rule.pattern = QRegExp("'''.*'''");
+      rule.pattern.setMinimal(true);
+      rule.format = quotationFormat;
+      rule.group = 0;
+      rules.append(rule);
+    }
 
-    rule.pattern = QRegExp("#[^\n]*");
-    rule.format = singleLineCommentFormat;
-    rule.group = 0;
-    rules.append(rule);
+    { // string
+      HighlightingRule rule;
+      rule.pattern = QRegExp("'[^\n\r]*'");
+      rule.pattern.setMinimal(true);
+      rule.format = quotationFormat;
+      rule.group = 0;
+      rules.append(rule);
+    }
+
+    { // string
+      HighlightingRule rule;
+      rule.pattern = QRegExp("\"[^\n\r]*\"");
+      rule.pattern.setMinimal(true);
+      rule.format = quotationFormat;
+      rule.group = 0;
+      rules.append(rule);
+    }
+
+    {
+      HighlightingRule rule;
+      rule.pattern = QRegExp("#[^\n\r]*");
+      rule.format = singleLineCommentFormat;
+      rule.group = 0;
+      rules.append(rule);
+    }
 }
 
 
@@ -109,31 +146,14 @@ PythonHighlighter::highlightBlock(const QString &text)
     int index = expression.pos(rule.group);
 
     while (index >= 0) {
+      // Apply format
       int length = expression.cap(rule.group).size();
       setFormat(index, length, rule.format);
+      // Find next match & get index
       expression.indexIn(text, index + length);
       index = expression.pos(rule.group);
     }
   }
 
   setCurrentBlockState(0);
-
-  // multiline strings handling
-  int startIndex = 0;
-  if (previousBlockState() != 1)
-    startIndex = text.indexOf("\"\"\"");
-
-  while (startIndex >= 0) {
-    int endIndex = text.indexOf("\"\"\"", startIndex);
-    int commentLength;
-
-    if (endIndex == -1) {
-      setCurrentBlockState(1);
-      commentLength = text.length() - startIndex;
-    } else {
-      commentLength = endIndex - startIndex + 3;//commentEndExpression.matchedLength();
-    }
-    setFormat(startIndex, commentLength, quotationFormat);
-    startIndex = text.indexOf("\"\"\"", startIndex + commentLength);
-  }
 }

@@ -19,9 +19,9 @@
 class HighlightingRule
 {
 public:
-    QRegExp pattern;
-    QTextCharFormat format;
-    int group;
+  QRegExp pattern;
+  QTextCharFormat format;
+  int group;
 };
 
 
