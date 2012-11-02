@@ -44,7 +44,8 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     singleLineCommentFormat.setFontItalic(true);
 
     quotationFormat.setFont(defaultFont);
-    quotationFormat.setForeground(QColor(0x00, 0x55, 0x00));
+    //quotationFormat.setForeground(QColor(0x00, 0x55, 0x00));
+    quotationFormat.setForeground(QColor(0x7f, 0x00, 0x00));
 
     numberFormat.setFont(defaultFont);
     numberFormat.setForeground(QColor(0xFF, 0xAA, 0x00));
@@ -62,26 +63,29 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     // Comments
     rules.append(HighlightingRule(QRegExp("#.*$"), singleLineCommentFormat));
     // Single line strings:
-    rules.append(
-          HighlightingRule(
-            QRegExp("(('[^\n\r']*')|(\"[^\n\r\"]*\")"), quotationFormat, 0,
-            HighlightingRule::DEFAULT, HighlightingRule::DEFAULT));
+    rules.append(HighlightingRule(QRegExp("\"[^\"]*\""), quotationFormat));
+    rules.append(HighlightingRule(QRegExp("'[^']*'"), quotationFormat));
     // Multiline strings
     rules.append(
           HighlightingRule(
-            QRegExp("(('[^']*)|((\"[^\"]*))$"), quotationFormat, 0,
+            QRegExp("\"[^\"]*$"), quotationFormat, 0,
             HighlightingRule::DEFAULT, HighlightingRule::QUOTATION_CONTINUATION));
     rules.append(
           HighlightingRule(
-            QRegExp("^(([^']*')|([^\"]*\"))"), quotationFormat, 0,
+            QRegExp("^[^\"]*\""), quotationFormat, 0,
             HighlightingRule::QUOTATION_CONTINUATION, HighlightingRule::DEFAULT));
+    rules.append(
+          HighlightingRule(
+          QRegExp("^[^\"]*$"), quotationFormat, 0,
+            HighlightingRule::QUOTATION_CONTINUATION, HighlightingRule::QUOTATION_CONTINUATION));
 }
 
 
 void
 PythonHighlighter::highlightBlock(const QString &text)
 {
-  std::cerr << "Hightlight '" << text.toStdString() << "'" << std::endl;
+  std::cerr << "Hightlight '" << text.toStdString() <<
+               "' in mode " << previousBlockState() << std::endl;
 
   // Set default font for all text:
   setFormat(0, text.length(), defaultFont);
@@ -95,26 +99,25 @@ PythonHighlighter::highlightBlock(const QString &text)
     foreach (const HighlightingRule &rule, rules) {
       // Skip pattern with different block state
       if (previousBlockState() != rule.inState) { continue; }
+      // If index matches:
       QRegExp expr(rule.pattern);
-      expr.indexIn(text, currentIndex);
-      if ((index > expr.pos(rule.group)) || (index == expr.pos(rule.group) && (length < expr.cap(rule.group).size()))) {
+      if (0 > expr.indexIn(text, currentIndex)) { continue; }
+      // Check if match is next:
+      if ((index > expr.pos(rule.group)) || ((index == expr.pos(rule.group)) && (length < expr.cap(rule.group).size()))) {
         matched_rule = &rule;
         index = expr.pos(rule.group);
         length = expr.cap(rule.group).size();
       }
     }
 
-    // If no rule matched but the last block was a multiline string -> set this block as
-    // also a multiline string
-    if (0 == matched_rule && HighlightingRule::QUOTATION_CONTINUATION == previousBlockState()) {
-      setCurrentBlockState(HighlightingRule::QUOTATION_CONTINUATION);
-      setFormat(currentIndex, text.length()-currentIndex, quotationFormat);
-      return;
-    }
-
+    // If no rule matched -> done.
     if (0 == matched_rule) { return; }
 
+    // Apply rule:
     setFormat(index, length, matched_rule->format);
     setCurrentBlockState(matched_rule->toState);
+
+    // Update current start index:
+    currentIndex = index+length;
   }
 }

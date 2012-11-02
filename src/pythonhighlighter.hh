@@ -20,8 +20,8 @@ class HighlightingRule
 {
 public:
   typedef enum {
-    DEFAULT = 0,
-    QUOTATION_CONTINUATION
+    DEFAULT = -1,
+    QUOTATION_CONTINUATION = 1
   } State;
 
 public:
@@ -33,8 +33,14 @@ public:
   /** Matches only if the last block is in state. */
   State inState;
 
-  HighlightingRule(const QRegExp &p, const QTextCharFormat &f, int g=0, State ts=DEFAULT, State is=DEFAULT)
+  HighlightingRule(const QRegExp &p, const QTextCharFormat &f, int g=0, State is=DEFAULT, State ts=DEFAULT)
     : pattern(p), format(f), group(g), toState(ts), inState(is)
+  {
+    // Pass...
+  }
+
+  HighlightingRule(const HighlightingRule &other)
+    : pattern(other.pattern), format(other.format), group(other.group), toState(other.toState), inState(other.inState)
   {
     // Pass...
   }
