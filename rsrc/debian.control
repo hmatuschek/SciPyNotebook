@@ -2,7 +2,7 @@ Source: scipynotebook
 Section: unknown
 Priority: optional
 Maintainer: Hannes Matuschek <hmatuschek@gmail.com>
-Build-Depends: debhelper (>= 4.1.16), g++, cmake, libqt4-dev (>= 4.5), libqtcore4 (>= 4.5), libqtgui4 (>= 4.5), libqt4-xml (>= 4.5), python, python-dev
+Build-Depends: debhelper (>= 4.1.16), g++, cmake, libqt4-dev (>= 4.5), libqtcore4 (>= 4.5), libqtgui4 (>= 4.5), python, python-dev
 
 Package: scipynotebook
 Architecture: any
