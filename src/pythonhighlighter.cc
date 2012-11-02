@@ -13,6 +13,7 @@
 #include "preferences.hh"
 
 #include <QTextEdit>
+#include <iostream>
 
 
 
@@ -29,6 +30,7 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
         << "is" << "lambda" << "not" << "or" << "pass" << "print" << "raise"
         << "return" << "try" << "while" << "yield";
 
+    /* Assemble formats. */
     keywordFormat.setFont(defaultFont);
     keywordFormat.setForeground(QColor(0x00, 0x00, 0x7f));
     keywordFormat.setFontWeight(QFont::Bold);
@@ -50,110 +52,69 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
     operatorFormat.setFont(defaultFont);
     operatorFormat.setForeground(QColor(0xAA, 0x00, 0xFF));
 
+    /* Assemble rules */
     // Keywords
-    foreach (QString kw, keywords) {
-      HighlightingRule rule;
-      rule.pattern = QRegExp("\\b" + kw + "\\b", Qt::CaseInsensitive);
-      rule.format = keywordFormat;
-      rule.group = 0;
-      rules.append(rule);
-    }
-
-    { // Definitions
-      HighlightingRule rule;
-      rule.pattern = QRegExp("\\b(def|class)\\s+(\\w+)\\b");
-      rule.format = definitionFormat;
-      rule.group = 2;
-      rules.append(rule);
-    }
-
-    { // Numbers
-      HighlightingRule rule;
-      rule.pattern = QRegExp("\\b\\d+\\b");
-      rule.pattern.setMinimal(true);
-      rule.format = numberFormat;
-      rule.group = 0;
-      rules.append(rule);
-    }
-
-    { // Operators
-      HighlightingRule rule;
-      rule.pattern = QRegExp("[\\\\|\\<|\\>|\\=|\\!|\\+|\\-|\\*|\\/|\\%]+");
-      rule.pattern.setMinimal(true);
-      rule.format = operatorFormat;
-      rule.group = 0;
-      rules.append(rule);
-    }
-
-    { // multiline string
-      HighlightingRule rule;
-      rule.pattern = QRegExp("\"\"\".*\"\"\"");
-      rule.pattern.setMinimal(true);
-      rule.format = quotationFormat;
-      rule.group = 0;
-      rules.append(rule);
-    }
-
-    { // multiline string
-      HighlightingRule rule;
-      rule.pattern = QRegExp("'''.*'''");
-      rule.pattern.setMinimal(true);
-      rule.format = quotationFormat;
-      rule.group = 0;
-      rules.append(rule);
-    }
-
-    { // string
-      HighlightingRule rule;
-      rule.pattern = QRegExp("'[^\n\r]*'");
-      rule.pattern.setMinimal(true);
-      rule.format = quotationFormat;
-      rule.group = 0;
-      rules.append(rule);
-    }
-
-    { // string
-      HighlightingRule rule;
-      rule.pattern = QRegExp("\"[^\n\r]*\"");
-      rule.pattern.setMinimal(true);
-      rule.format = quotationFormat;
-      rule.group = 0;
-      rules.append(rule);
-    }
-
-    {
-      HighlightingRule rule;
-      rule.pattern = QRegExp("#[^\n\r]*");
-      rule.format = singleLineCommentFormat;
-      rule.group = 0;
-      rules.append(rule);
-    }
+    rules.append(HighlightingRule(QRegExp("\\b(" + keywords.join("|") + ")\\b"), keywordFormat));
+    // Numbers
+    rules.append(HighlightingRule(QRegExp("\\b\\d+\\b"), numberFormat));
+    // Operators
+    rules.append(HighlightingRule(QRegExp("[\\\\|\\<|\\>|\\=|\\!|\\+|\\-|\\*|\\/|\\%]"), operatorFormat));
+    // Comments
+    rules.append(HighlightingRule(QRegExp("#.*$"), singleLineCommentFormat));
+    // Single line strings:
+    rules.append(
+          HighlightingRule(
+            QRegExp("(('[^\n\r']*')|(\"[^\n\r\"]*\")"), quotationFormat, 0,
+            HighlightingRule::DEFAULT, HighlightingRule::DEFAULT));
+    // Multiline strings
+    rules.append(
+          HighlightingRule(
+            QRegExp("(('[^']*)|((\"[^\"]*))$"), quotationFormat, 0,
+            HighlightingRule::DEFAULT, HighlightingRule::QUOTATION_CONTINUATION));
+    rules.append(
+          HighlightingRule(
+            QRegExp("^(([^']*')|([^\"]*\"))"), quotationFormat, 0,
+            HighlightingRule::QUOTATION_CONTINUATION, HighlightingRule::DEFAULT));
 }
 
 
 void
 PythonHighlighter::highlightBlock(const QString &text)
 {
+  std::cerr << "Hightlight '" << text.toStdString() << "'" << std::endl;
+
   // Set default font for all text:
   setFormat(0, text.length(), defaultFont);
 
-  // Perform pattern matching (also stolen from Scribus sources)
-  foreach (HighlightingRule rule, rules) {
-    // compile pattern:
-    QRegExp expression(rule.pattern);
-    // match and get position of matched group
-    expression.indexIn(text);
-    int index = expression.pos(rule.group);
-
-    while (index >= 0) {
-      // Apply format
-      int length = expression.cap(rule.group).size();
-      setFormat(index, length, rule.format);
-      // Find next match & get index
-      expression.indexIn(text, index + length);
-      index = expression.pos(rule.group);
+  // Apply rules
+  int currentIndex = 0;
+  while (currentIndex < text.length()) {
+    // Find first pattern matches
+    int index = text.length(), length = 0;
+    const HighlightingRule *matched_rule = 0;
+    foreach (const HighlightingRule &rule, rules) {
+      // Skip pattern with different block state
+      if (previousBlockState() != rule.inState) { continue; }
+      QRegExp expr(rule.pattern);
+      expr.indexIn(text, currentIndex);
+      if ((index > expr.pos(rule.group)) || (index == expr.pos(rule.group) && (length < expr.cap(rule.group).size()))) {
+        matched_rule = &rule;
+        index = expr.pos(rule.group);
+        length = expr.cap(rule.group).size();
+      }
     }
-  }
 
-  setCurrentBlockState(0);
+    // If no rule matched but the last block was a multiline string -> set this block as
+    // also a multiline string
+    if (0 == matched_rule && HighlightingRule::QUOTATION_CONTINUATION == previousBlockState()) {
+      setCurrentBlockState(HighlightingRule::QUOTATION_CONTINUATION);
+      setFormat(currentIndex, text.length()-currentIndex, quotationFormat);
+      return;
+    }
+
+    if (0 == matched_rule) { return; }
+
+    setFormat(index, length, matched_rule->format);
+    setCurrentBlockState(matched_rule->toState);
+  }
 }

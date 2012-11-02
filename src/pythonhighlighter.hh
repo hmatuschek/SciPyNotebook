@@ -19,9 +19,25 @@
 class HighlightingRule
 {
 public:
+  typedef enum {
+    DEFAULT = 0,
+    QUOTATION_CONTINUATION
+  } State;
+
+public:
   QRegExp pattern;
   QTextCharFormat format;
   int group;
+  /** If this pattern matches, the current block gets this state. */
+  State toState;
+  /** Matches only if the last block is in state. */
+  State inState;
+
+  HighlightingRule(const QRegExp &p, const QTextCharFormat &f, int g=0, State ts=DEFAULT, State is=DEFAULT)
+    : pattern(p), format(f), group(g), toState(ts), inState(is)
+  {
+    // Pass...
+  }
 };
 
 
