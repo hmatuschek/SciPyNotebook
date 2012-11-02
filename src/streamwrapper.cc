@@ -12,7 +12,7 @@
 #include "streamwrapper.hh"
 #include "cellinputstream.hh"
 #include <iostream>
-
+#include <Python.h>
 
 /**
  * Implements the "write()" method for the StreamWrapper objects.
