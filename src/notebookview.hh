@@ -1,7 +1,7 @@
 /*
  * This file is part of the SciPyNotebook project.
  *
- * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,29 +27,51 @@ class NotebookView : public QFrame
   Q_OBJECT
 
 public:
+  /** Constructs an empty notebook view. Use @c setNotebook to set the notebook to display. */
   explicit NotebookView(QWidget *parent = 0);
+  /** (Re-) Sets the notebook being displayed. */
   void setNotebook(Notebook *notebook);
+  /** Retruns a weak reference to the displayed notebook. */
   Notebook *notebook();
 
 public slots:
+  /** Undoes the last action in the current active cell. */
   void undo();
+  /** Redoes the last action in the current active cell. */
   void redo();
+  /** Copies the selected text in the current active cell. */
   void copy();
+  /** Cuts the selected text from the current active cell. */
   void cut();
+  /** Pastes some text from the clipboard into the active cell. */
   void paste();
 
+  /** Creates a new cell below the active cell or at the end of the notebook if no cell is
+   * currently active. */
   void newCell();
+  /** Deletes the currently active cell if the cell is not being evaluated or is scheduled for
+   * execution. */
   void deleteCell();
+  /** Splits the current cell at the current line of the cursor. */
   void splitCell();
+  /** Joins the current and the next cell if the next cell is not being evaluated or is scheduled
+   * for execution. */
   void joinCell();
+  /** Evaluates the currently active cell. */
   void evalCell();
 
 private slots:
+  /** Updates the view if a new cell is added to the notebook. */
   void onCellAdded(int index, Cell *cell);
+  /** Updates the view if a cell is removed from the notebook. */
   void onCellRemoved(int index);
+  /** Sets this cell to be the currently active cell. */
   void onCellActivated(CellView *cell);
+  /** Decativates the currently active cell. */
   void onCellDeactivated(CellView *cell);
+  /** Activates the cell right after the currently active cell. */
   void onActivateNextCell(CellView *cell);
+  /** Activates the cell right before the currently active cell. */
   void onActivatePrevCell(CellView *cell);
 
 protected:

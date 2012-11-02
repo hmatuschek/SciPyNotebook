@@ -1,7 +1,7 @@
 /*
  * This file is part of the SciPyNotebook project.
  *
- * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ NotebookView::setNotebook(Notebook *notebook)
   if (0 != _notebook) {
     QObject::disconnect(_notebook, 0, this, 0);
   }
+  _active_cell = 0;
 
   // Disconnect from all cells:
   for (QList<CellView *>::iterator cell_view=_cells.begin(); cell_view!=_cells.end(); cell_view++) {

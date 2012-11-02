@@ -1,7 +1,7 @@
 /*
  * This file is part of the SciPyNotebook project.
  *
- * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -33,11 +33,11 @@ class Cell : public QObject
 
 public:
   typedef enum {
-    UNEVALUATED,
-    QUEUED,
-    EVALUATING,
-    EVALUATED,
-    ERROR
+    UNEVALUATED,  ///< The cell is unevaluated/modified.
+    QUEUED,       ///< The cell is queued for evaluation.
+    EVALUATING,   ///< The cell is being evaluated.
+    EVALUATED,    ///< The cell was successfully evaluated.
+    ERROR         ///< The evaluation of the cell returned an error.
   } EvaluationState;
 
 public:
@@ -82,15 +82,7 @@ public:
   /** Resets the "isModified" state, emits @c modifiedStateChanged signal. */
   void setModified(bool modified=true);
 
-public slots:
-  /** Gets called whenever the corresponding cell-view gets the focus. */
-  void setActive();
-  /** Gets called whenever the corresponding cell-view looses the focus. */
-  void setInactive();
-
 signals:
-  void cellActivated(Cell *active_cell);
-  void cellDeactivated(Cell *active_cell);
   void evaluationStateChanged(unsigned int old_state, unsigned int new_state);
   void modifiedStateChanged(bool modified);
   void highlightLine(int line);

@@ -9,6 +9,17 @@
  *  (at your option) any later version.
  */
 
+/*
+ * This file is part of the SciPyNotebook project.
+ *
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ */
+
 #include "cell.hh"
 #include "cellstatus.hh"
 #include "pythonengine.hh"
@@ -23,7 +34,7 @@
 
 
 Cell::Cell(Notebook *notebook) :
-  QObject(notebook), _notebook(notebook), _stdoutStream(), _stderrStream(), _is_modified(true)
+  QObject(notebook), _notebook(notebook), _stderrStream(), _stdoutStream(), _is_modified(true)
 {
   // Allocate documents for code && result:
   _codedocument = new QTextDocument(this);
@@ -121,19 +132,8 @@ Cell::setModified(bool modified) {
 
 void
 Cell::markCodeLine(size_t line) {
-  emit highlightLine(line);
+  emit highlightLine(int(line));
 }
-
-void
-Cell::setActive() {
-  emit cellActivated(this);
-}
-
-void
-Cell::setInactive() {
-  emit cellDeactivated(this);
-}
-
 
 void
 Cell::onStdoutText(QString text) {

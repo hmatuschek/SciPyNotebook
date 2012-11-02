@@ -1,7 +1,7 @@
 /*
  * This file is part of the SciPyNotebook project.
  *
- * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -316,13 +316,13 @@ CodeCell::keyPressEvent(QKeyEvent *e)
 void
 CodeCell::focusInEvent(QFocusEvent *e)
 {
-  if (0 != _cell) { _cell->setActive(); }
+  if (0 != _cell) { emit activated(this); }
   QTextEdit::focusInEvent(e);
 }
 
 void
 CodeCell::focusOutEvent(QFocusEvent *e)
 {
-  if (0 != _cell) { _cell->setInactive(); }
+  if (0 != _cell) { emit inactivated(this); }
   QTextEdit::focusOutEvent(e);
 }
