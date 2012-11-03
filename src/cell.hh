@@ -94,8 +94,11 @@ private slots:
 
 
 protected:
+  /** Holds a weak reference to the notebook, this cell belongs to. */
   Notebook *_notebook;
+  /** Holds the evaluations state of the cell. */
   EvaluationState _evaluation_state;
+  /** If true, this cell was modified. */
   bool _is_modified;
 
   /** Holds the instance of the code cell. */

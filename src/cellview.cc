@@ -117,12 +117,12 @@ CellView::onHighlightLine(int line) {
 
 
 void
-CellView::onCellActivated(Cell *cell) {
+CellView::onCellActivated(CodeCell *cell) {
   emit cellActivated(this);
 }
 
 void
-CellView::onCellDeactivated(Cell *cell) {
+CellView::onCellDeactivated(CodeCell *cell) {
   emit cellDeactivated(this);
 }
 
