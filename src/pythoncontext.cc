@@ -155,7 +155,7 @@ PythonContext::getNamesFor(const QString &path, QStringList &names)
   }
 
   // Iterate over list of elements and assemble list of names:
-  for (size_t i=0; i<PyList_Size(keys); i++) {
+  for (int i=0; i<PyList_Size(keys); i++) {
     names.append(PyString_AsString(PyList_GetItem(keys, i)));
   }
 }

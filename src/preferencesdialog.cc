@@ -27,7 +27,7 @@
 PreferencesDialog::PreferencesDialog(QWidget *parent) :
     QDialog(parent)
 {
-  this->setWindowTitle("Preferences");
+  setWindowTitle("Preferences");
 
   QVBoxLayout *layout = new QVBoxLayout(this);
   QTabWidget *tabs = new QTabWidget(this);
@@ -49,15 +49,15 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
       gbox->setLayout(hbox);
 
       // Assemble font selection:
-      this->_fontBox = new QFontComboBox(this);
-      this->_fontBox->setCurrentFont(Preferences::get()->font());
-      hbox->addWidget(this->_fontBox);
+      _fontBox = new QFontComboBox(this);
+      _fontBox->setCurrentFont(Preferences::get()->font());
+      hbox->addWidget(_fontBox);
 
       // Assemble size selection box.
-      this->_fontSizeBox = new QSpinBox(this);
-      this->_fontSizeBox->setRange(6, 24);
-      this->_fontSizeBox->setValue(Preferences::get()->font().pointSize());
-      hbox->addWidget(this->_fontSizeBox);
+      _fontSizeBox = new QSpinBox(this);
+      _fontSizeBox->setRange(6, 24);
+      _fontSizeBox->setValue(Preferences::get()->font().pointSize());
+      hbox->addWidget(_fontSizeBox);
 
       vbox->addWidget(gbox);
     }
@@ -70,10 +70,10 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
       QHBoxLayout *hbox = new QHBoxLayout();
       gbox->setLayout(hbox);
 
-      this->_tabSizeBox = new QSpinBox(this);
-      this->_tabSizeBox->setRange(0, 10);
-      this->_tabSizeBox->setValue(Preferences::get()->tabSize());
-      hbox->addWidget(this->_tabSizeBox);
+      _tabSizeBox = new QSpinBox(this);
+      _tabSizeBox->setRange(0, 10);
+      _tabSizeBox->setValue(Preferences::get()->tabSize());
+      hbox->addWidget(_tabSizeBox);
 
       vbox->addWidget(gbox);
     }
@@ -86,20 +86,21 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
       QBoxLayout *hbox = new QVBoxLayout();
       gbox->setLayout(hbox);
 
-      this->_autoComplEnabledBox = new QCheckBox("Auto completion enabled", this);
-      this->_autoComplEnabledBox->setTristate(false);
-      if (Preferences::get()->autoCompletion())
-        this->_autoComplEnabledBox->setCheckState(Qt::Checked);
-      else
-        this->_autoComplEnabledBox->setCheckState(Qt::Unchecked);
-      hbox->addWidget(this->_autoComplEnabledBox);
+      _autoComplEnabledBox = new QCheckBox("Auto completion enabled", this);
+      _autoComplEnabledBox->setTristate(false);
+      if (Preferences::get()->autoCompletion()) {
+        _autoComplEnabledBox->setCheckState(Qt::Checked);
+      } else {
+        _autoComplEnabledBox->setCheckState(Qt::Unchecked);
+      }
+      hbox->addWidget(_autoComplEnabledBox);
 
       QBoxLayout *thres_box = new QHBoxLayout();
-      this->_autoComplThresBox = new QSpinBox(this);
-      this->_autoComplThresBox->setRange(3, 100);
-      this->_autoComplThresBox->setValue(Preferences::get()->autoCompletionThreshold());
+      _autoComplThresBox = new QSpinBox(this);
+      _autoComplThresBox->setRange(3, 100);
+      _autoComplThresBox->setValue(Preferences::get()->autoCompletionThreshold());
       thres_box->addWidget(new QLabel("Auto completion threshold", this));
-      thres_box->addWidget(this->_autoComplThresBox);
+      thres_box->addWidget(_autoComplThresBox);
       hbox->addLayout(thres_box);
 
       vbox->addWidget(gbox);
@@ -114,17 +115,16 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
     QVBoxLayout *vbox = new QVBoxLayout();
     preFrame->setLayout(vbox);
 
-    this->_preambleBox = new QTextEdit(this);
-    PythonHighlighter *highlighter = new PythonHighlighter(this->_preambleBox);
-    this->_preambleBox->document()->setPlainText(Preferences::get()->preamble());
-    vbox->addWidget(this->_preambleBox);
+    _preambleBox = new QTextEdit(this);
+    new PythonHighlighter(_preambleBox);
+    _preambleBox->document()->setPlainText(Preferences::get()->preamble());
+    vbox->addWidget(_preambleBox);
 
     // add preamble frame to tabs.
     tabs->addTab(preFrame, "Preamble");
   }
 
   this->layout()->addWidget(tabs);
-
 
   // Create default buttons
   QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
@@ -138,7 +138,7 @@ PreferencesDialog::PreferencesDialog(QWidget *parent) :
   layout->addWidget(buttons);
 
   // Set layout of dialog
-  this->setLayout(layout);
+  setLayout(layout);
 }
 
 
