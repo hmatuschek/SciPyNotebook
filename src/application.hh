@@ -9,7 +9,6 @@
  *  (at your option) any later version.
  */
 
-
 #ifndef APPLICATION_HH
 #define APPLICATION_HH
 
@@ -20,17 +19,24 @@
 #include "cell.hh"
 
 
+/** Central class implementing application global menu actions. */
 class Application : public QApplication
 {
   Q_OBJECT
 
 public:
+  /** Constructs the application. */
   explicit Application(int & argc, char ** argv);
   
+  /** Returns a weak reference to the "new notebook" action. */
   inline QAction *newNotebookAction() { return _newAct; }
+  /** Returns a weak reference to the "open file" action. */
   inline QAction *openFileAction() { return _openAct; }
+  /** Returns a weak reference to the "quit" action. */
   inline QAction *quitAction() { return _quitAct; }
+  /** Returns a weak reference to the "preferences" action. */
   inline QAction *showPreferencesAction() { return _preferencesAct; }
+  /** Returns a weak reference to the "about" action. */
   inline QAction *showAboutAction() { return _aboutAct; }
 
   void addNotebook(Notebook *notebook);

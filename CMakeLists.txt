@@ -6,14 +6,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 #
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake)
 
-#
-# Get default directories under Linux
-#
-IF(UNIX AND NOT APPLE)
-INCLUDE(GNUInstallDirs)
-ELSE()
-SET(CMAKE_INSTALL_LIBDIR "lib")
-ENDIF(UNIX AND NOT APPLE)
 
 # Ok we need this to avoid clang compiler on MacOSX 10.8+
 IF(APPLE)
