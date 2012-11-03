@@ -84,9 +84,6 @@ PythonHighlighter::PythonHighlighter(QTextEdit *parent) :
 void
 PythonHighlighter::highlightBlock(const QString &text)
 {
-  std::cerr << "Hightlight '" << text.toStdString() <<
-               "' in mode " << previousBlockState() << std::endl;
-
   // Set default font for all text:
   setFormat(0, text.length(), defaultFont);
 

@@ -29,8 +29,6 @@ PythonCompleter::setCompletionPrefix(const QString &prefix)
   QString name_prefix = names.back(); names.pop_back();
   QString object_path = names.join(".");
 
-  std::cerr << "Update list of objects from " << object_path.toStdString()
-            << " with prefix " << name_prefix.toStdString() << std::endl;
   QStringList lst; _context->getNamesFor(object_path, lst);
   _model->setStringList(lst);
   QCompleter::setCompletionPrefix(name_prefix);
