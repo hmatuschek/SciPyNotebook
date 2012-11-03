@@ -1,6 +1,6 @@
 Summary: Notebook like editor for NumPy/SciPy.
 
-%define version 0.3.0
+%define version 1.0.0rc1
 
 License: GPLv2
 Group: Development
