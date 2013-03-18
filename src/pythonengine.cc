@@ -71,6 +71,10 @@ PythonEngine::queueCell(Cell *cell) {
 void
 PythonEngine::run()
 {
+  // Tell Python about this thread...
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
   // Get global sys module:
   PyObject *sys_module = 0;
   if (0 == (sys_module = PyImport_AddModule("sys"))) {
@@ -187,5 +191,7 @@ PythonEngine::run()
     Py_DECREF(result);
     Py_DECREF(prec_code);
   }
+
+  PyGILState_Release(gstate);
 }
 
