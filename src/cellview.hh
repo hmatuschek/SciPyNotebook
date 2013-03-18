@@ -1,7 +1,7 @@
 /*
  * This file is part of the SciPyNotebook project.
  *
- * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -64,8 +64,8 @@ private slots:
   void onCellEvaluationStateChanged(unsigned int last_state, unsigned int new_state);
   void onCellDeleted();
   void onHighlightLine(int line);
-  void onCellActivated(Cell *cell);
-  void onCellDeactivated(Cell *cell);
+  void onCellActivated(CodeCell *cell);
+  void onCellDeactivated(CodeCell *cell);
   void onActivateNextCell();
   void onActivatePrevCell();
 

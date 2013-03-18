@@ -1,7 +1,7 @@
 /*
  * This file is part of the SciPyNotebook project.
  *
- * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -155,7 +155,7 @@ PythonContext::getNamesFor(const QString &path, QStringList &names)
   }
 
   // Iterate over list of elements and assemble list of names:
-  for (size_t i=0; i<PyList_Size(keys); i++) {
+  for (int i=0; i<PyList_Size(keys); i++) {
     names.append(PyString_AsString(PyList_GetItem(keys, i)));
   }
 }

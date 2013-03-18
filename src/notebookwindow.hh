@@ -1,7 +1,7 @@
 /*
  * This file is part of the SciPyNotebook project.
  *
- * (c) 2011,2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

@@ -1,3 +1,14 @@
+/*
+ * This file is part of the SciPyNotebook project.
+ *
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ */
+
 #include "pythoncompleter.hh"
 #include <iostream>
 
@@ -18,8 +29,6 @@ PythonCompleter::setCompletionPrefix(const QString &prefix)
   QString name_prefix = names.back(); names.pop_back();
   QString object_path = names.join(".");
 
-  std::cerr << "Update list of objects from " << object_path.toStdString()
-            << " with prefix " << name_prefix.toStdString() << std::endl;
   QStringList lst; _context->getNamesFor(object_path, lst);
   _model->setStringList(lst);
   QCompleter::setCompletionPrefix(name_prefix);

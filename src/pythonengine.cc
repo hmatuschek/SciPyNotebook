@@ -1,7 +1,7 @@
 /*
  * This file is part of the SciPyNotebook project.
  *
- * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ PythonEngine::PythonEngine(QObject *parent)
 
   // Register SciPyNotebookStreamWrapper class:
   if (0 > SciPyNotebookStreamWrapperType_init()) {
-    std::cerr << "Oops: Can not register stream wrapper type..." << std::endl;
     exit(-1);
   }
 }
@@ -78,7 +77,6 @@ PythonEngine::run()
   // Get global sys module:
   PyObject *sys_module = 0;
   if (0 == (sys_module = PyImport_AddModule("sys"))) {
-    std::cerr << "Opps: Can not import 'sys'" << std::endl;
     exit(-1);
   }
   PyObject *sys_dict = PyModule_GetDict(sys_module);

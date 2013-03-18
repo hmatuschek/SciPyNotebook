@@ -1,7 +1,7 @@
 /*
  * This file is part of the SciPyNotebook project.
  *
- * (c) 2011 Hannes Matuschek <hmatuschek AT gmail DOT com>
+ * (c) 2011, 2012 Hannes Matuschek <hmatuschek AT gmail DOT com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -53,8 +53,8 @@ CellView::CellView(Cell *cell, QWidget *parent)
                    this, SLOT(onCellEvaluationStateChanged(uint,uint)));
   QObject::connect(_cell, SIGNAL(destroyed()), this, SLOT(onCellDeleted()));
   QObject::connect(_cell, SIGNAL(highlightLine(int)), this, SLOT(onHighlightLine(int)));
-  QObject::connect(_cell, SIGNAL(cellActivated(Cell*)), this, SLOT(onCellActivated(Cell*)));
-  QObject::connect(_cell, SIGNAL(cellDeactivated(Cell*)), this, SLOT(onCellDeactivated(Cell*)));
+  QObject::connect(_codecell, SIGNAL(activated(CodeCell*)), this, SLOT(onCellActivated(CodeCell*)));
+  QObject::connect(_codecell, SIGNAL(inactivated(CodeCell*)), this, SLOT(onCellDeactivated(CodeCell*)));
   QObject::connect(_codecell, SIGNAL(activateNextCell()), this, SLOT(onActivateNextCell()));
   QObject::connect(_codecell, SIGNAL(activatePrevCell()), this, SLOT(onActivatePrevCell()));
 }
@@ -117,12 +117,12 @@ CellView::onHighlightLine(int line) {
 
 
 void
-CellView::onCellActivated(Cell *cell) {
+CellView::onCellActivated(CodeCell *cell) {
   emit cellActivated(this);
 }
 
 void
-CellView::onCellDeactivated(Cell *cell) {
+CellView::onCellDeactivated(CodeCell *cell) {
   emit cellDeactivated(this);
 }
 
