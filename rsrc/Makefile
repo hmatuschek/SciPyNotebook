@@ -7,7 +7,7 @@ QTSVG_FRAMEWORK = /opt/local/Library/Frameworks/QtSvg.framework/Versions/4/QtSvg
 QTNET_FRAMEWORK = /opt/local/Library/Frameworks/QtNetwork.framework/Versions/4/QtNetwork
 APP_LIBRARY_DIR = SciPyNotebook.app/Contents/Frameworks
 APP_BINARY_DIR  = SciPyNotebook.app/Contents/MacOS
-VERSION = 1.0.0rc1
+VERSION = 1.0.0rc2
 
 app: dmg
 
