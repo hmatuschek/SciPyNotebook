@@ -13,10 +13,12 @@
 #define PYTHONCONTEXT_HH
 
 #include <QObject>
-#include <Python.h>
+
 #include <QStringListModel>
 #include <QDir>
 
+// Forward declaration;
+typedef struct _object PyObject;
 
 /**
  * This class holds the python execution context for a notebook. This context contains the

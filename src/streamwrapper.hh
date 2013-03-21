@@ -12,33 +12,16 @@
 #ifndef __SCIPY_NOTEBOOK_STREAMWRAPPER_HH__
 #define __SCIPY_NOTEBOOK_STREAMWRAPPER_HH__
 
-#include <Python.h>
 #include "cellinputstream.hh"
 
+/* Forward declaration. */
+typedef struct _object PyObject;
 
-/**
- * Registers the StreamWrapperType with the python type system.
- */
+/** Registers the StreamWrapperType with the python type system. */
 int SciPyNotebookStreamWrapperType_init();
 
-
-/**
- * Constructs a StreamWrapper instance forwarding to CellInputStream instance.
- */
+/** Constructs a StreamWrapper instance forwarding to CellInputStream instance. */
 PyObject *SciPyNotebookStreamWrapper_new(CellInputStream *stream);
-
-
-/**
- * Defines the StreamWrapper python class.
- */
-typedef struct {
-    PyObject_HEAD
-
-    /**
-     * Holds the stream instance the data is forwarded to.
-     */
-    CellInputStream *stream;
-} SciPyNotebookStreamWrapper;
 
 
 #endif // __SCIPY_NOTEBOOK_STREAMWRAPPER_HH__

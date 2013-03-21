@@ -9,10 +9,10 @@
  *  (at your option) any later version.
  */
 
+#include <Python.h>
 #include "pythonengine.hh"
 #include "streamwrapper.hh"
 #include "cell.hh"
-
 #include <iostream>
 
 
@@ -99,10 +99,17 @@ PythonEngine::run()
     current_cell->setEvaluationState(Cell::EVALUATING);
 
     // Redirect stderr & stdout streams:
+#ifdef PY_MAJOR_VERSION >= 3
+    PyDict_SetItem(sys_dict, PyBytes_FromString("stdout"),
+                   SciPyNotebookStreamWrapper_new(current_cell->stdoutStream()));
+    PyDict_SetItem(sys_dict, PyBytes_FromString("stderr"),
+                   SciPyNotebookStreamWrapper_new(current_cell->stderrStream()));
+#else
     PyDict_SetItem(sys_dict, PyString_FromString("stdout"),
                    SciPyNotebookStreamWrapper_new(current_cell->stdoutStream()));
     PyDict_SetItem(sys_dict, PyString_FromString("stderr"),
                    SciPyNotebookStreamWrapper_new(current_cell->stderrStream()));
+#endif
 
     // Set working directory to file dir if file path is set:
     current_cell->context()->setWorkingDirectory();
@@ -129,13 +136,13 @@ PythonEngine::run()
         // Extract the line number of the first frame and mark the line in codecell
         PyObject *lineno = PyObject_GetAttrString(pvalue, "lineno");
         if (lineno) {
-          current_cell->markCodeLine(PyInt_AsSsize_t(lineno)); Py_DECREF(lineno);
+          current_cell->markCodeLine(PyLong_AsSsize_t(lineno)); Py_DECREF(lineno);
         }
       } else if (0 != traceback) {
         // Extract the line number of the first frame and mark the line in codecell
         PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
         if (lineno) {
-          current_cell->markCodeLine(PyInt_AsSsize_t(lineno));
+          current_cell->markCodeLine(PyLong_AsSsize_t(lineno));
           Py_DECREF(lineno);
         }
       }
@@ -149,8 +156,13 @@ PythonEngine::run()
     }
 
     // Evaluate code:
+#if PY_MAJOR_VERSION >= 3
+    PyObject *result = PyEval_EvalCode(
+          prec_code, current_cell->globalContext(), current_cell->globalContext());
+#else
     PyObject *result = PyEval_EvalCode(
           (PyCodeObject *)prec_code, current_cell->globalContext(), current_cell->globalContext());
+#endif
 
     if (0 == result) {
       // Extract Exception:
@@ -169,7 +181,7 @@ PythonEngine::run()
         // Extract the line number of the first frame and mark the line in codecell
         PyObject *lineno = PyObject_GetAttrString(traceback, "tb_lineno");
         if (lineno) {
-          current_cell->markCodeLine(PyInt_AsSsize_t(lineno));
+          current_cell->markCodeLine(PyLong_AsSsize_t(lineno));
           Py_DECREF(lineno);
         }
       }

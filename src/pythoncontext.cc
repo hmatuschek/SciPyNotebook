@@ -9,6 +9,7 @@
  *  (at your option) any later version.
  */
 
+#include <Python.h>
 #include "pythoncontext.hh"
 #include "pythonengine.hh"
 
@@ -76,8 +77,13 @@ PythonContext::setFileName(const QString &filename)
   // Store filename:
   _filepath = filename;
 
+#ifdef PY_MAJOR_VERSION >= 3
+  // Convert string to python string
+  PyObject *fname = PyBytes_FromString(_filepath.toStdString().c_str());
+#else
   // Convert string to python string
   PyObject *fname = PyString_FromString(_filepath.toStdString().c_str());
+#endif
 
   // Store filename into local and global context
   PyDict_SetItemString(_globals, "__file__", fname);
@@ -115,7 +121,12 @@ PythonContext::setWorkingDirectory(const QDir &dir)
     exit(-1);
   }
 
-  if(PyList_Insert(sys_path, 0, PyString_FromString(dir.path().toStdString().c_str()))) {
+#if PY_MAJOR_VERSION >= 3
+  PyObject *path_str=PyBytes_FromString(dir.path().toStdString().c_str());
+#else
+  PyObject *path_str=PyString_FromString(dir.path().toStdString().c_str());
+#endif
+  if(PyList_Insert(sys_path, 0, path_str)) {
     qFatal("Can not prepend file-directory to sys.path.");
     exit(-1);
   }
@@ -131,7 +142,11 @@ PythonContext::getNamesFor(const QString &path, QStringList &names)
   if ("" == path) {
     PyObject *key = 0; ssize_t pos = 0;
     while (PyDict_Next(_globals, &pos, &key, NULL)) {
+#if PY_MAJOR_VERSION >= 3
+      names.append(PyBytes_AsString(key));
+#else
       names.append(PyString_AsString(key));
+#endif
     }
     return;
   }
@@ -156,7 +171,11 @@ PythonContext::getNamesFor(const QString &path, QStringList &names)
 
   // Iterate over list of elements and assemble list of names:
   for (int i=0; i<PyList_Size(keys); i++) {
+#if PY_MAJOR_VERSION >= 3
+    names.append(PyBytes_AsString(PyList_GetItem(keys, i)));
+#else
     names.append(PyString_AsString(PyList_GetItem(keys, i)));
+#endif
   }
 }
 

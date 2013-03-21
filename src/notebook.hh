@@ -20,8 +20,6 @@
 #include <QLayout>
 #include <QAction>
 
-#include <Python.h>
-
 
 /** A notebook is a list of cells representing a code file. */
 class Notebook : public QObject

@@ -20,6 +20,7 @@
  *  (at your option) any later version.
  */
 
+#include <Python.h>
 #include "cell.hh"
 #include "cellstatus.hh"
 #include "pythonengine.hh"

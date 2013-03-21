@@ -17,7 +17,6 @@
 #include <QMutex>
 #include <QWaitCondition>
 
-#include <Python.h>
 #include "cellinputstream.hh"
 
 

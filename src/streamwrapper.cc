@@ -9,10 +9,22 @@
  *  (at your option) any later version.
  */
 
+#include <Python.h>
 #include "streamwrapper.hh"
 #include "cellinputstream.hh"
 #include <iostream>
-#include <Python.h>
+
+/** Defines the StreamWrapper python class. */
+typedef struct {
+    PyObject_HEAD
+
+    /**
+     * Holds the stream instance the data is forwarded to.
+     */
+    CellInputStream *stream;
+} SciPyNotebookStreamWrapper;
+
+
 
 /**
  * Implements the "write()" method for the StreamWrapper objects.
@@ -28,16 +40,17 @@ SciPyNotebookStreamWrapper_write(SciPyNotebookStreamWrapper *self, PyObject *arg
   }
 
   // Extract string and send it to stream:
+#if PY_MAJOR_VERSION >= 3
+  self->stream->write(PyBytes_AsString(text));
+#else
   self->stream->write(PyString_AsString(text));
-
+#endif
   // Return number of bytes send
   Py_RETURN_NONE;
 }
 
 
-/**
- * The method definitions for StreamWrapper instances.
- */
+/** The method definitions for StreamWrapper instances. */
 static PyMethodDef SciPyNotebookStreamWrapperType_methods[] =
 {
   {"write", (PyCFunction)SciPyNotebookStreamWrapper_write, METH_VARARGS, "..."},
@@ -45,11 +58,20 @@ static PyMethodDef SciPyNotebookStreamWrapperType_methods[] =
 };
 
 
-
 /**
  * Defines the StreamWrapper type.
  */
 static PyTypeObject SciPyNotebookStreamWrapperType = {
+  #if PY_MAJOR_VERSION >= 3
+  PyVarObject_HEAD_INIT(NULL, 0)
+  "SciPyNotebookStreamWrapper",
+  0, sizeof(SciPyNotebookStreamWrapperType),
+  0,0,0,0,0,0, 0,0,0, 0,0,0,0,0, 0,
+  Py_TPFLAGS_DEFAULT,
+  "Wrapper of stderr and stdout.",
+  0,0,0,0,0,0,
+  SciPyNotebookStreamWrapperType_methods
+  #else
   PyObject_HEAD_INIT(NULL)
   0,
   "SciPyNotebookStreamWrapper",
@@ -58,8 +80,8 @@ static PyTypeObject SciPyNotebookStreamWrapperType = {
   Py_TPFLAGS_DEFAULT,
   "Wrapper of stderr and stdout.",
   0,0,0,0,0,0,
-  SciPyNotebookStreamWrapperType_methods,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  SciPyNotebookStreamWrapperType_methods
+  #endif
 };
 
 

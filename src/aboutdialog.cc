@@ -20,7 +20,7 @@ static QString content = \
     "<head></head>" \
     "<body>" \
     "<h1 align=\"center\">SciPy Notebook</h1>" \
-    "<center><b>Version 1.0.0-rc1</b></center>" \
+    "<center><b>Version 1.0.0-rc2</b></center>" \
     "<center>(c) 2011 <i>Hannes Matuschek</i> &lt;hmatuschek@gmail.com&gt;</center>" \
     "<center> <a href=\"http://github.com/hmatuschek/SciPyNotebook/wiki\"> " \
     "http://github.com/hmatuschek/SciPyNotebook/wiki</a></center>" \
