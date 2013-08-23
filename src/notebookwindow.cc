@@ -107,8 +107,10 @@ NotebookWindow::_initNotebookWindow()
   QAction *evalAllCellsAction = new QAction(tr("Evaluate all cells"), this);
   evalAllCellsAction->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Return));
 
-  QAction *closeAction = new QAction(tr("Close Notebook"), this);
+  QAction *closeAction = new QAction(tr("Close notebook"), this);
   closeAction->setShortcut(QKeySequence::Close);
+  QAction *setWDirAction = new QAction(tr("Set working directory"), this);
+  setWDirAction->setToolTip(tr("Sets the current working directory to the file location."));
 
   QObject::connect(saveAction, SIGNAL(triggered()), _notebook_view->notebook(), SLOT(save()));
   QObject::connect(saveAsAction, SIGNAL(triggered()), _notebook_view->notebook(), SLOT(saveAs()));
@@ -120,6 +122,7 @@ NotebookWindow::_initNotebookWindow()
   QObject::connect(evalCellAction, SIGNAL(triggered()), _notebook_view, SLOT(evalCell()));
   QObject::connect(evalAllCellsAction, SIGNAL(triggered()), _notebook_view->notebook(), SLOT(evalAllCells()));
   QObject::connect(closeAction, SIGNAL(triggered()), this, SLOT(onCloseNotebook()));
+  QObject::connect(setWDirAction, SIGNAL(triggered()), _notebook_view, SLOT(setCWD()));
 
   QObject::connect(undoAction, SIGNAL(triggered()), _notebook_view, SLOT(undo()));
   QObject::connect(redoAction, SIGNAL(triggered()), _notebook_view, SLOT(redo()));
