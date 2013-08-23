@@ -77,7 +77,7 @@ PythonContext::setFileName(const QString &filename)
   // Store filename:
   _filepath = filename;
 
-#ifdef PY_MAJOR_VERSION >= 3
+#if PY_MAJOR_VERSION >= 3
   // Convert string to python string
   PyObject *fname = PyBytes_FromString(_filepath.toStdString().c_str());
 #else
@@ -92,6 +92,16 @@ PythonContext::setFileName(const QString &filename)
   // Set working directory to file directory:
   QDir file_dir = QFileInfo(_filepath).dir();
   setWorkingDirectory(file_dir);
+}
+
+
+QString
+PythonContext::fileLocation() const {
+  // Skip if no filepath is set
+  if (0 == _filepath.size()) { return ""; }
+  // Get directory from file-path
+  QDir file_dir = QFileInfo(_filepath).dir();
+  return file_dir.path();
 }
 
 void

@@ -15,6 +15,8 @@
 
 #include <QApplication>
 #include <QFile>
+#include <QMessageBox>
+#include <unistd.h>
 
 
 NotebookView::NotebookView(QWidget *parent) :
@@ -196,4 +198,15 @@ NotebookView::evalCell() {
   int index = _cells.indexOf(_active_cell);
   if (0 > index) { return; }
   _notebook->evalCell(index);
+}
+
+void
+NotebookView::setCWD() {
+  QString path = _notebook->context()->fileLocation();
+  if (0 == path.size()) { return; }
+  int err = chdir(path.toLocal8Bit().constData());
+  if (0 == err) { return; }
+  QMessageBox::critical(
+        0, tr("Can not set working directory."),
+        tr("Can not change directory to \"%1\": chdir() returned %1").arg(path).arg(err));
 }

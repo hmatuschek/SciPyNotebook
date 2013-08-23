@@ -50,6 +50,8 @@ public:
 
   /** Sets the file-name of the context. */
   void setFileName(const QString &filename);
+  /** Returns the file location. */
+  QString fileLocation() const;
   /** Sets the working directory of the context to the directory of the file-path. */
   void setWorkingDirectory();
   /** Sets the working directory of the context to the given dir. */

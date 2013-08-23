@@ -59,6 +59,8 @@ public slots:
   void joinCell();
   /** Evaluates the currently active cell. */
   void evalCell();
+  /** Sets the current working directory of the process to the file location of the notebook. */
+  void setCWD();
 
 private slots:
   /** Updates the view if a new cell is added to the notebook. */
