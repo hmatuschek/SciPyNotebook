@@ -12,6 +12,7 @@
 #include "preferences.hh"
 
 #include <QDir>
+#include <QStringList>
 
 
 Preferences * Preferences::_instance = 0;
@@ -107,3 +108,33 @@ Preferences::setAutoIndent(bool enabled) {
   setValue("autoindent", enabled);
 }
 
+void
+Preferences::addRecentFile(QString path) {
+  QStringList recent_files = recentFiles();
+
+  // Remove prior occurrence of path in recent_files:
+  recent_files.removeAll(path); recent_files.prepend(path);
+  while (recent_files.size() > 5) {
+    recent_files.pop_back();
+  }
+
+  // Write recent files:
+  beginWriteArray("recent");
+  for (int i=0; i<recent_files.size(); i++) {
+    setArrayIndex(i);
+    setValue("path", recent_files.at(i));
+  }
+  endArray();
+}
+
+QStringList
+Preferences::recentFiles() {
+  QStringList recent_files;
+  int size = beginReadArray("recent");
+  for (int i=0; i<size; i++) {
+    setArrayIndex(i);
+    recent_files.append(value("path").toString());
+  }
+  endArray();
+  return recent_files;
+}

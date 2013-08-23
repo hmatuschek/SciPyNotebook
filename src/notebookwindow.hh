@@ -30,6 +30,7 @@ protected:
   QScrollArea *_scrolledWindow;
 
   QMenu *_fileMenu;
+  QMenu *_recentMenu;
   QMenu *_editMenu;
   QMenu *_cellMenu;
   QMenu *_helpMenu;

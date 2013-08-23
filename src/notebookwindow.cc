@@ -133,6 +133,7 @@ NotebookWindow::_initNotebookWindow()
   _fileMenu = menuBar()->addMenu(tr("&File"));
   _fileMenu->addAction(application->newNotebookAction());
   _fileMenu->addAction(application->openFileAction());
+  _recentMenu = _fileMenu->addMenu(tr("Recent Files"));
   _fileMenu->addSeparator();
   _fileMenu->addAction(saveAction);
   _fileMenu->addAction(saveAsAction);
@@ -140,6 +141,8 @@ NotebookWindow::_initNotebookWindow()
   //_fileMenu->addAction(_notebook_view->notebook()->printNotebookAction());
   _fileMenu->addSeparator();
   _fileMenu->addAction(application->quitAction());
+
+  // Assemble "recent" menu:
 
   _editMenu = menuBar()->addMenu(tr("&Edit"));
   _editMenu->addAction(undoAction);

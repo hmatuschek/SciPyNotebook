@@ -16,6 +16,7 @@
 #include <QFont>
 #include <QFile>
 #include <QSettings>
+#include <QStringList>
 
 class Preferences : public QSettings
 {
@@ -59,6 +60,8 @@ public slots:
   void setAutoCompletion(bool enabled);
   void setAutoCompletionThreshold(int thres);
   void setAutoIndent(bool enabled);
+  void addRecentFile(QString path);
+  QStringList recentFiles();
 };
 
 #endif // PREFERENCES_HH

@@ -1,3 +1,10 @@
+scipynotebook (1.0.0rc2-1) stable; urgency=low
+
+  * Fixed sporadic dead locks.
+
+ -- Hannes Matuschek <hmatuschek@gmail.com>  Fr, 21 Mar 2012 00:00:00 +0100
+
+
 scipynotebook (1.0.0rc1-1) stable; urgency=low
 
   * Executes code in separate thread.

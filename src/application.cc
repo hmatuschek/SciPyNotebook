@@ -15,6 +15,7 @@
 #include "notebookwindow.hh"
 #include "aboutdialog.hh"
 #include "preferencesdialog.hh"
+#include "preferences.hh"
 
 
 Application::Application(int &argc, char **argv) :
@@ -73,6 +74,9 @@ Application::onOpenNotebook() {
         0, tr("Open file..."), "", tr("Python Source File (*.py)"));
   if (0 == filename.size()) { return; }
 
+  // Save filename in "recent files":
+  Preferences::get()->addRecentFile(filename);
+  // open...
   NotebookWindow *window = new NotebookWindow(filename);
   window->show();
 }
@@ -89,13 +93,11 @@ Application::onQuit()
 
   // If any notebook is modified, ask user:
   if (modified) {
-    if (QMessageBox::Yes != QMessageBox::question(0, tr("Discard changes"),
-                                                  tr("One or more notebooks have unsaved changes, "
-                                                     "do you want to close SciPy Notebook anyway?"),
-                                                  QMessageBox::Yes, QMessageBox::No))
-    {
-      return;
-    }
+    if (QMessageBox::Yes != QMessageBox::question(
+          0, tr("Discard changes"),
+          tr("One or more notebooks have unsaved changes, "
+             "do you want to close SciPy Notebook anyway?"),
+          QMessageBox::Yes, QMessageBox::No)) { return; }
   }
 
   QApplication::quit();
