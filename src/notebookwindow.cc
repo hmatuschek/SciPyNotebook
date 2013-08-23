@@ -153,6 +153,7 @@ NotebookWindow::_initNotebookWindow()
   _editMenu->addAction(pasteAction);
   _editMenu->addSeparator();
   _editMenu->addAction(application->showPreferencesAction());
+  _editMenu->addAction(setWDirAction);
 
   _cellMenu = menuBar()->addMenu(tr("&Notebook"));
   _cellMenu->addAction(newCellAction);
